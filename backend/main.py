@@ -69,24 +69,24 @@ from fastapi import Header
 
 def get_user(authorization: str = Header(None), db: Session = Depends(get_db)):
     if not authorization:
-        raise HTTPException(401, "مطلوب تسجيل الدخول")
+        raise HTTPException(401, "Login required")
     try:
         token = authorization.replace("Bearer ", "")
         payload = jwt.decode(token, SECRET, algorithms=["HS256"])
         user = db.query(User).get(int(payload["sub"]))
         if not user:
-            raise HTTPException(401, "المستخدم غير موجود")
+            raise HTTPException(401, "User not found")
         return user
     except (Exception,):
-        raise HTTPException(401, "رمز غير صالح")
+        raise HTTPException(401, "Invalid token")
 
 # ── Auth endpoints ───────────────────────────────────────────────────────────
 @app.post("/api/auth/register")
 def register(req: RegisterReq, db: Session = Depends(get_db)):
     if len(req.password) < 6:
-        raise HTTPException(400, "كلمة المرور يجب أن تكون ٦ أحرف على الأقل")
+        raise HTTPException(400, "Password must be at least 6 characters")
     if db.query(User).filter_by(email=req.email).first():
-        raise HTTPException(400, "البريد مسجل مسبقاً")
+        raise HTTPException(400, "Email already registered")
     user = User(name=req.name, email=req.email, password_hash=hash_pw(req.password))
     db.add(user)
     db.commit()
@@ -101,7 +101,7 @@ def register(req: RegisterReq, db: Session = Depends(get_db)):
 def login(req: LoginReq, db: Session = Depends(get_db)):
     user = db.query(User).filter_by(email=req.email).first()
     if not user or not verify_pw(req.password, user.password_hash):
-        raise HTTPException(401, "بيانات الدخول غير صحيحة")
+        raise HTTPException(401, "Invalid login credentials")
     return {"token": create_token(user.id), "user": {"id": user.id, "name": user.name}}
 
 # ── User profile ─────────────────────────────────────────────────────────────
@@ -156,8 +156,8 @@ def update_settings(req: SettingsReq, user: User = Depends(get_user), db: Sessio
 @app.post("/api/diagnostic/start")
 def start_diagnostic(user: User = Depends(get_user), db: Session = Depends(get_db)):
     if user.diagnostic_completed:
-        raise HTTPException(400, "التشخيصي مكتمل مسبقاً")
-    return {"message": "ابدأ الاختبار التشخيصي", "total_questions": 9}
+        raise HTTPException(400, "Diagnostic already completed")
+    return {"message": "Start diagnostic test", "total_questions": 9}
 
 @app.get("/api/diagnostic/next")
 def diagnostic_next(user: User = Depends(get_user), db: Session = Depends(get_db)):
@@ -203,10 +203,10 @@ def diagnostic_next(user: User = Depends(get_user), db: Session = Depends(get_db
 @app.post("/api/diagnostic/answer")
 def diagnostic_answer(req: AnswerReq, user: User = Depends(get_user), db: Session = Depends(get_db)):
     if user.diagnostic_completed:
-        raise HTTPException(400, "التشخيصي مكتمل مسبقاً")
+        raise HTTPException(400, "Diagnostic already completed")
     q = db.query(Question).get(req.question_id)
     if not q:
-        raise HTTPException(404, "السؤال غير موجود")
+        raise HTTPException(404, "Question not found")
 
     is_correct = req.selected_option == q.correct_option
     resp = UserResponse(user_id=user.id, question_id=q.id, session_type="diagnostic",
@@ -235,7 +235,7 @@ def complete_diagnostic(user: User = Depends(get_user), db: Session = Depends(ge
     db.commit()
     generate_study_plan(db, user.id, user.daily_minutes)
     score = predict_score(db, user.id)
-    return {"message": "تم إكمال التشخيصي!", "predicted_score": score}
+    return {"message": "Diagnostic completed!", "predicted_score": score}
 
 # ── Study Plan ───────────────────────────────────────────────────────────────
 @app.get("/api/study-plan")
@@ -260,7 +260,7 @@ def get_today(user: User = Depends(get_user), db: Session = Depends(get_db)):
     if not plan:
         return {"day": user.current_day, "phase": "", "focus_skills": [], "target_questions": 0,
                 "completed_questions": 0, "is_mock_day": False, "is_rest_day": False, "remaining": 0,
-                "message": "لا توجد خطة لليوم"}
+                "message": "No plan for today"}
     skills = {s.id: s for s in db.query(Skill).all()}
     return {
         "day": plan.day_number,
@@ -287,7 +287,7 @@ def practice_next(user: User = Depends(get_user), db: Session = Depends(get_db))
 
     q = select_next_question(db, user.id, "drill", excluded, current_day=user.current_day)
     if not q:
-        return {"done": True, "message": "أنهيت جميع الأسئلة المتاحة!"}
+        return {"done": True, "message": "You have completed all available questions!"}
 
     return {"done": False, "question": format_question(q)}
 
@@ -295,7 +295,7 @@ def practice_next(user: User = Depends(get_user), db: Session = Depends(get_db))
 def practice_answer(req: AnswerReq, user: User = Depends(get_user), db: Session = Depends(get_db)):
     q = db.query(Question).get(req.question_id)
     if not q:
-        raise HTTPException(404, "السؤال غير موجود")
+        raise HTTPException(404, "Question not found")
 
     is_correct = req.selected_option == q.correct_option
 
@@ -346,7 +346,7 @@ def advance_day(user: User = Depends(get_user), db: Session = Depends(get_db)):
         return {"current_day": user.current_day}
     plan = db.query(StudyPlan).filter_by(user_id=user.id, day_number=user.current_day).first()
     if plan and not plan.is_rest_day and plan.completed_questions < plan.target_questions:
-        raise HTTPException(400, "أكمل أسئلة اليوم أولاً")
+        raise HTTPException(400, "Complete today's questions first")
     user.current_day += 1
     db.commit()
     return {"current_day": user.current_day}
@@ -426,10 +426,10 @@ def format_question(q: Question):
         "text_ar": q.text_ar,
         "passage_ar": q.passage_ar,
         "options": [
-            {"key": "a", "label": "أ", "text_ar": q.option_a},
-            {"key": "b", "label": "ب", "text_ar": q.option_b},
-            {"key": "c", "label": "ج", "text_ar": q.option_c},
-            {"key": "d", "label": "د", "text_ar": q.option_d},
+            {"key": "a", "label": "A", "text_ar": q.option_a},
+            {"key": "b", "label": "B", "text_ar": q.option_b},
+            {"key": "c", "label": "C", "text_ar": q.option_c},
+            {"key": "d", "label": "D", "text_ar": q.option_d},
         ],
         "paper_only": q.paper_only,
     }
@@ -464,17 +464,17 @@ class FeedbackReq(BaseModel):
 @app.post("/api/feedback")
 def submit_feedback(req: FeedbackReq, user: User = Depends(get_user), db: Session = Depends(get_db)):
     if req.rating < 1 or req.rating > 5:
-        raise HTTPException(400, "التقييم يجب أن يكون بين ١ و ٥")
+        raise HTTPException(400, "Rating must be between 1 and 5")
     fb = Feedback(user_id=user.id, rating=req.rating, comment=req.comment, trigger=req.trigger, page=req.page)
     db.add(fb)
     db.commit()
-    return {"message": "شكراً لملاحظاتك!"}
+    return {"message": "Thank you for your feedback!"}
 
 # ── Admin ────────────────────────────────────────────────────────────────────
 
 def get_admin(user: User = Depends(get_user)):
     if not user.is_admin:
-        raise HTTPException(403, "غير مصرح لك بالوصول")
+        raise HTTPException(403, "Access denied")
     return user
 
 @app.get("/api/admin/feedback")
@@ -555,9 +555,9 @@ def mock_start(preview: bool = Query(False), user: User = Depends(get_user), db:
     if not is_preview:
         max_attempts = get_mock_max(db)
         if user.mock_attempts >= max_attempts:
-            raise HTTPException(400, f"تجاوزت الحد الأقصى من المحاولات ({max_attempts})")
+            raise HTTPException(400, f"Maximum attempts exceeded ({max_attempts})")
         if user.current_day < 25:
-            raise HTTPException(400, "اختبار المحاكاة متاح من اليوم ٢٥")
+            raise HTTPException(400, "Mock exam available from day 25")
 
     import random
     verbal_skills = [s.id for s in db.query(Skill).filter_by(section="verbal").all()]
@@ -613,14 +613,14 @@ def mock_start(preview: bool = Query(False), user: User = Depends(get_user), db:
 def mock_question(question_id: int, user: User = Depends(get_user), db: Session = Depends(get_db)):
     q = db.query(Question).get(question_id)
     if not q:
-        raise HTTPException(404, "السؤال غير موجود")
+        raise HTTPException(404, "Question not found")
     return format_question(q)
 
 @app.post("/api/mock/answer")
 def mock_answer(req: MockAnswerReq, user: User = Depends(get_user), db: Session = Depends(get_db)):
     q = db.query(Question).get(req.question_id)
     if not q:
-        raise HTTPException(404, "السؤال غير موجود")
+        raise HTTPException(404, "Question not found")
     is_correct = req.selected_option == q.correct_option
     resp = UserResponse(user_id=user.id, question_id=q.id, session_type="mock",
                         attempt_id=req.attempt_id, selected_option=req.selected_option,
@@ -637,13 +637,13 @@ class MockCompleteReq(BaseModel):
 def mock_complete(req: MockCompleteReq, user: User = Depends(get_user), db: Session = Depends(get_db)):
     attempt = db.query(MockAttempt).get(req.attempt_id)
     if not attempt or attempt.user_id != user.id:
-        raise HTTPException(404, "المحاولة غير موجودة")
+        raise HTTPException(404, "Attempt not found")
     if attempt.completed_at:
-        raise HTTPException(400, "تم إكمال هذه المحاولة مسبقاً")
+        raise HTTPException(400, "This attempt has already been completed")
 
     responses = db.query(UserResponse).filter_by(user_id=user.id, attempt_id=attempt.id).all()
     if not responses:
-        raise HTTPException(400, "لم يتم الإجابة على أي سؤال")
+        raise HTTPException(400, "No questions answered")
 
     total = len(responses)
     correct = sum(1 for r in responses if r.is_correct)
@@ -709,7 +709,7 @@ def mock_attempts(user: User = Depends(get_user), db: Session = Depends(get_db))
 def mock_attempt_status(attempt_id: int, user: User = Depends(get_user), db: Session = Depends(get_db)):
     attempt = db.query(MockAttempt).get(attempt_id)
     if not attempt or attempt.user_id != user.id:
-        raise HTTPException(404, "المحاولة غير موجودة")
+        raise HTTPException(404, "Attempt not found")
     answers_count = db.query(UserResponse).filter_by(attempt_id=attempt.id).count()
     return {
         "attempt_id": attempt.id,
@@ -722,7 +722,7 @@ def mock_attempt_status(attempt_id: int, user: User = Depends(get_user), db: Ses
 def mock_attempt_detail(attempt_id: int, user: User = Depends(get_user), db: Session = Depends(get_db)):
     attempt = db.query(MockAttempt).get(attempt_id)
     if not attempt or (attempt.user_id != user.id and not user.is_admin):
-        raise HTTPException(404, "المحاولة غير موجودة")
+        raise HTTPException(404, "Attempt not found")
 
     responses = db.query(UserResponse).filter_by(attempt_id=attempt.id).order_by(UserResponse.id).all()
     skills_map = {s.id: s for s in db.query(Skill).all()}
@@ -769,7 +769,7 @@ def mock_results(user: User = Depends(get_user), db: Session = Depends(get_db)):
     """Alias: returns latest completed attempt summary."""
     latest = db.query(MockAttempt).filter_by(user_id=user.id, is_preview=False).filter(MockAttempt.completed_at != None).order_by(MockAttempt.attempt_number.desc()).first()
     if not latest:
-        raise HTTPException(400, "لم يتم إكمال اختبار المحاكاة بعد")
+        raise HTTPException(400, "Mock exam not completed yet")
     return {
         "attempt_id": latest.id, "score": latest.score,
         "total": latest.total_questions, "correct": latest.correct_count,
@@ -923,7 +923,7 @@ def admin_question_analysis(admin: User = Depends(get_admin), db: Session = Depe
 @app.post("/api/admin/questions/recalculate")
 def admin_recalculate(admin: User = Depends(get_admin), db: Session = Depends(get_db)):
     count = recalculate_all_question_stats(db)
-    return {"message": f"تم إعادة حساب إحصائيات {count} سؤال"}
+    return {"message": f"Recalculated statistics for {count} questions"}
 
 @app.post("/api/admin/questions/calibrate")
 def admin_calibrate(
@@ -947,29 +947,29 @@ def admin_add_question(req: QuestionReq, admin: User = Depends(get_admin), db: S
     db.add(q)
     db.commit()
     db.refresh(q)
-    return {"id": q.id, "message": "تمت إضافة السؤال"}
+    return {"id": q.id, "message": "Question added"}
 
 @app.put("/api/admin/questions/{question_id}")
 def admin_update_question(question_id: int, req: QuestionReq, admin: User = Depends(get_admin), db: Session = Depends(get_db)):
     q = db.query(Question).get(question_id)
     if not q:
-        raise HTTPException(404, "السؤال غير موجود")
+        raise HTTPException(404, "Question not found")
     for field in ["skill_id", "question_type", "difficulty", "text_ar", "passage_ar",
                    "option_a", "option_b", "option_c", "option_d", "correct_option",
                    "explanation_ar", "solution_steps_ar", "tags", "stage", "status"]:
         setattr(q, field, getattr(req, field))
     db.commit()
-    return {"message": "تم تحديث السؤال"}
+    return {"message": "Question updated"}
 
 @app.delete("/api/admin/questions/{question_id}")
 def admin_delete_question(question_id: int, admin: User = Depends(get_admin), db: Session = Depends(get_db)):
     q = db.query(Question).get(question_id)
     if not q:
-        raise HTTPException(404, "السؤال غير موجود")
+        raise HTTPException(404, "Question not found")
     db.query(UserResponse).filter_by(question_id=q.id).delete()
     db.delete(q)
     db.commit()
-    return {"message": "تم حذف السؤال"}
+    return {"message": "Question deleted"}
 
 # ── Health check ─────────────────────────────────────────────────────────────
 @app.get("/health")
