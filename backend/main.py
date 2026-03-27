@@ -19,9 +19,13 @@ from seed import seed_all
 Base.metadata.create_all(bind=engine)
 seed_all()
 
-app = FastAPI(title="قدرة أكاديمي — Qudra Academy")
+app = FastAPI(title="Qudra Academy — GAT Prep")
 app.add_middleware(GZipMiddleware, minimum_size=500)
 app.add_middleware(CORSMiddleware, allow_origins=os.getenv("CORS_ORIGINS", "*").split(","), allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+
+@app.get("/")
+async def root():
+    return {"message": "Qudra Academy API", "status": "running"}
 
 SECRET = os.getenv("SECRET_KEY", "gat-prep-secret-key-change-in-production")
 def hash_pw(p): return hashlib.sha256((p + SECRET).encode()).hexdigest()
