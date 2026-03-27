@@ -740,7 +740,61 @@ export function LandingPage({ onStart, onTrial }: LandingPageProps) {
       </section>
 
       {/* ═══════════════════════════════════════════════
-          10. Footer
+          10. Compliance Section
+          ═══════════════════════════════════════════════ */}
+      <section className="bg-slate-50 py-16 lg:py-20">
+        <div className="max-w-6xl mx-auto px-4 lg:px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-3">Compliant With National Standards</h2>
+            <p className="text-slate-600 max-w-2xl mx-auto">
+              This platform meets the highest standards set by Saudi Arabia's leading education authorities
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+            {/* ETEC Card */}
+            <div className="bg-white rounded-2xl p-8 lg:p-10 shadow-lg shadow-slate-200/50 border border-slate-100 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300 hover:-translate-y-1">
+              <div className="flex flex-col items-center text-center">
+                <div className="mb-6 p-6 bg-slate-50 rounded-2xl w-full max-w-xs">
+                  <img 
+                    src="/logos/etec.png" 
+                    alt="ETEC - Education and Training Evaluation Commission" 
+                    className="w-full h-auto object-contain" 
+                  />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">ETEC</h3>
+                <p className="text-sm font-medium text-teal-600 mb-4">Education and Training Evaluation Commission</p>
+                <p className="text-slate-600 text-sm leading-relaxed">
+                  Our exam preparation content aligns with ETEC standards for academic assessment 
+                  and evaluation, ensuring you practice with questions that meet official quality benchmarks.
+                </p>
+              </div>
+            </div>
+
+            {/* NELC Card */}
+            <div className="bg-white rounded-2xl p-8 lg:p-10 shadow-lg shadow-slate-200/50 border border-slate-100 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300 hover:-translate-y-1">
+              <div className="flex flex-col items-center text-center">
+                <div className="mb-6 p-6 bg-slate-50 rounded-2xl w-full max-w-xs">
+                  <img 
+                    src="/logos/nelc.png" 
+                    alt="NELC - National eLearning Center" 
+                    className="w-full h-auto object-contain" 
+                  />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">NELC</h3>
+                <p className="text-sm font-medium text-teal-600 mb-4">National eLearning Center</p>
+                <p className="text-slate-600 text-sm leading-relaxed">
+                  Our digital learning platform adheres to NELC national e-learning standards, 
+                  providing a compliant and quality-assured online education experience.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════
+          11. Footer
           ═══════════════════════════════════════════════ */}
       <footer className="bg-slate-900 text-slate-300 py-16">
         <div className="max-w-6xl mx-auto px-4 lg:px-6">
