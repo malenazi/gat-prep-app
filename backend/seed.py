@@ -113,7 +113,7 @@ def seed_all():
         db.commit()
         print("Seeded: student@gat.sa (new)")
 
-    # ── 2. Sara — Day 5, beginner, التأسيس phase ──
+    # ── 2. Sara — Day 5, beginner, Foundation phase ──
     if db.query(User).filter_by(email="sara@gat.sa").first() is None:
         sara = User(name="Sara Al-Mutairi", email="sara@gat.sa", password_hash=pw("123456"),
                     diagnostic_completed=True, current_day=5, xp=420, streak_current=5,
@@ -134,7 +134,7 @@ def seed_all():
         }, days_active=5, response_count=50, badge_ids=['first_step'])
         print("Seeded: sara@gat.sa (day 5, Foundation)")
 
-    # ── 3. Mohammed — Day 15, intermediate, التعزيز phase ──
+    # ── 3. Mohammed — Day 15, intermediate, Enhancement phase ──
     if db.query(User).filter_by(email="mohammed@gat.sa").first() is None:
         mohammed = User(name="Mohammed Al-Ghamdi", email="mohammed@gat.sa", password_hash=pw("123456"),
                         diagnostic_completed=True, current_day=15, xp=2850, streak_current=12,
@@ -155,7 +155,7 @@ def seed_all():
         }, days_active=15, response_count=154, badge_ids=['first_step', 'warrior', 'streak_7'])
         print("Seeded: mohammed@gat.sa (day 15, Enhancement)")
 
-    # ── 4. Lujain — Day 25, advanced, الإتقان phase ──
+    # ── 4. Lujain — Day 25, advanced, Mastery phase ──
     if db.query(User).filter_by(email="lujain@gat.sa").first() is None:
         lujain = User(name="Lujain Al-Harbi", email="lujain@gat.sa", password_hash=pw("123456"),
                       diagnostic_completed=True, current_day=25, xp=8200, streak_current=25,
