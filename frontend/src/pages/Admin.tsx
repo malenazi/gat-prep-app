@@ -599,7 +599,7 @@ export default function Admin() {
                           style={{ width: `${q.difficulty * 100}%` }} />
                       </div>
                       {q.rating_overall && <span className={`text-xs font-bold ${q.rating_overall >= 4.5 ? 'text-emerald-500' : q.rating_overall >= 3.5 ? 'text-teal-500' : q.rating_overall >= 3 ? 'text-amber-500' : 'text-red-500'}`}>★{q.rating_overall.toFixed(1)}</span>}
-                      {q.times_answered > 0 && <span className="text-xs text-slate-400">{Math.round(q.accuracy * 100)}٪</span>}
+                      {q.times_answered > 0 && <span className="text-xs text-slate-400">{Math.round(q.accuracy * 100)}%</span>}
                       {q.status === 'review' && <span className="text-xs text-amber-500">Review</span>}
                       {q.status === 'disabled' && <span className="text-xs text-red-500">Disabled</span>}
                       {expandedQ === q.id ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
@@ -874,7 +874,7 @@ function QuestionModal({ question, skills, onClose, onSave }: {
     e.preventDefault();
     setSaving(true); setError('');
     try { await onSave(form); }
-    catch (err: unknown) { setError(err instanceof Error ? err.message : 'حدث خطأ'); }
+    catch (err: unknown) { setError(err instanceof Error ? err.message : 'An error occurred'); }
     finally { setSaving(false); }
   };
 
@@ -927,7 +927,7 @@ function QuestionModal({ question, skills, onClose, onSave }: {
               rows={3} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none" required />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            {[{ k: 'option_a', l: 'أ' }, { k: 'option_b', l: 'ب' }, { k: 'option_c', l: 'ج' }, { k: 'option_d', l: 'د' }].map(opt => (
+            {[{ k: 'option_a', l: 'A' }, { k: 'option_b', l: 'B' }, { k: 'option_c', l: 'C' }, { k: 'option_d', l: 'D' }].map(opt => (
               <div key={opt.k}>
                 <label className="text-xs font-medium text-slate-600 mb-1 flex items-center gap-1">
                   <input type="radio" name="correct" value={opt.k.slice(-1)}

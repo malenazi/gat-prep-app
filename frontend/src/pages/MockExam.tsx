@@ -258,7 +258,7 @@ export default function MockExam() {
       clearMockSession();
       await loadUser();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'حدث خطأ');
+      setError(e instanceof Error ? e.message : 'An error occurred');
     }
     setLoading(false);
   };
@@ -486,13 +486,13 @@ export default function MockExam() {
             <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5">
               <BookOpen className="w-6 h-6 text-blue-600 mx-auto mb-2" />
               <p className="text-blue-400 text-sm mb-1">Verbal Section</p>
-              <p className="text-blue-700 font-black text-2xl">{Math.round(results.verbal_pct * 100)}٪</p>
+              <p className="text-blue-700 font-black text-2xl">{Math.round(results.verbal_pct * 100)}%</p>
               <p className="text-xs text-blue-500">{results.verbal_correct} / {results.verbal_total}</p>
             </div>
             <div className="bg-violet-50 border border-violet-200 rounded-2xl p-5">
               <Calculator className="w-6 h-6 text-violet-600 mx-auto mb-2" />
               <p className="text-violet-400 text-sm mb-1">Quantitative Section</p>
-              <p className="text-violet-700 font-black text-2xl">{Math.round(results.quant_pct * 100)}٪</p>
+              <p className="text-violet-700 font-black text-2xl">{Math.round(results.quant_pct * 100)}%</p>
               <p className="text-xs text-violet-500">{results.quant_correct} / {results.quant_total}</p>
             </div>
           </div>
@@ -583,11 +583,11 @@ export default function MockExam() {
                 <div className="grid grid-cols-3 gap-3">
                   <div className="bg-blue-50 rounded-lg p-2 text-center">
                     <p className="text-xs text-blue-500 mb-0.5">Verbal</p>
-                    <p className="text-sm font-bold text-blue-700">{Math.round(a.verbal_pct * 100)}٪</p>
+                    <p className="text-sm font-bold text-blue-700">{Math.round(a.verbal_pct * 100)}%</p>
                   </div>
                   <div className="bg-violet-50 rounded-lg p-2 text-center">
                     <p className="text-xs text-violet-500 mb-0.5">Quant</p>
-                    <p className="text-sm font-bold text-violet-700">{Math.round(a.quant_pct * 100)}٪</p>
+                    <p className="text-sm font-bold text-violet-700">{Math.round(a.quant_pct * 100)}%</p>
                   </div>
                   <div className="bg-slate-50 rounded-lg p-2 text-center">
                     <p className="text-xs text-slate-500 mb-0.5">Date</p>
@@ -637,7 +637,7 @@ export default function MockExam() {
           {/* Header with score */}
           <div className="text-center mb-8">
             <p className="text-sm text-slate-400 mb-3">Attempt {detail.attempt_number}</p>
-            <ScoreRing score={detail.score} label="من ١٠٠" />
+            <ScoreRing score={detail.score} label="out of 100" />
           </div>
 
           {/* Section Breakdown */}
@@ -645,13 +645,13 @@ export default function MockExam() {
             <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 text-center">
               <BookOpen className="w-6 h-6 text-blue-600 mx-auto mb-2" />
               <p className="text-blue-400 text-sm mb-1">Verbal Section</p>
-              <p className="text-blue-700 font-black text-2xl">{verbalPct}٪</p>
+              <p className="text-blue-700 font-black text-2xl">{verbalPct}%</p>
               <p className="text-xs text-blue-500">{detail.verbal_correct} / {detail.verbal_total}</p>
             </div>
             <div className="bg-violet-50 border border-violet-200 rounded-2xl p-5 text-center">
               <Calculator className="w-6 h-6 text-violet-600 mx-auto mb-2" />
               <p className="text-violet-400 text-sm mb-1">Quantitative Section</p>
-              <p className="text-violet-700 font-black text-2xl">{quantPct}٪</p>
+              <p className="text-violet-700 font-black text-2xl">{quantPct}%</p>
               <p className="text-xs text-violet-500">{detail.quant_correct} / {detail.quant_total}</p>
             </div>
           </div>
@@ -670,7 +670,7 @@ export default function MockExam() {
                       <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
                         <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
                       </div>
-                      <span className="text-xs text-slate-500 font-mono w-20 shrink-0">{sk.correct}/{sk.total} ({Math.round(pct)}٪)</span>
+                      <span className="text-xs text-slate-500 font-mono w-20 shrink-0">{sk.correct}/{sk.total} ({Math.round(pct)}%)</span>
                     </div>
                   );
                 })}
@@ -737,7 +737,7 @@ export default function MockExam() {
           <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
           <p className="text-slate-600 font-bold mb-4">All attempts completed</p>
           {user?.mock_score ? (
-            <p className="text-2xl font-black text-slate-800 mb-4">أفضل درجة: {user.mock_score}</p>
+            <p className="text-2xl font-black text-slate-800 mb-4">Best Score: {user.mock_score}</p>
           ) : null}
           <button onClick={loadHistory} className="text-teal-600 font-medium">View Attempt History</button>
         </div>

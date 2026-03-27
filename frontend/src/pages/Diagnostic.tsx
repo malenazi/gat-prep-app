@@ -77,7 +77,7 @@ export default function Diagnostic() {
       // No explanation shown — auto-advance after brief delay
       setTimeout(() => { setPhase('testing'); loadNext(); }, 800);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'حدث خطأ');
+      setError(e instanceof Error ? e.message : 'An error occurred');
       setSelected(null);
     }
   };

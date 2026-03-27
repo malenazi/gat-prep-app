@@ -30,7 +30,7 @@ export function ScoreRing({ score, size = 160, strokeWidth = 10, label }: ScoreR
       </svg>
       <div className="absolute flex flex-col items-center">
         <span className="text-4xl lg:text-5xl font-black text-slate-800">{pct}</span>
-        {label && <span className="text-sm text-slate-500 mt-0.5">{label === 'من' ? 'of' : label}</span>}
+        {label && <span className="text-sm text-slate-500 mt-0.5">{label === 'of' ? 'of' : label}</span>}
       </div>
     </div>
   );

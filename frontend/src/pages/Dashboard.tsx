@@ -197,7 +197,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ═══ Guidance Card — "ماذا بعد؟" ═══ */}
+      {/* ═══ Guidance Card — "What next?" ═══ */}
       {weakest && weakest.questions_seen > 0 && (
         <div className="bg-gradient-to-l from-indigo-50 to-blue-50 border border-indigo-100 rounded-2xl p-3 lg:p-5 flex items-center gap-4 stagger-2">
           <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-2xl shrink-0">
@@ -383,7 +383,7 @@ export default function Dashboard() {
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
                       <span className={`text-sm font-bold ${sec.title}`}>{sec.label}</span>
-                      <span className={`text-lg font-black ${sec.score}`}>{avgMastery}٪</span>
+                      <span className={`text-lg font-black ${sec.score}`}>{avgMastery}%</span>
                     </div>
                     <div className={`h-1.5 ${sec.trackBg} rounded-full overflow-hidden`}>
                       <div className={`h-full ${sec.bar} rounded-full transition-all duration-700`} style={{ width: `${avgMastery}%` }} />
@@ -410,7 +410,7 @@ export default function Dashboard() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-medium text-slate-700 truncate">{a.name_ar}</span>
-                    <span className={`text-sm font-black ${textColor}`}>{a.questions_seen > 0 ? `${pct}٪` : '—'}</span>
+                    <span className={`text-sm font-black ${textColor}`}>{a.questions_seen > 0 ? `${pct}%` : '—'}</span>
                   </div>
                   <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                     <div className={`h-full ${barColor} rounded-full transition-all duration-700`} style={{ width: `${pct}%` }} />

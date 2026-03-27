@@ -55,7 +55,7 @@ async function req<T>(path: string, opts: RequestInit = {}): Promise<T> {
   }
   if (!res.ok) {
     const e = await res.json().catch(() => ({}));
-    throw new Error(e.detail || e.message || res.statusText || 'خطأ في الخادم');
+    throw new Error(e.detail || e.message || res.statusText || 'Server error');
   }
   return res.json();
 }

@@ -632,7 +632,7 @@ export function LandingPage({ onStart, onTrial }: LandingPageProps) {
 
               <div className="border-t border-slate-100 pt-4 mt-2">
                 <p className="text-xs text-slate-400">
-                  حساب تجريبي: <span className="font-mono text-slate-500">student@gat.sa</span> /{' '}
+                  Demo account: <span className="font-mono text-slate-500">student@gat.sa</span> /{' '}
                   <span className="font-mono text-slate-500">123456</span>
                 </p>
               </div>

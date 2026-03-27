@@ -131,8 +131,8 @@ export default function Analytics() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Predicted Score */}
         <div className="bg-white shadow-card rounded-2xl p-6 flex flex-col items-center justify-center card-hover">
-          <p className="text-slate-500 text-sm mb-4">الدرجة المتوقعة</p>
-          <ScoreRing score={data.predicted_score.mid} label="من ١٠٠" />
+          <p className="text-slate-500 text-sm mb-4">Predicted Score</p>
+          <ScoreRing score={data.predicted_score.mid} label="out of 100" />
           <div className="flex gap-4 mt-5 w-full text-center">
             <div className="flex-1">
               <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-1">

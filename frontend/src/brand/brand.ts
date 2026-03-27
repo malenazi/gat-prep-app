@@ -1,13 +1,13 @@
-// Brand Identity for قدرة أكاديمي — Qudra Academy
+// Brand Identity for Qudra Academy
 // Complete brand guidelines and design tokens
 
 export const brand = {
   // Brand Name
   name: {
-    ar: 'قدرة أكاديمي',
+    ar: 'Qudra Academy',
     en: 'Qudra Academy',
     tagline: {
-      ar: 'طريقك نحو النجاح',
+      ar: 'Your Path to Success',
       en: 'Your Path to Success'
     }
   },
@@ -190,53 +190,53 @@ export const brand = {
 // Brand messaging
 export const brandMessages = {
   hero: {
-    title: 'قدرة أكاديمي',
-    subtitle: 'طريقك نحو النجاح',
-    description: 'تدرب بذكاء، تعلم بفعالية، وحقق درجات عالية في اختبار القدرات العامة',
+    title: 'Qudra Academy',
+    subtitle: 'Your Path to Success',
+    description: 'Train smart, learn effectively, and achieve high scores in the General Aptitude Test',
   },
   features: {
     diagnostic: {
-      title: 'اختبار تشخيصي ذكي',
-      description: 'اكتشف مستواك الحالي واحصل على خطة دراسية مخصصة',
+      title: 'Smart Diagnostic Test',
+      description: 'Discover your current level and get a personalized study plan',
     },
     practice: {
-      title: 'أسئلة مشابهة للاختبار',
-      description: 'تدرب على أسئلة بنفس مستوى صعوبة اختبار القدرات',
+      title: 'Exam-like Questions',
+      description: 'Practice with questions at the same difficulty level as the aptitude test',
     },
     progress: {
-      title: 'تتبع تقدمك',
-      description: 'راقب تحسنك مع إحصائيات مفصلة وشارات إنجاز',
+      title: 'Track Your Progress',
+      description: 'Monitor your improvement with detailed statistics and achievement badges',
     },
     explanation: {
-      title: 'شرح مفصل',
-      description: 'افهم أخطاءك مع شروحات واضحة لكل سؤال',
+      title: 'Detailed Explanation',
+      description: 'Understand your mistakes with clear explanations for each question',
     },
   },
   cta: {
-    primary: 'ابدأ رحلتك الآن',
-    secondary: 'شاهد كيف تعمل',
-    startFree: 'ابدأ مجاناً',
+    primary: 'Start Your Journey Now',
+    secondary: 'See How It Works',
+    startFree: 'Start for Free',
   },
   stats: {
-    students: '10K+ طالب',
-    questions: '50K+ سؤال',
-    success: '95% نسبة النجاح',
+    students: '10K+ Students',
+    questions: '50K+ Questions',
+    success: '95% Success Rate',
   },
   feedback: {
-    excellent: 'أداء ممتاز! استمر في التقدم 🎉',
-    good: 'أداء جيد! واصل التدرب 👏',
-    keepTrying: 'لا تيأس! استمر في التدرب لتحسين أدائك 💪',
+    excellent: 'Excellent performance! Keep progressing 🎉',
+    good: 'Good performance! Keep practicing 👏',
+    keepTrying: "Don't give up! Keep practicing to improve your performance 💪",
   },
   errors: {
-    generic: 'حدث خطأ، يرجى المحاولة مرة أخرى',
-    unauthorized: 'يجب تسجيل الدخول أولاً',
-    network: 'مشكلة في الاتصال، تحقق من إنترنتك',
+    generic: 'An error occurred, please try again',
+    unauthorized: 'You must log in first',
+    network: 'Connection issue, please check your internet',
   },
   success: {
-    login: 'تم تسجيل الدخول بنجاح!',
-    logout: 'تم تسجيل الخروج',
-    quizStart: 'بدأ الاختبار',
-    quizComplete: 'أكملت الاختبار بنجاح!',
+    login: 'Logged in successfully!',
+    logout: 'Logged out successfully',
+    quizStart: 'Quiz started',
+    quizComplete: 'Quiz completed successfully!',
   },
 } as const;
 

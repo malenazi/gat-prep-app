@@ -1025,7 +1025,7 @@ export function TrialSession({ onRegister, onBack }: TrialSessionProps) {
 
           {/* Score Ring */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-4 text-center">
-            <ScoreRing score={overallPct} size={150} label={`${allCorrect} من ${allAnswers.length}`} />
+            <ScoreRing score={overallPct} size={150} label={`${allCorrect} of ${allAnswers.length}`} />
             <p className="text-sm text-slate-500 mt-3">Predicted GAT Score: <span className="font-black text-teal-600 text-lg">{predicted}</span></p>
           </div>
 
@@ -1034,8 +1034,8 @@ export function TrialSession({ onRegister, onBack }: TrialSessionProps) {
             <h3 className="font-bold text-slate-800 flex items-center gap-2"><BarChart3 className="w-5 h-5 text-teal-600" /> Section Analysis</h3>
             <div>
               <div className="flex justify-between items-center mb-1">
-                <span className="text-xs font-bold text-blue-600">{vPct}٪</span>
-                <span className="text-sm font-bold text-slate-700 flex items-center gap-1"><BookOpen className="w-4 h-4 text-blue-500" /> لفظي</span>
+                <span className="text-xs font-bold text-blue-600">{vPct}%</span>
+                <span className="text-sm font-bold text-slate-700 flex items-center gap-1"><BookOpen className="w-4 h-4 text-blue-500" /> Verbal</span>
               </div>
               <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
                 <div className="h-full bg-blue-500 rounded-full transition-all duration-500" style={{ width: `${vPct}%` }} />
@@ -1043,8 +1043,8 @@ export function TrialSession({ onRegister, onBack }: TrialSessionProps) {
             </div>
             <div>
               <div className="flex justify-between items-center mb-1">
-                <span className="text-xs font-bold text-violet-600">{qPct}٪</span>
-                <span className="text-sm font-bold text-slate-700 flex items-center gap-1"><Calculator className="w-4 h-4 text-violet-500" /> كمّي</span>
+                <span className="text-xs font-bold text-violet-600">{qPct}%</span>
+                <span className="text-sm font-bold text-slate-700 flex items-center gap-1"><Calculator className="w-4 h-4 text-violet-500" /> Quantitative</span>
               </div>
               <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
                 <div className="h-full bg-violet-500 rounded-full transition-all duration-500" style={{ width: `${qPct}%` }} />

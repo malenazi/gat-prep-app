@@ -176,7 +176,7 @@ export default function Plan() {
                 <span className={`text-sm font-bold px-3 py-1 rounded-full
                   ${selectedDay.phase === 'foundation' ? 'bg-blue-50 text-blue-600' :
                     selectedDay.phase === 'building' ? 'bg-teal-50 text-teal-600' : 'bg-amber-50 text-amber-600'}`}>
-                  {selectedDay.phase === 'foundation' ? 'التأسيس' : selectedDay.phase === 'building' ? 'التعزيز' : 'الإتقان'}
+                  {selectedDay.phase === 'foundation' ? 'Foundation' : selectedDay.phase === 'building' ? 'Building' : 'Mastery'}
                 </span>
               </div>
 

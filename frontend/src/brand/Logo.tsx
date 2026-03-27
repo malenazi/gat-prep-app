@@ -76,7 +76,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 40, variant = 'full', classNa
           fontWeight="900"
           fontFamily="Tajawal, sans-serif"
         >
-          قدرة أكاديمي
+          Qudra Academy
         </text>
       </svg>
     );
@@ -131,7 +131,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 40, variant = 'full', classNa
         fontWeight="900"
         fontFamily="Tajawal, sans-serif"
       >
-        قدرة أكاديمي
+        Qudra Academy
       </text>
       
       {/* Tagline */}
@@ -143,7 +143,7 @@ export const Logo: React.FC<LogoProps> = ({ size = 40, variant = 'full', classNa
         fontWeight="500"
         fontFamily="Tajawal, sans-serif"
       >
-        طريقك نحو النجاح
+        Your Path to Success
       </text>
     </svg>
   );
