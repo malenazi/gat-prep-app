@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  CheckCircle, BookOpen, Brain, BarChart3, Zap, Calendar,
-  Star, Clock, ChevronDown, ChevronUp, Globe, Layers,
-  Shield, MessageCircle, Award, Users, Trophy, Target,
-  PlayCircle, ArrowRight, Sparkles, TrendingUp, CheckSquare
+  CheckCircle, BookOpen, Brain, BarChart3, Zap,
+  Star, Clock, ChevronDown, ChevronUp, Layers,
+  Shield, MessageCircle, Award, Users, Target, Trophy,
+  PlayCircle, ArrowRight, Sparkles, CheckSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
