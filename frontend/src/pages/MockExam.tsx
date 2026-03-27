@@ -1,0 +1,747 @@
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { api } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
+import { ScoreRing } from '@/components/shared/ScoreRing';
+import type { ApiQuestion, MockStartResponse, MockCompleteResponse, MockAttemptSummary, MockAttemptDetail } from '@/types';
+import { Clock, BookOpen, Calculator, AlertTriangle, CheckCircle, Shield, ChevronRight, ArrowRight, History, XCircle, RotateCcw } from 'lucide-react';
+
+const MOCK_SESSION_KEY = 'mock_exam_session';
+
+interface MockSession {
+  attemptId: number;
+  questionIds: number[];
+  currentIndex: number;
+  section: 'verbal' | 'quant';
+  timeLeft: number;
+  verbalCount: number;
+  quantCount: number;
+}
+
+function saveMockSession(session: MockSession) {
+  localStorage.setItem(MOCK_SESSION_KEY, JSON.stringify(session));
+}
+
+function loadMockSession(): MockSession | null {
+  try {
+    const raw = localStorage.getItem(MOCK_SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function clearMockSession() {
+  localStorage.removeItem(MOCK_SESSION_KEY);
+}
+
+type Phase = 'instructions' | 'exam' | 'results' | 'history' | 'detail';
+type Section = 'verbal' | 'quant';
+
+export default function MockExam() {
+  const { user, loadUser } = useAuth();
+  const nav = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isPreview = searchParams.get('preview') === 'true' && user?.is_admin;
+
+  const [phase, setPhase] = useState<Phase>('instructions');
+  const [config, setConfig] = useState<MockStartResponse | null>(null);
+  const [results, setResults] = useState<MockCompleteResponse | null>(null);
+  const [attemptId, setAttemptId] = useState<number | null>(null);
+
+  // History / detail state
+  const [attempts, setAttempts] = useState<MockAttemptSummary[]>([]);
+  const [detail, setDetail] = useState<MockAttemptDetail | null>(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  // Exam state
+  const [questionIds, setQuestionIds] = useState<number[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [question, setQuestion] = useState<ApiQuestion | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [section, setSection] = useState<Section>('verbal');
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [_answers, setAnswers] = useState<{ qid: number; option: string }[]>([]);
+  const startTimeRef = useRef<number>(0);
+
+  const attemptsUsed = user?.mock_attempts ?? 0;
+  const maxAttempts = user?.mock_max_attempts ?? 1;
+  const allAttemptsUsed = attemptsUsed >= maxAttempts && !isPreview;
+  const nextAttemptNumber = attemptsUsed + 1;
+  const isLastAttempt = nextAttemptNumber === maxAttempts;
+  const hasMoreAttempts = attemptsUsed < maxAttempts;
+
+  // On mount: try to resume saved session, else check history
+  useEffect(() => {
+    const saved = loadMockSession();
+
+    // Priority 1: Resume an in-progress exam from localStorage
+    if (saved && !isPreview) {
+      api.mockAttemptStatus(saved.attemptId).then(status => {
+        if (!status.completed) {
+          // Resume session
+          setAttemptId(saved.attemptId);
+          setQuestionIds(saved.questionIds);
+          setCurrentIndex(saved.currentIndex);
+          setSection(saved.section);
+          setTimeLeft(saved.timeLeft);
+          setConfig({
+            attempt_id: saved.attemptId,
+            attempt_number: 0,
+            total_questions: saved.questionIds.length,
+            verbal_count: saved.verbalCount,
+            quant_count: saved.quantCount,
+            verbal_minutes: 35,
+            quant_minutes: 35,
+            question_ids: saved.questionIds,
+          });
+          api.mockQuestion(saved.questionIds[saved.currentIndex]).then(q => {
+            setQuestion(q);
+            startTimeRef.current = Date.now();
+            setPhase('exam');
+          }).catch(() => {
+            clearMockSession();
+            if (allAttemptsUsed) loadHistory();
+          });
+        } else {
+          // Attempt already completed — clear and show history or start
+          clearMockSession();
+          if (allAttemptsUsed) loadHistory();
+        }
+      }).catch(() => {
+        clearMockSession();
+        if (allAttemptsUsed) loadHistory();
+      });
+      return; // Don't fall through
+    }
+
+    // Priority 2: No saved session — show history if all attempts used
+    if (allAttemptsUsed) {
+      loadHistory();
+    }
+  }, []);
+
+  // Timer
+  useEffect(() => {
+    if (phase !== 'exam' || timeLeft <= 0) return;
+    const interval = setInterval(() => {
+      setTimeLeft(prev => {
+        const newTime = prev <= 1 ? 0 : prev - 1;
+        // Save every 10 seconds
+        if (newTime > 0 && newTime % 10 === 0) {
+          const saved = loadMockSession();
+          if (saved) saveMockSession({ ...saved, timeLeft: newTime });
+        }
+        if (prev <= 1) {
+          clearInterval(interval);
+          handleSectionTimeout();
+        }
+        return newTime;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [phase, section]);
+
+  const loadHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      const list = await api.mockAttempts();
+      setAttempts(list);
+      setPhase('history');
+    } catch { /* ignore */ }
+    setHistoryLoading(false);
+  };
+
+  const loadAttemptDetail = async (id: number) => {
+    setHistoryLoading(true);
+    try {
+      const d = await api.mockAttemptDetail(id);
+      setDetail(d);
+      setPhase('detail');
+    } catch { /* ignore */ }
+    setHistoryLoading(false);
+  };
+
+  const handleSectionTimeout = () => {
+    if (section === 'verbal' && config) {
+      const quantStart = config.verbal_count;
+      setSection('quant');
+      setCurrentIndex(quantStart);
+      setTimeLeft(config.quant_minutes * 60);
+      loadQuestion(questionIds[quantStart]);
+    } else {
+      finishExam();
+    }
+  };
+
+  const startExam = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const cfg = await api.mockStart(isPreview);
+      setConfig(cfg);
+      setAttemptId(cfg.attempt_id);
+      setQuestionIds(cfg.question_ids);
+      setSection('verbal');
+      setTimeLeft(cfg.verbal_minutes * 60);
+      setCurrentIndex(0);
+      setAnswers([]);
+      await loadQuestion(cfg.question_ids[0]);
+      startTimeRef.current = Date.now();
+      setPhase('exam');
+      saveMockSession({
+        attemptId: cfg.attempt_id,
+        questionIds: cfg.question_ids,
+        currentIndex: 0,
+        section: 'verbal',
+        timeLeft: cfg.verbal_minutes * 60,
+        verbalCount: cfg.verbal_count,
+        quantCount: cfg.quant_count,
+      });
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Error occurred');
+    }
+    setLoading(false);
+  };
+
+  const loadQuestion = async (qid: number) => {
+    setSelected(null);
+    setQuestion(null);
+    try {
+      const q = await api.mockQuestion(qid);
+      setQuestion(q);
+      startTimeRef.current = Date.now();
+    } catch {
+      setError('Error loading question');
+    }
+  };
+
+  const submitAnswer = async (option: string) => {
+    if (selected || !question || attemptId === null) return;
+    setSelected(option);
+    const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000);
+
+    try {
+      await api.mockAnswer({ question_id: question.id, selected_option: option, time_spent_seconds: elapsed, attempt_id: attemptId });
+    } catch {
+      console.warn('Failed to save answer, continuing');
+    }
+    setAnswers(prev => [...prev, { qid: question.id, option }]);
+
+    setTimeout(() => {
+      const nextIndex = currentIndex + 1;
+      if (config && section === 'verbal' && nextIndex >= config.verbal_count) {
+        setSection('quant');
+        setCurrentIndex(nextIndex);
+        setTimeLeft(config.quant_minutes * 60);
+        const saved = loadMockSession();
+        if (saved) saveMockSession({ ...saved, currentIndex: nextIndex, section: 'quant', timeLeft: config.quant_minutes * 60 });
+        loadQuestion(questionIds[nextIndex]);
+      } else if (config && nextIndex >= questionIds.length) {
+        finishExam();
+      } else {
+        setCurrentIndex(nextIndex);
+        const saved = loadMockSession();
+        if (saved) saveMockSession({ ...saved, currentIndex: nextIndex });
+        loadQuestion(questionIds[nextIndex]);
+      }
+    }, 500);
+  };
+
+  const finishExam = async () => {
+    if (attemptId === null) return;
+    setLoading(true);
+    try {
+      const res = await api.mockComplete(attemptId);
+      setResults(res);
+      setPhase('results');
+      clearMockSession();
+      await loadUser();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'حدث خطأ');
+    }
+    setLoading(false);
+  };
+
+  const formatTime = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+  };
+
+  const sectionLabel = section === 'verbal' ? 'Verbal Section' : 'Quantitative Section';
+  const SectionIcon = section === 'verbal' ? BookOpen : Calculator;
+  const sectionProgress = config ? (
+    section === 'verbal'
+      ? `${currentIndex + 1} / ${config.verbal_count}`
+      : `${currentIndex - config.verbal_count + 1} / ${config.quant_count}`
+  ) : '';
+
+  const scoreColor = (score: number) =>
+    score >= 80 ? 'text-emerald-600' : score >= 65 ? 'text-teal-600' : score >= 50 ? 'text-amber-600' : 'text-red-500';
+
+  // ── Instructions Phase ──
+  if (phase === 'instructions' && !allAttemptsUsed) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="max-w-2xl w-full">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Shield className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-3xl font-black text-slate-800 mb-2">Final Mock Exam</h1>
+            <p className="text-slate-500">Full simulation of the general aptitude test</p>
+
+            {/* Attempt counter */}
+            <div className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 text-sm font-bold px-4 py-2 rounded-full mt-3">
+              Attempt {nextAttemptNumber} of {maxAttempts}
+            </div>
+
+            {isPreview && (
+              <div className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1.5 rounded-full mt-3 mr-2">
+                <Shield className="w-3.5 h-3.5" /> Preview Mode — Score will not be saved
+              </div>
+            )}
+          </div>
+
+          {/* Exam Info Card */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 space-y-4">
+            <h2 className="font-bold text-slate-800 text-lg mb-3">Exam Instructions</h2>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+                <BookOpen className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+                <p className="font-bold text-blue-800">Verbal Section</p>
+                <p className="text-sm text-blue-600">34 questions • 35 minutes</p>
+              </div>
+              <div className="bg-violet-50 border border-violet-200 rounded-xl p-4 text-center">
+                <Calculator className="w-6 h-6 text-violet-600 mx-auto mb-2" />
+                <p className="font-bold text-violet-800">Quantitative Section</p>
+                <p className="text-sm text-violet-600">31 questions • 35 minutes</p>
+              </div>
+            </div>
+
+            {/* Last attempt warning */}
+            {isLastAttempt && !isPreview && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
+                  <div className="text-sm text-red-800 font-bold">
+                    This is your last attempt — the exam cannot be retaken after this
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+                <div className="text-sm text-amber-800 space-y-1.5">
+                  <p className="font-bold">Important Warnings:</p>
+                  <p>• Total: <strong>65 questions</strong> in <strong>70 minutes</strong></p>
+                  <p>• Questions <strong>are different from daily training</strong></p>
+                  <p>• Correct answers are not shown during the exam</p>
+                  <p>• Automatically moves to next section when time expires</p>
+                  <p>• Cannot return to previous questions</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <p className="text-sm text-slate-600"><strong>Tip:</strong> Read each question carefully. If you don't know the answer, choose your best guess and move to the next question. Don't spend too much time on one question.</p>
+            </div>
+          </div>
+
+          {loadMockSession() && !isPreview && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+              <p className="font-bold text-amber-800 mb-2">You have an exam in progress</p>
+              <p className="text-sm text-amber-600 mb-3">You can resume the exam from where you left off</p>
+              {/* The useEffect above will handle auto-resume */}
+            </div>
+          )}
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-center text-sm text-red-600">{error}</div>
+          )}
+
+          <div className="flex gap-3">
+            <button onClick={() => nav(isPreview ? '/admin' : '/')}
+              className="flex-1 text-slate-500 font-medium py-4 hover:text-slate-700 transition">
+              Back
+            </button>
+            <button onClick={startExam} disabled={loading}
+              className="flex-1 bg-gradient-to-l from-amber-600 to-amber-500 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50">
+              {loading ? '...' : 'Start Exam'}
+            </button>
+          </div>
+
+          {/* Link to previous attempts */}
+          {attemptsUsed > 0 && !isPreview && (
+            <button onClick={loadHistory}
+              className="w-full mt-4 flex items-center justify-center gap-2 text-teal-600 font-medium text-sm py-3 hover:text-teal-700 transition">
+              <History className="w-4 h-4" />
+              View Previous Attempts ({attemptsUsed})
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Exam Phase ──
+  if (phase === 'exam' && question) {
+    const isUrgent = timeLeft < 120;
+    const isWarning = timeLeft < 300 && !isUrgent;
+
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col">
+        {/* Exam Header */}
+        <div className={`px-4 py-3 flex items-center justify-between ${section === 'verbal' ? 'bg-blue-600' : 'bg-violet-600'} text-white`}>
+          <div className="flex items-center gap-2">
+            <SectionIcon className="w-5 h-5" />
+            <span className="font-bold text-sm">{sectionLabel}</span>
+            <span className="text-xs opacity-75">— Question {sectionProgress}</span>
+          </div>
+          <div className={`flex items-center gap-2 font-mono font-bold text-lg ${isUrgent ? 'text-red-200 animate-pulse' : isWarning ? 'text-amber-200' : ''}`}>
+            <Clock className="w-4 h-4" />
+            {formatTime(timeLeft)}
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="h-1 bg-slate-200">
+          <div className={`h-full transition-all duration-300 ${section === 'verbal' ? 'bg-blue-500' : 'bg-violet-500'}`}
+            style={{ width: `${config ? ((currentIndex + 1) / questionIds.length) * 100 : 0}%` }} />
+        </div>
+
+        {/* Question */}
+        <div className="flex-1 p-3 lg:p-8 max-w-3xl mx-auto w-full">
+          {question.passage_ar && (
+            <div className="bg-white border border-slate-200 rounded-xl p-3 lg:p-5 mb-3 text-xs lg:text-sm text-slate-600 leading-relaxed max-h-32 lg:max-h-48 overflow-y-auto">
+              {question.passage_ar}
+            </div>
+          )}
+
+          <h2 className="text-base lg:text-xl font-bold text-slate-800 mb-4 lg:mb-6 leading-relaxed whitespace-pre-line math-text">
+            {question.text_ar}
+          </h2>
+
+          <div className="space-y-2 lg:space-y-3">
+            {question.options.map(opt => (
+              <button key={opt.key} onClick={() => submitAnswer(opt.key)} disabled={!!selected}
+                className={`w-full text-left border-2 rounded-xl p-3 lg:p-4 transition-all
+                  ${selected === opt.key
+                    ? (section === 'verbal' ? 'bg-blue-50 border-blue-400' : 'bg-violet-50 border-violet-400')
+                    : 'bg-white border-slate-200 hover:border-slate-300'}`}>
+                <div className="flex items-start gap-3">
+                  <span className={`w-8 h-8 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center text-xs lg:text-sm font-bold shrink-0
+                    ${selected === opt.key
+                      ? (section === 'verbal' ? 'bg-blue-500 text-white' : 'bg-violet-500 text-white')
+                      : 'bg-slate-100 text-slate-600'}`}>
+                    {opt.label}
+                  </span>
+                  <span className="text-sm lg:text-base text-slate-700 leading-relaxed">{opt.text_ar}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Loading during exam ──
+  if (phase === 'exam' && !question) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-8 h-8 border-3 border-amber-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // ── Results Phase ──
+  if (phase === 'results' && results) {
+    const passed = results.score >= 65;
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="max-w-lg w-full text-center">
+          <div className="text-6xl mb-4">{passed ? '🎉' : '💪'}</div>
+          <h1 className="text-3xl font-black text-slate-800 mb-2">
+            {passed ? 'Excellent Performance!' : 'Good Attempt!'}
+          </h1>
+          <p className="text-slate-500 mb-2">
+            {passed ? 'Your score shows good readiness for the real exam' : 'Continue training and your score will improve'}
+          </p>
+          <p className="text-sm text-slate-400 mb-8">Attempt {results.attempt_number} of {maxAttempts}</p>
+
+          {/* Score Ring */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 mb-6">
+            <p className="text-slate-500 text-sm mb-4">Predicted Score</p>
+            <ScoreRing score={results.score} label="of 100" />
+          </div>
+
+          {/* Section Breakdown */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5">
+              <BookOpen className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+              <p className="text-blue-400 text-sm mb-1">Verbal Section</p>
+              <p className="text-blue-700 font-black text-2xl">{Math.round(results.verbal_pct * 100)}٪</p>
+              <p className="text-xs text-blue-500">{results.verbal_correct} / {results.verbal_total}</p>
+            </div>
+            <div className="bg-violet-50 border border-violet-200 rounded-2xl p-5">
+              <Calculator className="w-6 h-6 text-violet-600 mx-auto mb-2" />
+              <p className="text-violet-400 text-sm mb-1">Quantitative Section</p>
+              <p className="text-violet-700 font-black text-2xl">{Math.round(results.quant_pct * 100)}٪</p>
+              <p className="text-xs text-violet-500">{results.quant_correct} / {results.quant_total}</p>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="bg-white border border-slate-200 rounded-xl p-4 mb-6">
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div>
+                <p className="text-xl font-black text-slate-800">{results.total}</p>
+                <p className="text-xs text-slate-500">Total Questions</p>
+              </div>
+              <div>
+                <p className="text-xl font-black text-emerald-600">{results.correct}</p>
+                <p className="text-xs text-slate-500">Correct Answers</p>
+              </div>
+              <div>
+                <p className="text-xl font-black text-slate-800">{Math.round((results.correct / Math.max(1, results.total)) * 100)}%</p>
+                <p className="text-xs text-slate-500">Overall Accuracy</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="space-y-3">
+            {hasMoreAttempts && !isPreview && (
+              <button onClick={() => { setPhase('instructions'); setResults(null); setAttemptId(null); }}
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-l from-amber-600 to-amber-500 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98]">
+                <RotateCcw className="w-5 h-5" />
+                Start Next Attempt
+              </button>
+            )}
+
+            <button onClick={() => nav('/')}
+              className="w-full bg-gradient-to-l from-teal-600 to-teal-500 text-white font-bold py-4 rounded-xl shadow-brand hover:shadow-lg transition-all">
+              Back to Dashboard
+            </button>
+
+            <button onClick={loadHistory}
+              className="w-full flex items-center justify-center gap-2 text-teal-600 font-medium text-sm py-3 hover:text-teal-700 transition">
+              <History className="w-4 h-4" />
+              View All Attempts
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── History Phase ──
+  if (phase === 'history') {
+    return (
+      <div className="min-h-screen bg-slate-50 p-4">
+        <div className="max-w-2xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <History className="w-8 h-8 text-white" />
+            </div>
+            <h1 className="text-2xl font-black text-slate-800 mb-1">Attempt History</h1>
+            <p className="text-slate-500 text-sm">{attemptsUsed} of {maxAttempts} attempts completed</p>
+          </div>
+
+          {historyLoading && (
+            <div className="flex justify-center py-12">
+              <div className="w-8 h-8 border-3 border-teal-400 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+
+          {!historyLoading && attempts.length === 0 && (
+            <div className="text-center py-12 text-slate-400">No previous attempts</div>
+          )}
+
+          {/* Attempt Cards */}
+          <div className="space-y-3 mb-8">
+            {attempts.map(a => (
+              <button key={a.id} onClick={() => loadAttemptDetail(a.id)}
+                className="w-full bg-white border border-slate-200 rounded-2xl p-5 hover:border-teal-300 hover:shadow-md transition-all text-left">
+                <div className="flex items-center justify-between mb-3">
+                  <ChevronRight className="w-5 h-5 text-slate-400" />
+                  <div className="flex items-center gap-2">
+                    <span className="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-lg">
+                      Attempt {a.attempt_number}
+                    </span>
+                    <span className={`font-black text-2xl ${scoreColor(a.score)}`}>{a.score}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-blue-50 rounded-lg p-2 text-center">
+                    <p className="text-xs text-blue-500 mb-0.5">Verbal</p>
+                    <p className="text-sm font-bold text-blue-700">{Math.round(a.verbal_pct * 100)}٪</p>
+                  </div>
+                  <div className="bg-violet-50 rounded-lg p-2 text-center">
+                    <p className="text-xs text-violet-500 mb-0.5">Quant</p>
+                    <p className="text-sm font-bold text-violet-700">{Math.round(a.quant_pct * 100)}٪</p>
+                  </div>
+                  <div className="bg-slate-50 rounded-lg p-2 text-center">
+                    <p className="text-xs text-slate-500 mb-0.5">Date</p>
+                    <p className="text-sm font-bold text-slate-700">
+                      {new Date(a.completed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {/* Actions */}
+          <div className="space-y-3">
+            {hasMoreAttempts && !isPreview && (
+              <button onClick={() => { setPhase('instructions'); }}
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-l from-amber-600 to-amber-500 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98]">
+                <ArrowRight className="w-5 h-5" />
+                Start Next Attempt
+              </button>
+            )}
+            <button onClick={() => nav('/')}
+              className="w-full text-slate-500 font-medium py-3 hover:text-slate-700 transition">
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Detail Phase ──
+  if (phase === 'detail' && detail) {
+    const verbalPct = detail.verbal_total > 0 ? Math.round((detail.verbal_correct / detail.verbal_total) * 100) : 0;
+    const quantPct = detail.quant_total > 0 ? Math.round((detail.quant_correct / detail.quant_total) * 100) : 0;
+
+    return (
+      <div className="min-h-screen bg-slate-50 p-4">
+        <div className="max-w-3xl mx-auto">
+          {/* Back button */}
+          <button onClick={() => { setPhase('history'); setDetail(null); }}
+            className="flex items-center gap-1.5 text-teal-600 font-medium text-sm mb-6 hover:text-teal-700 transition">
+            <ArrowRight className="w-4 h-4 rotate-180" />
+            Back to Attempt History
+          </button>
+
+          {/* Header with score */}
+          <div className="text-center mb-8">
+            <p className="text-sm text-slate-400 mb-3">Attempt {detail.attempt_number}</p>
+            <ScoreRing score={detail.score} label="من ١٠٠" />
+          </div>
+
+          {/* Section Breakdown */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 text-center">
+              <BookOpen className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+              <p className="text-blue-400 text-sm mb-1">Verbal Section</p>
+              <p className="text-blue-700 font-black text-2xl">{verbalPct}٪</p>
+              <p className="text-xs text-blue-500">{detail.verbal_correct} / {detail.verbal_total}</p>
+            </div>
+            <div className="bg-violet-50 border border-violet-200 rounded-2xl p-5 text-center">
+              <Calculator className="w-6 h-6 text-violet-600 mx-auto mb-2" />
+              <p className="text-violet-400 text-sm mb-1">Quantitative Section</p>
+              <p className="text-violet-700 font-black text-2xl">{quantPct}٪</p>
+              <p className="text-xs text-violet-500">{detail.quant_correct} / {detail.quant_total}</p>
+            </div>
+          </div>
+
+          {/* Per-Skill Accuracy Table */}
+          {detail.skill_breakdown.length > 0 && (
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-6">
+              <h3 className="font-bold text-slate-800 mb-4">Skill Performance</h3>
+              <div className="space-y-2">
+                {detail.skill_breakdown.map(sk => {
+                  const pct = sk.pct;
+                  const barColor = pct >= 80 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-red-500';
+                  return (
+                    <div key={sk.skill_id} className="flex items-center gap-3">
+                      <span className="text-sm text-slate-700 font-medium w-32 shrink-0 text-left">{sk.skill_name_ar}</span>
+                      <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="text-xs text-slate-500 font-mono w-20 shrink-0">{sk.correct}/{sk.total} ({Math.round(pct)}٪)</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Question Review Table */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-6">
+            <h3 className="font-bold text-slate-800 mb-4">Question Review ({detail.questions.length})</h3>
+            <div className="space-y-3">
+              {detail.questions.map((q, i) => {
+                const isCorrect = q.is_correct;
+                return (
+                  <div key={q.question_id} className={`border rounded-xl p-4 ${isCorrect ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-200 bg-red-50/30'}`}>
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-2 shrink-0">
+                        {isCorrect
+                          ? <CheckCircle className="w-5 h-5 text-emerald-500" />
+                          : <XCircle className="w-5 h-5 text-red-500" />
+                        }
+                        <span className="text-xs text-slate-400 font-mono">{i + 1}</span>
+                      </div>
+                      <p className="text-sm text-slate-700 leading-relaxed flex-1 text-left">
+                        {q.text_ar.length > 100 ? q.text_ar.slice(0, 100) + '...' : q.text_ar}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-400">{q.time_spent_seconds} seconds • {q.skill_name_ar}</span>
+                      <div className="flex items-center gap-3">
+                        <span className={isCorrect ? 'text-emerald-600 font-bold' : 'text-red-600 font-bold'}>
+                          Your answer: {q.selected_option}
+                        </span>
+                        {!isCorrect && (
+                          <span className="text-emerald-600 font-bold">Correct: {q.correct_option}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Show explanation for wrong answers */}
+                    {!isCorrect && q.explanation_ar && (
+                      <div className="mt-3 bg-white border border-slate-200 rounded-lg p-3 text-xs text-slate-600 leading-relaxed">
+                        <span className="font-bold text-slate-700">Explanation: </span>{q.explanation_ar}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Fallback: loading or all attempts used (loading history) ──
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      {historyLoading ? (
+        <div className="w-8 h-8 border-3 border-teal-400 border-t-transparent rounded-full animate-spin" />
+      ) : (
+        <div className="text-center">
+          <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
+          <p className="text-slate-600 font-bold mb-4">All attempts completed</p>
+          {user?.mock_score ? (
+            <p className="text-2xl font-black text-slate-800 mb-4">أفضل درجة: {user.mock_score}</p>
+          ) : null}
+          <button onClick={loadHistory} className="text-teal-600 font-medium">View Attempt History</button>
+        </div>
+      )}
+    </div>
+  );
+}

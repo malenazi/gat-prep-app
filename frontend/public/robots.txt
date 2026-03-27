@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /practice
+Disallow: /diagnostic
+Disallow: /plan
+Disallow: /analytics
+Disallow: /admin
+Disallow: /mock
+
+Sitemap: https://qudra.academy/sitemap.xml
