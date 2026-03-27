@@ -278,10 +278,9 @@ export function LandingPage({ onStart, onTrial }: LandingPageProps) {
 
               {/* Price */}
               <div className="flex items-center gap-3 justify-center lg:justify-start mb-6">
-                <span className="text-3xl lg:text-4xl font-black text-slate-900">199 <img src="/sar-symbol.svg" alt="SAR" className="inline-block h-[0.75em] w-auto mr-0.5" /></span>
-                <span className="text-lg text-slate-400 line-through">399 <img src="/sar-symbol.svg" alt="SAR" className="inline-block h-[0.75em] w-auto mr-0.5" /></span>
-                <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2.5 py-1 rounded-full">
-                  50% OFF
+                <span className="text-3xl lg:text-4xl font-black text-emerald-600">FREE</span>
+                <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2.5 py-1 rounded-full">
+                  LIMITED TIME
                 </span>
               </div>
 
@@ -289,9 +288,9 @@ export function LandingPage({ onStart, onTrial }: LandingPageProps) {
               <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-4">
                 <Button
                   onClick={onStart}
-                  className="h-12 lg:h-14 px-8 lg:px-10 text-base lg:text-lg font-bold bg-gradient-to-l from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+                  className="h-12 lg:h-14 px-8 lg:px-10 text-base lg:text-lg font-bold bg-gradient-to-l from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
                 >
-                  Register Now — 199 <img src="/sar-symbol.svg" alt="SAR" className="inline-block h-[0.75em] w-auto mr-0.5" />
+                  Register Now — Free
                 </Button>
                 <Button
                   variant="outline"
@@ -311,7 +310,7 @@ export function LandingPage({ onStart, onTrial }: LandingPageProps) {
                 <div className="space-y-4 mb-6">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-500">Price</span>
-                    <span className="font-bold text-slate-800">199 <img src="/sar-symbol.svg" alt="SAR" className="inline-block h-[0.75em] w-auto mr-0.5" /></span>
+                    <span className="font-bold text-emerald-600">FREE</span>
                   </div>
                   <div className="border-b border-slate-100" />
                   <div className="flex items-center justify-between text-sm">
@@ -601,12 +600,11 @@ export function LandingPage({ onStart, onTrial }: LandingPageProps) {
 
               {/* Price */}
               <div className="flex items-center justify-center gap-3 my-5">
-                <span className="text-4xl lg:text-5xl font-black text-slate-900">199 <img src="/sar-symbol.svg" alt="SAR" className="inline-block h-[0.75em] w-auto mr-0.5" /></span>
-                <span className="text-lg text-slate-400 line-through">399 <img src="/sar-symbol.svg" alt="SAR" className="inline-block h-[0.75em] w-auto mr-0.5" /></span>
+                <span className="text-4xl lg:text-5xl font-black text-emerald-600">FREE</span>
               </div>
 
-              <span className="inline-block bg-amber-100 text-amber-700 text-sm font-bold px-4 py-1.5 rounded-full mb-6">
-                50% OFF — Limited Time
+              <span className="inline-block bg-emerald-100 text-emerald-700 text-sm font-bold px-4 py-1.5 rounded-full mb-6">
+                LIMITED TIME — Register Now
               </span>
 
               {/* Included Items */}
@@ -622,14 +620,14 @@ export function LandingPage({ onStart, onTrial }: LandingPageProps) {
               {/* CTA */}
               <Button
                 onClick={onStart}
-                className="w-full h-14 text-lg font-bold bg-gradient-to-l from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 mb-4"
+                className="w-full h-14 text-lg font-bold bg-gradient-to-l from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 mb-4"
               >
-                Register Now — 199 <img src="/sar-symbol.svg" alt="SAR" className="inline-block h-[0.75em] w-auto mr-0.5" />
+                Register Now — Free Access
               </Button>
 
               <p className="text-xs text-slate-400 mb-3 flex items-center justify-center gap-1.5">
                 <Shield className="w-3.5 h-3.5" />
-                7-Day Money-Back Guarantee
+                Free for All Students — No Credit Card Required
               </p>
 
               <div className="border-t border-slate-100 pt-4 mt-2">
