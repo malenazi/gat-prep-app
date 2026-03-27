@@ -1,7 +1,5 @@
 [phases.setup]
 nixPkgs = ["nodejs_20", "npm-9_x", "python311"]
-[phases.setup.nixOverlays]
-nodejs = "nodejs_20"
 
 [phases.install]
 cmds = [
