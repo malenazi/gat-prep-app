@@ -967,23 +967,41 @@ def admin_delete_question(question_id: int, admin: User = Depends(get_admin), db
     db.commit()
     return {"message": "تم حذف السؤال"}
 
+# ── Health check ─────────────────────────────────────────────────────────────
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "timestamp": datetime.datetime.utcnow().isoformat()}
+
 # ── Serve frontend ───────────────────────────────────────────────────────────
 # Try production static folder first, then development frontend/dist
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "static")
 if not os.path.exists(FRONTEND_DIR):
     FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
 
+# Debug: Log the frontend directory
+print(f"FRONTEND_DIR: {FRONTEND_DIR}")
+print(f"FRONTEND_DIR exists: {os.path.exists(FRONTEND_DIR)}")
 if os.path.exists(FRONTEND_DIR):
-    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_DIR, "assets")), name="assets")
+    print(f"Contents: {os.listdir(FRONTEND_DIR)}")
+
+if os.path.exists(FRONTEND_DIR):
+    assets_dir = os.path.join(FRONTEND_DIR, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+    
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str):
-        # Serve static files (svg, png, ico, txt, xml) directly if they exist
+        # Skip API routes
+        if full_path.startswith("api/") or full_path == "health":
+            raise HTTPException(status_code=404, detail="Not found")
+        # Serve static files directly if they exist
         static_file = os.path.join(FRONTEND_DIR, full_path)
         if full_path and os.path.isfile(static_file):
             resp = FileResponse(static_file)
             if full_path.startswith("assets/"):
                 resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
             return resp
+        # Serve index.html for all other routes (SPA behavior)
         resp = FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
         resp.headers["Cache-Control"] = "no-cache"
         return resp
