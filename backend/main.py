@@ -977,18 +977,22 @@ async def health_check():
     return {"status": "ok", "timestamp": datetime.datetime.utcnow().isoformat()}
 
 # ── Serve frontend ───────────────────────────────────────────────────────────
-# Try production static folder first, then development frontend/dist
-FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "static")
-if not os.path.exists(FRONTEND_DIR):
-    FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
+# Try multiple paths for Railway and local development
+possible_dirs = [
+    os.path.join(os.path.dirname(__file__), "static"),  # Production: backend/static
+    os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"),  # Local dev
+    "/app/frontend/dist",  # Railway specific path
+]
 
-# Debug: Log the frontend directory
-print(f"FRONTEND_DIR: {FRONTEND_DIR}")
-print(f"FRONTEND_DIR exists: {os.path.exists(FRONTEND_DIR)}")
-if os.path.exists(FRONTEND_DIR):
-    print(f"Contents: {os.listdir(FRONTEND_DIR)}")
+FRONTEND_DIR = None
+for d in possible_dirs:
+    print(f"Checking FRONTEND_DIR: {d} - exists: {os.path.exists(d)}")
+    if os.path.exists(d):
+        FRONTEND_DIR = d
+        print(f"Selected FRONTEND_DIR: {FRONTEND_DIR}")
+        break
 
-if os.path.exists(FRONTEND_DIR):
+if FRONTEND_DIR and os.path.exists(FRONTEND_DIR):
     assets_dir = os.path.join(FRONTEND_DIR, "assets")
     if os.path.exists(assets_dir):
         app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
@@ -996,7 +1000,7 @@ if os.path.exists(FRONTEND_DIR):
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str):
         # Skip API routes
-        if full_path.startswith("api/") or full_path == "health":
+        if full_path.startswith("api/") or full_path in ["health", "docs", "openapi.json"]:
             raise HTTPException(status_code=404, detail="Not found")
         # Serve static files directly if they exist
         static_file = os.path.join(FRONTEND_DIR, full_path)
@@ -1006,6 +1010,9 @@ if os.path.exists(FRONTEND_DIR):
                 resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
             return resp
         # Serve index.html for all other routes (SPA behavior)
-        resp = FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
-        resp.headers["Cache-Control"] = "no-cache"
-        return resp
+        index_file = os.path.join(FRONTEND_DIR, "index.html")
+        if os.path.exists(index_file):
+            resp = FileResponse(index_file)
+            resp.headers["Cache-Control"] = "no-cache"
+            return resp
+        raise HTTPException(status_code=404, detail="Not found")
