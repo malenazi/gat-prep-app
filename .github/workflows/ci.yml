@@ -46,7 +46,9 @@ jobs:
 
       - name: Run dark mode audit
         run: node frontend/scripts/check-dark-mode.cjs
-        working-directory: .
+
+      - name: Run SVG color audit
+        run: node frontend/scripts/check-svg-colors.cjs
 
       - name: Start isolated backend API server
         run: python backend/run_test_server.py > backend-server.log 2>&1 &

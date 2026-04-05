@@ -15,6 +15,8 @@
     "test:e2e:headed": "playwright test --headed",
     "format:check": "prettier --check src/",
     "dark:audit": "node scripts/check-dark-mode.cjs",
+    "svg:audit": "node scripts/check-svg-colors.cjs",
+    "quality:audit": "node scripts/check-dark-mode.cjs && node scripts/check-svg-colors.cjs",
     "prepare": "husky"
   },
   "lint-staged": {
