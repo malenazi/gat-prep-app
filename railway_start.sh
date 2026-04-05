@@ -16,9 +16,7 @@ echo "📁 Setting up static files..."
 mkdir -p backend/static
 cp -r frontend/dist/* backend/static/
 
-# Set environment variables
 export PORT=${PORT:-8000}
-export CORS_ORIGINS="*"
 
 echo "🚀 Starting server on port $PORT..."
 cd backend

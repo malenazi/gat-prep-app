@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '23'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install backend dependencies
+        run: python -m pip install --upgrade pip && pip install -r backend/requirements.txt
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium webkit
+        working-directory: frontend
+
+      - name: Run question bank tests
+        run: python -m pytest backend/tests/test_questions.py -q
+
+      - name: Start isolated backend API server
+        run: python backend/run_test_server.py > backend-server.log 2>&1 &
+
+      - name: Wait for backend API server
+        run: |
+          python - <<'PY'
+          import time
+          import urllib.request
+
+          for _ in range(60):
+              try:
+                  with urllib.request.urlopen("http://127.0.0.1:8000/", timeout=2) as response:
+                      if response.status == 200:
+                          raise SystemExit(0)
+              except Exception:
+                  time.sleep(1)
+
+          raise SystemExit("Backend API server did not start in time")
+          PY
+
+      - name: Run backend API tests
+        run: API_BASE_URL=http://127.0.0.1:8000/api python -m pytest backend/tests/test_api_questions.py -q
+
+      - name: Stop backend API server
+        if: always()
+        run: pkill -f "backend/run_test_server.py" || true
+
+      - name: Run frontend lint
+        run: npm run lint
+        working-directory: frontend
+
+      - name: Run frontend build
+        run: npm run build
+        working-directory: frontend
+
+      - name: Run end-to-end suite
+        run: npm run test:e2e
+        working-directory: frontend
+        env:
+          E2E_FRONTEND_PORT: 34134
+          E2E_BACKEND_PORT: 38100
+          E2E_DATABASE_URL: sqlite:///./gat_prep.ci.e2e.db
+
+      - name: Run responsive audit suite
+        run: >
+          npx playwright test
+          tests/e2e/responsive-audit.spec.ts
+          tests/e2e/plan.spec.ts
+          --project=audit-chromium-390
+          --project=audit-chromium-768
+          --project=audit-chromium-1024
+          --project=audit-chromium-1280
+          --project=audit-chromium-1440
+          --project=audit-chromium-1920
+          --project=audit-chromium-2560
+          --project=audit-webkit-390
+          --project=audit-webkit-1280
+        working-directory: frontend
+        env:
+          PW_ENABLE_RESPONSIVE_AUDIT: '1'
+          E2E_FRONTEND_PORT: 34134
+          E2E_BACKEND_PORT: 38100
+          E2E_DATABASE_URL: sqlite:///./gat_prep.ci.e2e.db

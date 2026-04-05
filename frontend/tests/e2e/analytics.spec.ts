@@ -1,25 +1,16 @@
-import { test, expect } from '@playwright/test';
-import { TEST_USERS } from '../fixtures/test-data';
+import { expect, test } from '@playwright/test';
+import { goToAnalytics, loginAsSara } from './helpers';
 
 test.describe('Analytics', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.getByText('Register Now').first().click();
-    await page.getByText(TEST_USERS.sara.name).click();
-    await page.getByText('Analytics', { exact: true }).click();
-    await expect(page).toHaveURL(/.*analytics.*/);
+    await loginAsSara(page);
+    await goToAnalytics(page);
   });
 
-  test('analytics page loads', async ({ page }) => {
-    await expect(page.getByText(/Analytics|Performance/i)).toBeVisible();
-  });
-
-  test('skill breakdown is visible', async ({ page }) => {
-    await expect(page.getByText('Verbal')).toBeVisible();
-    await expect(page.getByText('Quant')).toBeVisible();
-  });
-
-  test('stats cards are visible', async ({ page }) => {
-    await expect(page.getByText(/Questions|Correct|Accuracy/i)).toBeVisible();
+  test('renders the analytics overview cards', async ({ page }) => {
+    await expect(page.getByTestId('analytics-stats')).toBeVisible();
+    await expect(page.getByTestId('analytics-score-card')).toBeVisible();
+    await expect(page.getByTestId('analytics-verbal')).toBeVisible();
+    await expect(page.getByTestId('analytics-quant')).toBeVisible();
   });
 });

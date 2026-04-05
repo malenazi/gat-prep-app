@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api';
+import { QuestionOptions } from '@/components/questions/QuestionOptions';
+import { QuestionPrompt } from '@/components/questions/QuestionPrompt';
+import { defaultQuestionAppearance, validateMarkdownMathFields } from '@/lib/questionPresentation';
+import { parseTableEditorValue, sanitizeInlineSvg } from '@/lib/questionVisuals';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend } from 'recharts';
 import { Shield, BarChart3, MessageSquare, Users, BookOpen, Search, Plus, Pencil, Trash2, ChevronDown, ChevronUp, Star, Flame, X, ArrowRight, LogOut, Trophy, AlertTriangle } from 'lucide-react';
 import type { AdminFeedbackAnalytics, AdminUsersResponse, AdminFeedbackItem, AdminQuestion, QuestionPayload, ApiSkill, QuestionAnalysis } from '@/types';
@@ -16,6 +20,31 @@ const triggerLabels: Record<string, string> = {
 };
 const ratingEmojis = ['', '😡', '😕', '😐', '🙂', '😍'];
 const ratingColors = ['', '#ef4444', '#f97316', '#94a3b8', '#22c55e', '#0d9488'];
+const questionRatingMetrics = [
+  { subject: 'Clarity', field: 'rating_clarity' },
+  { subject: 'Cognitive', field: 'rating_cognitive' },
+  { subject: 'Distractors', field: 'rating_distractors' },
+  { subject: 'Difficulty', field: 'rating_difficulty_align' },
+  { subject: 'Explanation', field: 'rating_explanation' },
+  { subject: 'Fairness', field: 'rating_fairness' },
+  { subject: 'Discrimination', field: 'rating_discrimination' },
+] as const;
+
+type QuestionRatingField = typeof questionRatingMetrics[number]['field'];
+
+const contentClassificationLabels: Record<string, string> = {
+  ready: 'Ready',
+  'safe-to-auto-convert': 'Safe Auto-Fix',
+  'needs-manual-cleanup': 'Manual Cleanup',
+  'content-corrupted': 'Corrupted',
+};
+
+const recommendedActionLabels: Record<string, string> = {
+  'keep-active': 'Keep Active',
+  'auto-fix-and-sync': 'Auto-Fix + Sync',
+  'manual-review': 'Manual Review',
+  'keep-in-review': 'Keep in Review',
+};
 
 export default function Admin() {
   const { user, logout } = useAuth();
@@ -35,6 +64,13 @@ export default function Admin() {
   const [skillFilter, setSkillFilter] = useState('');
   const [stageFilter, setStageFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [batchFilter, setBatchFilter] = useState('');
+  const [authoringSourceFilter, setAuthoringSourceFilter] = useState('');
+  const [variantGroupFilter, setVariantGroupFilter] = useState('');
+  const [classificationFilter, setClassificationFilter] = useState('');
+  const [issueCodeFilter, setIssueCodeFilter] = useState('');
+  const [ratingsFilter, setRatingsFilter] = useState('');
+  const [analyticsRiskFilter, setAnalyticsRiskFilter] = useState('');
   const [questionSort, setQuestionSort] = useState('');
   const [expandedQ, setExpandedQ] = useState<number | null>(null);
   const [showAddQ, setShowAddQ] = useState(false);
@@ -43,15 +79,11 @@ export default function Admin() {
   const [sortAsc, setSortAsc] = useState(false);
   const [mockMaxAttempts, setMockMaxAttempts] = useState<number>(3);
 
-  if (!user || !user.is_admin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <p className="text-slate-500">Access not authorized</p>
-      </div>
-    );
-  }
-
   useEffect(() => {
+    if (!user?.is_admin) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     Promise.all([
       api.adminFeedbackAnalytics(),
@@ -64,7 +96,7 @@ export default function Admin() {
       setAnalytics(a); setUsers(u); setFeedback(f); setQuestions(q); setSkills(s); setQuestionAnalysis(qa);
     }).catch(e => setError(e.message)).finally(() => setLoading(false));
     api.adminGetConfig().then(cfg => { if (cfg?.mock_max_attempts) setMockMaxAttempts(cfg.mock_max_attempts); }).catch(() => {});
-  }, []);
+  }, [user?.is_admin]);
 
   const refreshQuestions = () => api.adminQuestions().then(setQuestions);
   const saveMockConfig = async () => {
@@ -111,6 +143,13 @@ export default function Admin() {
     .filter(q => !skillFilter || q.skill_id === skillFilter)
     .filter(q => !stageFilter || q.stage === stageFilter)
     .filter(q => !statusFilter || q.status === statusFilter)
+    .filter(q => !batchFilter || q.batch_id === batchFilter)
+    .filter(q => !authoringSourceFilter || (q.authoring_source || 'human') === authoringSourceFilter)
+    .filter(q => !variantGroupFilter || q.variant_group === variantGroupFilter)
+    .filter(q => !classificationFilter || q.content_classification === classificationFilter)
+    .filter(q => !issueCodeFilter || !!q.content_issues?.some(issue => issue.code === issueCodeFilter))
+    .filter(q => !ratingsFilter || (ratingsFilter === 'complete' ? q.ratings_complete : !q.ratings_complete))
+    .filter(q => !analyticsRiskFilter || !!q.analytics_flags?.includes(analyticsRiskFilter))
     .sort((a, b) => {
       if (questionSort === 'accuracy') return a.accuracy - b.accuracy;
       if (questionSort === 'difficulty') return a.difficulty - b.difficulty;
@@ -121,14 +160,46 @@ export default function Admin() {
     });
   const verbalCount = questions.filter(q => q.section === 'verbal').length;
   const quantCount = questions.filter(q => q.section === 'quantitative').length;
+  const reviewReadyCount = questions.filter(q => q.ratings_complete).length;
+  const batchOptions = Array.from(
+    new Set(questions.map((question) => question.batch_id).filter((value): value is string => Boolean(value))),
+  ).sort();
+  const authoringSourceOptions = Array.from(
+    new Set(questions.map((question) => question.authoring_source || 'human')),
+  ).sort();
+  const variantGroupOptions = Array.from(
+    new Set(questions.map((question) => question.variant_group).filter((value): value is string => Boolean(value))),
+  ).sort();
+  const issueCodeOptions = Array.from(
+    new Set(
+      questions.flatMap((question) => question.content_issues?.map((issue) => issue.code) || []),
+    ),
+  ).sort();
 
   const toggleSort = (col: string) => {
     if (sortCol === col) setSortAsc(!sortAsc);
     else { setSortCol(col); setSortAsc(false); }
   };
 
+  const averageQuestionRating = (field: QuestionRatingField) => {
+    const values = questions
+      .map((question) => question[field])
+      .filter((value): value is number => typeof value === 'number');
+
+    if (!values.length) return 0;
+    return +(values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(1);
+  };
+
+  if (!user || !user.is_admin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950" data-testid="admin-page">
+        <p className="text-slate-500 dark:text-slate-400">Access not authorized</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100" data-testid="admin-page">
       {/* Admin Header */}
       <div className="bg-slate-800 text-white px-4 lg:px-8 py-3">
         <div className="flex items-center justify-between">
@@ -155,12 +226,12 @@ export default function Admin() {
       </div>
 
       {/* Tab Bar */}
-      <div className="bg-white border-b border-slate-200 px-4 lg:px-8 overflow-x-auto">
+      <div className="bg-white border-b border-slate-200 px-4 lg:px-8 overflow-x-auto dark:border-slate-800 dark:bg-slate-950">
         <div className="flex gap-1">
           {tabs.map(t => {
             const Icon = t.icon;
             return (
-              <button key={t.key} onClick={() => setTab(t.key)}
+              <button key={t.key} onClick={() => setTab(t.key)} data-testid={`admin-tab-${t.key}`}
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap
                   ${tab === t.key ? 'border-amber-500 text-amber-700 bg-amber-50/50' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
                 <Icon className="w-4 h-4" />
@@ -421,7 +492,19 @@ export default function Admin() {
         {/* Question Bank */}
         {tab === 'questions' && (
           <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
+                <p className="text-xl font-black text-emerald-700">{questionAnalysis?.by_classification?.ready || 0}</p>
+                <p className="text-xs text-emerald-600">Ready</p>
+              </div>
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+                <p className="text-xl font-black text-amber-700">{questionAnalysis?.flagged_count || 0}</p>
+                <p className="text-xs text-amber-600">Flagged</p>
+              </div>
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
+                <p className="text-xl font-black text-white">{reviewReadyCount}</p>
+                <p className="text-xs text-slate-300">Ratings Complete</p>
+              </div>
               <div className="bg-white border border-slate-200 rounded-xl p-4 text-center">
                 <p className="text-xl font-black text-slate-800">{questions.length}</p>
                 <p className="text-xs text-slate-500">Total Questions</p>
@@ -437,7 +520,7 @@ export default function Admin() {
             </div>
 
             {questionAnalysis && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
                 {/* Stage Distribution Pie */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-5">
                   <h3 className="text-sm font-bold text-slate-700 mb-3">Stage Distribution</h3>
@@ -477,28 +560,49 @@ export default function Admin() {
                 <div className="bg-white border border-slate-200 rounded-2xl p-5">
                   <h3 className="text-sm font-bold text-slate-700 mb-3">Average Question Quality</h3>
                   <ResponsiveContainer width="100%" height={200}>
-                    <RadarChart data={(() => {
-                      const qs = questions;
-                      const avg = (field: string) => {
-                        const vals = qs.map(q => (q as any)[field]).filter(Boolean);
-                        return vals.length ? +(vals.reduce((a: number, b: number) => a + b, 0) / vals.length).toFixed(1) : 0;
-                      };
-                      return [
-                        { subject: 'Clarity', value: avg('rating_clarity'), fullMark: 5 },
-                        { subject: 'Cognitive', value: avg('rating_cognitive'), fullMark: 5 },
-                        { subject: 'Distractors', value: avg('rating_distractors'), fullMark: 5 },
-                        { subject: 'Difficulty', value: avg('rating_difficulty_align'), fullMark: 5 },
-                        { subject: 'Explanation', value: avg('rating_explanation'), fullMark: 5 },
-                        { subject: 'Fairness', value: avg('rating_fairness'), fullMark: 5 },
-                        { subject: 'Discrimination', value: avg('rating_discrimination'), fullMark: 5 },
-                      ];
-                    })()}>
+                    <RadarChart
+                      data={questionRatingMetrics.map((metric) => ({
+                        subject: metric.subject,
+                        value: averageQuestionRating(metric.field),
+                        fullMark: 5,
+                      }))}
+                    >
                       <PolarGrid />
                       <PolarAngleAxis dataKey="subject" tick={{fontSize: 11}} />
                       <PolarRadiusAxis angle={90} domain={[0, 5]} tick={{fontSize: 9}} />
                       <Radar dataKey="value" stroke="#0d9488" fill="#0d9488" fillOpacity={0.3} />
                     </RadarChart>
                   </ResponsiveContainer>
+                </div>
+
+                <div className="bg-white border border-slate-200 rounded-2xl p-5">
+                  <h3 className="text-sm font-bold text-slate-700 mb-3">Generation Sources</h3>
+                  <div className="space-y-3">
+                    {Object.entries(questionAnalysis.by_authoring_source || {}).map(([source, count]) => (
+                      <div key={source}>
+                        <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                          <span>{source === 'ai_generated' ? 'AI generated' : source}</span>
+                          <span>{count}</span>
+                        </div>
+                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className={`${source === 'ai_generated' ? 'bg-teal-500' : 'bg-slate-400'} h-full rounded-full`}
+                            style={{ width: `${(count / Math.max(1, questionAnalysis.total)) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    {!!questionAnalysis.by_batch?.length && (
+                      <div className="pt-2 border-t border-slate-100 space-y-1 text-xs text-slate-500">
+                        <p className="font-semibold text-slate-700">Recent batches</p>
+                        {questionAnalysis.by_batch.slice(0, 4).map((batch) => (
+                          <p key={batch.batch_id || 'unbatched'}>
+                            {batch.batch_id || 'Unbatched'}: {batch.auto_published} active, {batch.held_in_review} review
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -543,6 +647,46 @@ export default function Admin() {
                 <option value="active">Active</option>
                 <option value="review">Review</option>
                 <option value="disabled">Disabled</option>
+              </select>
+              <select value={batchFilter} onChange={e => setBatchFilter(e.target.value)}
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                <option value="">All Batches</option>
+                {batchOptions.map((batch) => <option key={batch} value={batch}>{batch}</option>)}
+              </select>
+              <select value={authoringSourceFilter} onChange={e => setAuthoringSourceFilter(e.target.value)}
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                <option value="">All Sources</option>
+                {authoringSourceOptions.map((source) => <option key={source} value={source}>{source}</option>)}
+              </select>
+              <select value={variantGroupFilter} onChange={e => setVariantGroupFilter(e.target.value)}
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                <option value="">All Variant Groups</option>
+                {variantGroupOptions.map((group) => <option key={group} value={group}>{group}</option>)}
+              </select>
+              <select value={classificationFilter} onChange={e => setClassificationFilter(e.target.value)}
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                <option value="">All Classifications</option>
+                {Object.entries(contentClassificationLabels).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+              <select value={issueCodeFilter} onChange={e => setIssueCodeFilter(e.target.value)}
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                <option value="">All Issue Codes</option>
+                {issueCodeOptions.map((code) => <option key={code} value={code}>{code}</option>)}
+              </select>
+              <select value={ratingsFilter} onChange={e => setRatingsFilter(e.target.value)}
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                <option value="">All Rating States</option>
+                <option value="complete">Ratings Complete</option>
+                <option value="missing">Missing Ratings</option>
+              </select>
+              <select value={analyticsRiskFilter} onChange={e => setAnalyticsRiskFilter(e.target.value)}
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                <option value="">All Analytics Flags</option>
+                <option value="very_low_accuracy">Very Low Accuracy</option>
+                <option value="too_easy">Too Easy</option>
+                <option value="low_discrimination">Low Discrimination</option>
               </select>
               <select value={questionSort} onChange={e => setQuestionSort(e.target.value)}
                 className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
@@ -592,6 +736,16 @@ export default function Admin() {
                       q.stage === 'mock' ? 'bg-purple-100 text-purple-700' :
                       'bg-slate-100 text-slate-500'
                     }`}>{q.stage}</span>
+                    {q.content_classification && (
+                      <span className="text-xs px-1.5 py-0.5 rounded shrink-0 bg-slate-100 text-slate-600">
+                        {contentClassificationLabels[q.content_classification] || q.content_classification}
+                      </span>
+                    )}
+                    {q.authoring_source && (
+                      <span className={`text-xs px-1.5 py-0.5 rounded shrink-0 ${q.authoring_source === 'ai_generated' ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-600'}`}>
+                        {q.authoring_source}
+                      </span>
+                    )}
                     <span className="flex-1 text-sm text-slate-700 truncate">{q.text_ar}</span>
                     <div className="flex items-center gap-2 shrink-0">
                       <div className="h-1.5 w-10 bg-slate-100 rounded-full overflow-hidden" title={`Difficulty ${q.difficulty}`}>
@@ -608,19 +762,37 @@ export default function Admin() {
 
                   {expandedQ === q.id && (
                     <div className="border-t border-slate-100 p-4 bg-slate-50/50 space-y-3">
-                      {q.passage_ar && (
-                        <div className="bg-white border border-slate-200 rounded-lg p-3 text-sm text-slate-600">{q.passage_ar}</div>
-                      )}
-                      <p className="text-sm text-slate-800 font-medium whitespace-pre-line">{q.text_ar}</p>
-                      <div className="grid grid-cols-2 gap-2">
-                        {(['a','b','c','d'] as const).map(key => (
-                          <div key={key} className={`border rounded-lg p-2.5 text-sm
-                            ${key === q.correct_option ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-600'}`}>
-                            <span className="font-bold ml-1">{key === 'a' ? 'A' : key === 'b' ? 'B' : key === 'c' ? 'C' : 'D'}.</span>
-                            {q[`option_${key}` as keyof AdminQuestion] as string}
-                          </div>
-                        ))}
-                      </div>
+                      <QuestionPrompt
+                        passage_ar={q.passage_ar}
+                        table_ar={q.table_ar}
+                        table_caption={q.table_caption}
+                        figure_svg={q.figure_svg}
+                        figure_alt={q.figure_alt}
+                        text_ar={q.text_ar}
+                        content_format={q.content_format}
+                        comparison_columns={q.comparison_columns}
+                        testIdPrefix={`admin-question-${q.id}`}
+                        compact
+                        passageClassName="bg-white border border-slate-200 rounded-lg p-3 text-sm text-slate-600"
+                        questionClassName="text-sm text-slate-800 font-medium whitespace-pre-line"
+                        figureFrameClassName="rounded-lg border border-slate-200 bg-white p-3"
+                        appearance={defaultQuestionAppearance}
+                      />
+                      <QuestionOptions
+                        options={[
+                          { key: 'a', label: 'A', text_ar: q.option_a },
+                          { key: 'b', label: 'B', text_ar: q.option_b },
+                          { key: 'c', label: 'C', text_ar: q.option_c },
+                          { key: 'd', label: 'D', text_ar: q.option_d },
+                        ]}
+                        contentFormat={q.content_format}
+                        selectedKey={q.correct_option}
+                        correctOption={q.correct_option}
+                        disabled
+                        onSelect={() => {}}
+                        testIdPrefix={`admin-question-options-${q.id}`}
+                        appearance={defaultQuestionAppearance}
+                      />
                       {q.explanation_ar && (
                         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-700">
                           <p className="font-bold mb-1">Explanation:</p>
@@ -632,6 +804,43 @@ export default function Admin() {
                           {q.tags.split(',').map((tag, i) => (
                             <span key={i} className="bg-slate-100 text-slate-500 text-xs px-2 py-0.5 rounded-full">{tag.trim()}</span>
                           ))}
+                        </div>
+                      )}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 text-xs">
+                        <div className="rounded-lg border border-slate-200 bg-white p-3">
+                          <p className="font-bold text-slate-700 mb-2">Content Queue</p>
+                          <div className="space-y-1 text-slate-600">
+                            <p>Source key: <span className="font-mono">{q.source_key || 'admin question'}</span></p>
+                            <p>Batch: {q.batch_id || 'Unbatched'}</p>
+                            <p>Source: {q.authoring_source || 'human'}</p>
+                            <p>Prompt version: {q.generation_prompt_version || '—'}</p>
+                            <p>Variant group: {q.variant_group || '—'}</p>
+                            <p>Classification: {contentClassificationLabels[q.content_classification || 'ready'] || q.content_classification || 'Ready'}</p>
+                            <p>Recommended action: {recommendedActionLabels[q.recommended_action || 'keep-active'] || q.recommended_action || 'Keep Active'}</p>
+                            <p>Issue counts: {q.content_issue_counts?.error || 0} error, {q.content_issue_counts?.warning || 0} warning</p>
+                            <p>Ratings complete: {q.ratings_complete ? 'Yes' : 'No'}</p>
+                          </div>
+                        </div>
+                        <div className="rounded-lg border border-slate-200 bg-white p-3">
+                          <p className="font-bold text-slate-700 mb-2">Review State</p>
+                          <div className="space-y-1 text-slate-600">
+                            <p>Review passes: {q.rating_passes_done || 0}</p>
+                            <p>Missing ratings: {q.missing_review_ratings?.length ? q.missing_review_ratings.join(', ') : 'None'}</p>
+                            <p>Analytics flags: {q.analytics_flags?.length ? q.analytics_flags.join(', ') : 'None'}</p>
+                          </div>
+                          {q.rating_notes && (
+                            <p className="mt-2 rounded-md bg-slate-50 px-2 py-1 text-slate-600">{q.rating_notes}</p>
+                          )}
+                        </div>
+                      </div>
+                      {!!q.content_issues?.length && (
+                        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                          <p className="font-bold mb-1">Content checks</p>
+                          <div className="space-y-1">
+                            {q.content_issues.map((issue) => (
+                              <p key={`${issue.code}-${issue.field}`}>{issue.field}: {issue.message}</p>
+                            ))}
+                          </div>
                         </div>
                       )}
                       <div className="flex items-center gap-2 text-xs text-slate-500 flex-wrap">
@@ -855,25 +1064,100 @@ function QuestionModal({ question, skills, onClose, onSave }: {
 }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [tableEditorValue, setTableEditorValue] = useState(
+    question?.table_ar ? JSON.stringify(question.table_ar, null, 2) : '',
+  );
   const [form, setForm] = useState<QuestionPayload>({
     skill_id: question?.skill_id || skills[0]?.id || '',
     question_type: question?.question_type || 'reading',
     difficulty: question?.difficulty || 0.5,
     text_ar: question?.text_ar || '',
     passage_ar: question?.passage_ar || null,
+    content_format: question?.content_format || ((question?.skill_id || skills[0]?.id || '').startsWith('quant_') ? 'markdown_math' : 'plain'),
+    comparison_columns: question?.comparison_columns || null,
+    figure_svg: question?.figure_svg || null,
+    figure_alt: question?.figure_alt || null,
+    table_ar: question?.table_ar || null,
+    table_caption: question?.table_caption || null,
     option_a: question?.option_a || '', option_b: question?.option_b || '',
     option_c: question?.option_c || '', option_d: question?.option_d || '',
     correct_option: question?.correct_option || 'a',
     explanation_ar: question?.explanation_ar || null,
-    solution_steps_ar: null,
+    solution_steps_ar: question?.solution_steps_ar ? JSON.stringify(question.solution_steps_ar) : null,
+    tags: question?.tags || '',
+    stage: question?.stage || 'general',
+    status: question?.status || 'active',
+    rating_clarity: question?.rating_clarity ?? null,
+    rating_cognitive: question?.rating_cognitive ?? null,
+    rating_distractors: question?.rating_distractors ?? null,
+    rating_difficulty_align: question?.rating_difficulty_align ?? null,
+    rating_explanation: question?.rating_explanation ?? null,
+    rating_fairness: question?.rating_fairness ?? null,
+    rating_discrimination: question?.rating_discrimination ?? null,
+    rating_overall: question?.rating_overall ?? null,
+    rating_passes_done: question?.rating_passes_done || 0,
+    rating_notes: question?.rating_notes || null,
   });
 
   const update = (field: string, value: unknown) => setForm(prev => ({ ...prev, [field]: value }));
+  const parsedTable = parseTableEditorValue(tableEditorValue);
+  const safePreviewSvg = sanitizeInlineSvg(form.figure_svg);
+  const comparisonColumns = form.comparison_columns || { a: '', b: '' };
+  const reviewScores = questionRatingMetrics.map(metric => form[metric.field]).filter((value): value is number => typeof value === 'number');
+  const computedOverallRating = reviewScores.length === questionRatingMetrics.length
+    ? +(reviewScores.reduce((sum, value) => sum + value, 0) / questionRatingMetrics.length).toFixed(2)
+    : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true); setError('');
-    try { await onSave(form); }
+    if (tableEditorValue.trim() && parsedTable.error) {
+      setSaving(false);
+      setError(parsedTable.error);
+      return;
+    }
+    if (form.figure_svg?.trim() && !form.figure_alt?.trim()) {
+      setSaving(false);
+      setError('Figure alt text is required when a figure is provided.');
+      return;
+    }
+    if (form.content_format === 'markdown_math') {
+      const mathIssues = validateMarkdownMathFields([
+        { label: 'Passage text', value: form.passage_ar },
+        { label: 'Question text', value: form.text_ar },
+        { label: 'Option A', value: form.option_a },
+        { label: 'Option B', value: form.option_b },
+        { label: 'Option C', value: form.option_c },
+        { label: 'Option D', value: form.option_d },
+        { label: 'Explanation', value: form.explanation_ar },
+        { label: 'Solution steps', value: form.solution_steps_ar },
+        { label: 'Column A', value: form.comparison_columns?.a },
+        { label: 'Column B', value: form.comparison_columns?.b },
+      ]);
+      if (mathIssues.length) {
+        setSaving(false);
+        setError(mathIssues[0]);
+        return;
+      }
+    }
+    if (form.question_type === 'comparison' && (!comparisonColumns.a.trim() || !comparisonColumns.b.trim())) {
+      setSaving(false);
+      setError('Comparison questions require both Column A and Column B.');
+      return;
+    }
+    const payload: QuestionPayload = {
+      ...form,
+      figure_svg: form.figure_svg?.trim() ? form.figure_svg : null,
+      figure_alt: form.figure_alt?.trim() ? form.figure_alt : null,
+      table_ar: parsedTable.value,
+      table_caption: form.table_caption?.trim() ? form.table_caption : null,
+      comparison_columns: form.question_type === 'comparison'
+        ? { a: comparisonColumns.a.trim(), b: comparisonColumns.b.trim() }
+        : null,
+      rating_overall: computedOverallRating,
+      rating_notes: form.rating_notes?.trim() ? form.rating_notes : null,
+    };
+    try { await onSave(payload); }
     catch (err: unknown) { setError(err instanceof Error ? err.message : 'An error occurred'); }
     finally { setSaving(false); }
   };
@@ -897,7 +1181,14 @@ function QuestionModal({ question, skills, onClose, onSave }: {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-slate-600 mb-1 block">Skill</label>
-              <select value={form.skill_id} onChange={e => update('skill_id', e.target.value)}
+              <select value={form.skill_id} onChange={e => {
+                const nextSkill = e.target.value;
+                update('skill_id', nextSkill);
+                if (!question && nextSkill.startsWith('quant_')) {
+                  update('content_format', 'markdown_math');
+                }
+              }}
+                aria-label="Skill"
                 className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
                 {skills.map(s => <option key={s.id} value={s.id}>{s.icon} {s.name_ar}</option>)}
               </select>
@@ -905,26 +1196,180 @@ function QuestionModal({ question, skills, onClose, onSave }: {
             <div>
               <label className="text-xs font-medium text-slate-600 mb-1 block">Question Type</label>
               <select value={form.question_type} onChange={e => update('question_type', e.target.value)}
+                aria-label="Question Type"
                 className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
                 {qTypes.map(t => <option key={t.v} value={t.v}>{t.l}</option>)}
               </select>
             </div>
           </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div>
+              <label className="text-xs font-medium text-slate-600 mb-1 block">Content Format</label>
+              <select value={form.content_format || 'plain'} onChange={e => update('content_format', e.target.value)}
+                aria-label="Content Format"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                <option value="plain">Plain Text</option>
+                <option value="markdown_math">Markdown + TeX</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-600 mb-1 block">Stage</label>
+              <select value={form.stage || 'general'} onChange={e => update('stage', e.target.value)}
+                aria-label="Stage"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                {['diagnostic', 'foundation', 'building', 'peak', 'mock', 'general'].map(stage => (
+                  <option key={stage} value={stage}>{stage}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-600 mb-1 block">Status</label>
+              <select value={form.status || 'active'} onChange={e => update('status', e.target.value)}
+                aria-label="Status"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                {['active', 'review', 'disabled'].map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-slate-600 mb-1 block">Tags</label>
+              <input value={form.tags || ''} onChange={e => update('tags', e.target.value)}
+                aria-label="Tags"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                placeholder="fractions, percentages" />
+            </div>
+          </div>
           <div>
             <label className="text-xs font-medium text-slate-600 mb-1 block">Difficulty: {form.difficulty}</label>
             <input type="range" min="0" max="1" step="0.1" value={form.difficulty}
+              aria-label="Difficulty"
               onChange={e => update('difficulty', parseFloat(e.target.value))} className="w-full accent-amber-500" />
             <div className="flex justify-between text-xs text-slate-400"><span>Easy</span><span>Medium</span><span>Hard</span></div>
           </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-bold text-slate-700">Editorial Review</p>
+              <span className="text-xs text-slate-500">
+                Overall: {computedOverallRating != null ? computedOverallRating.toFixed(2) : 'Pending'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {questionRatingMetrics.map((metric) => (
+                <div key={metric.field}>
+                  <label className="text-xs font-medium text-slate-600 mb-1 block">{metric.subject}</label>
+                  <select
+                    value={form[metric.field] ?? ''}
+                    onChange={(e) => update(metric.field, e.target.value ? Number(e.target.value) : null)}
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                  >
+                    <option value="">Not rated</option>
+                    {[1, 2, 3, 4, 5].map((score) => (
+                      <option key={score} value={score}>{score}</option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Review Passes</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="3"
+                  value={form.rating_passes_done ?? 0}
+                  onChange={(e) => update('rating_passes_done', Number(e.target.value))}
+                  aria-label="Review Passes"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </div>
+              <div className="lg:col-span-2">
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Review Notes</label>
+                <input
+                  value={form.rating_notes || ''}
+                  onChange={(e) => update('rating_notes', e.target.value || null)}
+                  aria-label="Review Notes"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                  placeholder="Key clarity fixes, answer-key checks, or editorial notes"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-slate-500">
+              Active questions now require all seven review ratings and at least one review pass.
+            </p>
+          </div>
+          {form.content_format === 'markdown_math' && (
+            <div className="rounded-xl border border-teal-200 bg-teal-50 p-3 text-xs text-teal-700">
+              Use Markdown plus TeX like <code>$\\frac{'{1}'}{'{2}'}$</code>, <code>$\\sqrt{'{50}'}$</code>, and display blocks with <code>$$...$$</code>.
+            </div>
+          )}
           <div>
             <label className="text-xs font-medium text-slate-600 mb-1 block">Passage Text (optional)</label>
             <textarea value={form.passage_ar || ''} onChange={e => update('passage_ar', e.target.value || null)}
+              aria-label="Passage Text (optional)"
               rows={2} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none" />
           </div>
           <div>
             <label className="text-xs font-medium text-slate-600 mb-1 block">Question Text *</label>
             <textarea value={form.text_ar} onChange={e => update('text_ar', e.target.value)}
+              aria-label="Question Text *"
               rows={3} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none" required />
+          </div>
+          {form.question_type === 'comparison' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Column A *</label>
+                <textarea
+                  value={comparisonColumns.a}
+                  onChange={e => update('comparison_columns', { ...comparisonColumns, a: e.target.value })}
+                  rows={3}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Column B *</label>
+                <textarea
+                  value={comparisonColumns.b}
+                  onChange={e => update('comparison_columns', { ...comparisonColumns, b: e.target.value })}
+                  rows={3}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none"
+                />
+              </div>
+            </div>
+          )}
+          <div>
+            <label className="text-xs font-medium text-slate-600 mb-1 block">Figure SVG (optional)</label>
+            <textarea value={form.figure_svg || ''} onChange={e => update('figure_svg', e.target.value || null)}
+              aria-label="Figure SVG (optional)"
+              rows={6} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono resize-y" placeholder="<svg ...>...</svg>" />
+            {form.figure_svg && !safePreviewSvg && (
+              <p className="mt-1 text-xs text-amber-600">Preview is hidden because the SVG markup is invalid or unsafe.</p>
+            )}
+          </div>
+          <div>
+            <label className="text-xs font-medium text-slate-600 mb-1 block">Figure Alt Text</label>
+            <input value={form.figure_alt || ''} onChange={e => update('figure_alt', e.target.value || null)}
+              aria-label="Figure Alt Text"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+              placeholder="Describe the figure for learners using assistive tech" />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-slate-600 mb-1 block">Table JSON (optional)</label>
+            <textarea value={tableEditorValue} onChange={e => setTableEditorValue(e.target.value)}
+              aria-label="Table JSON (optional)"
+              rows={6} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono resize-y" placeholder={'{"headers":["Column","Value"],"rows":[["A","10"],["B","12"]]}'}
+            />
+            {tableEditorValue.trim() && parsedTable.error && (
+              <p className="mt-1 text-xs text-amber-600">{parsedTable.error}</p>
+            )}
+          </div>
+          <div>
+            <label className="text-xs font-medium text-slate-600 mb-1 block">Table Caption (optional)</label>
+            <input value={form.table_caption || ''} onChange={e => update('table_caption', e.target.value || null)}
+              aria-label="Table Caption (optional)"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+              placeholder="Short summary of what the table shows" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             {[{ k: 'option_a', l: 'A' }, { k: 'option_b', l: 'B' }, { k: 'option_c', l: 'C' }, { k: 'option_d', l: 'D' }].map(opt => (
@@ -936,6 +1381,7 @@ function QuestionModal({ question, skills, onClose, onSave }: {
                   Option {opt.l} {form.correct_option === opt.k.slice(-1) && <span className="text-emerald-500 text-[10px]">(Correct)</span>}
                 </label>
                 <input value={(form as unknown as Record<string, string>)[opt.k] || ''}
+                  aria-label={`Option ${opt.l}`}
                   onChange={e => update(opt.k, e.target.value)}
                   className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" required />
               </div>
@@ -944,8 +1390,54 @@ function QuestionModal({ question, skills, onClose, onSave }: {
           <div>
             <label className="text-xs font-medium text-slate-600 mb-1 block">Explanation (optional)</label>
             <textarea value={form.explanation_ar || ''} onChange={e => update('explanation_ar', e.target.value || null)}
+              aria-label="Explanation (optional)"
               rows={2} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none" />
           </div>
+          <div>
+            <label className="text-xs font-medium text-slate-600 mb-1 block">Solution Steps JSON (optional)</label>
+            <textarea value={form.solution_steps_ar || ''} onChange={e => update('solution_steps_ar', e.target.value || null)}
+              aria-label="Solution Steps JSON (optional)"
+              rows={3} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono resize-y"
+              placeholder='["First simplify the fraction.", "Then compare the two values."]' />
+          </div>
+          {(form.passage_ar || form.text_ar || form.figure_svg || parsedTable.value) && (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4" data-testid="admin-question-preview">
+              <p className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">Live Preview</p>
+              <QuestionPrompt
+                passage_ar={form.passage_ar}
+                table_ar={parsedTable.value}
+                table_caption={form.table_caption}
+                figure_svg={safePreviewSvg}
+                figure_alt={form.figure_alt}
+                text_ar={form.text_ar}
+                content_format={form.content_format}
+                comparison_columns={form.comparison_columns}
+                testIdPrefix="admin-question-preview"
+                compact
+                passageClassName="bg-white border border-slate-200 rounded-lg p-3 mb-3 text-sm text-slate-600"
+                questionClassName="text-sm text-slate-800 font-medium whitespace-pre-line"
+                figureFrameClassName="mb-3 rounded-lg border border-slate-200 bg-white p-3"
+                appearance={defaultQuestionAppearance}
+              />
+              <div className="mt-4">
+                <QuestionOptions
+                  options={[
+                    { key: 'a', label: 'A', text_ar: form.option_a },
+                    { key: 'b', label: 'B', text_ar: form.option_b },
+                    { key: 'c', label: 'C', text_ar: form.option_c },
+                    { key: 'd', label: 'D', text_ar: form.option_d },
+                  ]}
+                  contentFormat={form.content_format}
+                  selectedKey={form.correct_option}
+                  correctOption={form.correct_option}
+                  disabled
+                  onSelect={() => {}}
+                  testIdPrefix="admin-preview"
+                  appearance={defaultQuestionAppearance}
+                />
+              </div>
+            </div>
+          )}
           {error && <p className="text-sm text-red-500 bg-red-50 rounded-lg p-2 text-center">{error}</p>}
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 text-slate-500 text-sm font-medium py-2.5 hover:text-slate-700">Cancel</button>

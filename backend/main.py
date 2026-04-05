@@ -1,35 +1,122 @@
 import json, math, datetime, os
-from fastapi import FastAPI, Depends, HTTPException, Query
+from uuid import uuid4
+from fastapi import FastAPI, Depends, HTTPException, Query, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import Optional, List
-import hashlib
+from typing import Any, Optional, List
 from jose import jwt
 
+from auth_utils import (
+    auth_rate_limiter,
+    get_client_ip,
+    get_secret_key,
+    normalize_email,
+    resolve_cors_configuration,
+    verify_password,
+)
 from database import get_db, engine, Base
 from models import User, Skill, Question, UserAbility, UserResponse, StudyPlan, Badge, UserBadge, Feedback, MockAttempt, AppConfig
-from adaptive import update_ability, select_next_question, select_diagnostic_question, generate_study_plan, predict_score, recalculate_all_question_stats, calibrate_question_difficulties
+from adaptive import (
+    SCHEDULED_MOCK_DAYS,
+    update_ability,
+    select_next_question,
+    select_diagnostic_question,
+    generate_study_plan,
+    predict_score,
+    recalculate_all_question_stats,
+    calibrate_question_difficulties,
+)
+from password_reset import (
+    get_password_reset_support_email,
+    get_password_reset_ttl_minutes,
+    issue_password_reset_token_for_email,
+    password_reset_preview_enabled,
+    reset_password_with_token,
+)
+from practice_support import (
+    build_practice_adaptive_payload,
+    build_practice_assistment_payload,
+)
+from question_content import (
+    CONTENT_FORMAT_MARKDOWN_MATH,
+    HIGH_PRIORITY_QUANT_SKILLS,
+    activation_blockers,
+    clean_optional_text,
+    collect_question_quality_metadata,
+    collect_question_content_issues,
+    deserialize_comparison_columns,
+    ensure_question_content_columns,
+    extract_comparison_columns,
+    get_missing_review_ratings,
+    normalize_math_markdown,
+    ratings_complete,
+    recommended_action_for_classification,
+    serialize_comparison_columns,
+    suggest_figure_alt,
+    suggest_table_caption,
+    validate_comparison_columns,
+    validate_content_format,
+)
+from question_visuals import (
+    deserialize_table_payload,
+    ensure_question_visual_columns,
+    prepare_question_visual_fields,
+)
 from seed import seed_all
+from sync_question_bank import generate_admin_source_key
+from user_management import create_user, find_user_by_email
 
 # ── App setup ────────────────────────────────────────────────────────────────
+SECRET = get_secret_key()
+CORS_ORIGINS, CORS_ALLOW_CREDENTIALS = resolve_cors_configuration()
+
 Base.metadata.create_all(bind=engine)
+ensure_question_visual_columns(engine)
+ensure_question_content_columns(engine)
 seed_all()
 
 app = FastAPI(title="Qudra Academy — GAT Prep")
 app.add_middleware(GZipMiddleware, minimum_size=500)
-app.add_middleware(CORSMiddleware, allow_origins=os.getenv("CORS_ORIGINS", "*").split(","), allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ORIGINS,
+    allow_credentials=CORS_ALLOW_CREDENTIALS,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+FRONTEND_DIR: Optional[str] = None
+
+
+def api_root_payload() -> dict[str, str]:
+    return {"message": "Qudra Academy API", "status": "running"}
+
+
+def frontend_index_response() -> Optional[FileResponse]:
+    if not FRONTEND_DIR:
+        return None
+
+    index_file = os.path.join(FRONTEND_DIR, "index.html")
+    if not os.path.exists(index_file):
+        return None
+
+    response = FileResponse(index_file)
+    response.headers["Cache-Control"] = "no-cache"
+    return response
+
 
 @app.get("/")
 async def root():
-    return {"message": "Qudra Academy API", "status": "running"}
+    return frontend_index_response() or api_root_payload()
 
-SECRET = os.getenv("SECRET_KEY", "gat-prep-secret-key-change-in-production")
-def hash_pw(p): return hashlib.sha256((p + SECRET).encode()).hexdigest()
-def verify_pw(p, h): return hash_pw(p) == h
+
+@app.get("/api")
+async def api_root():
+    return api_root_payload()
 
 def update_question_stats(q, is_correct: bool, time_spent: int):
     """Update question-level analytics after each answer."""
@@ -38,6 +125,25 @@ def update_question_stats(q, is_correct: bool, time_spent: int):
         q.times_correct = (q.times_correct or 0) + 1
     prev_avg = q.avg_time_seconds or 0.0
     q.avg_time_seconds = (prev_avg * (q.times_answered - 1) + time_spent) / q.times_answered
+
+
+def get_plan_day(db: Session, user_id: int, day_number: int) -> Optional[StudyPlan]:
+    return db.query(StudyPlan).filter_by(user_id=user_id, day_number=day_number).first()
+
+
+def sync_current_day_plan(db: Session, user: User) -> Optional[StudyPlan]:
+    plan = get_plan_day(db, user.id, user.current_day)
+    if not plan:
+        return None
+
+    # Rest day is automatically considered complete when the learner reaches it.
+    if plan.is_rest_day and not plan.completed:
+        plan.completed_questions = max(plan.completed_questions, plan.target_questions)
+        plan.completed = True
+        db.commit()
+        db.refresh(plan)
+
+    return plan
 
 # ── Schemas ──────────────────────────────────────────────────────────────────
 class RegisterReq(BaseModel):
@@ -48,6 +154,14 @@ class RegisterReq(BaseModel):
 class LoginReq(BaseModel):
     email: str
     password: str
+
+class ForgotPasswordReq(BaseModel):
+    email: str
+
+class ResetPasswordReq(BaseModel):
+    email: str
+    reset_token: str
+    new_password: str
 
 class AnswerReq(BaseModel):
     question_id: int
@@ -62,10 +176,7 @@ def create_token(user_id: int):
     return jwt.encode({"sub": str(user_id), "exp": datetime.datetime.utcnow() + datetime.timedelta(days=30)}, SECRET)
 
 def get_current_user(db: Session = Depends(get_db), token: str = None):
-    from fastapi import Header
     return None  # simplified for MVP; see auth endpoint
-
-from fastapi import Header
 
 def get_user(authorization: str = Header(None), db: Session = Depends(get_db)):
     if not authorization:
@@ -82,31 +193,94 @@ def get_user(authorization: str = Header(None), db: Session = Depends(get_db)):
 
 # ── Auth endpoints ───────────────────────────────────────────────────────────
 @app.post("/api/auth/register")
-def register(req: RegisterReq, db: Session = Depends(get_db)):
-    if len(req.password) < 6:
-        raise HTTPException(400, "Password must be at least 6 characters")
-    if db.query(User).filter_by(email=req.email).first():
-        raise HTTPException(400, "Email already registered")
-    user = User(name=req.name, email=req.email, password_hash=hash_pw(req.password))
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    # Initialize abilities at 0
-    for skill in db.query(Skill).all():
-        db.add(UserAbility(user_id=user.id, skill_id=skill.id))
-    db.commit()
+def register(req: RegisterReq, request: Request, db: Session = Depends(get_db)):
+    client_ip = get_client_ip(request)
+    retry_after = auth_rate_limiter.register_retry_after(client_ip)
+    if retry_after is not None:
+        raise HTTPException(
+            429,
+            "Too many registration attempts. Please try again later.",
+            headers={"Retry-After": str(retry_after)},
+        )
+
+    try:
+        user = create_user(
+            db,
+            name=req.name,
+            email=req.email,
+            password=req.password,
+        )
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
     return {"token": create_token(user.id), "user": {"id": user.id, "name": user.name}}
 
 @app.post("/api/auth/login")
-def login(req: LoginReq, db: Session = Depends(get_db)):
-    user = db.query(User).filter_by(email=req.email).first()
-    if not user or not verify_pw(req.password, user.password_hash):
+def login(req: LoginReq, request: Request, db: Session = Depends(get_db)):
+    email = normalize_email(req.email)
+    client_ip = get_client_ip(request)
+    retry_after = auth_rate_limiter.login_retry_after(client_ip, email)
+    if retry_after is not None:
+        raise HTTPException(
+            429,
+            "Too many failed login attempts. Please try again later.",
+            headers={"Retry-After": str(retry_after)},
+        )
+
+    user = find_user_by_email(db, email)
+    if not user or not verify_password(req.password, user.password_hash):
+        auth_rate_limiter.record_login_failure(client_ip, email)
         raise HTTPException(401, "Invalid login credentials")
+    auth_rate_limiter.clear_login_failures(client_ip, email)
     return {"token": create_token(user.id), "user": {"id": user.id, "name": user.name}}
+
+
+@app.post("/api/auth/forgot-password")
+def forgot_password(req: ForgotPasswordReq, db: Session = Depends(get_db)):
+    email = normalize_email(req.email)
+    preview_enabled = password_reset_preview_enabled()
+    support_email = get_password_reset_support_email()
+    reset_token_preview = None
+
+    if preview_enabled:
+        reset_token_preview = issue_password_reset_token_for_email(db, email)
+
+    if preview_enabled:
+        message = "If an account exists for that email, use the one-time reset code below to choose a new password."
+    elif support_email:
+        message = f"If an account exists for that email, contact {support_email} for a one-time reset code."
+    else:
+        message = "If an account exists for that email, contact the academy team for a one-time reset code."
+
+    return {
+        "message": message,
+        "reset_token_preview": reset_token_preview,
+        "expires_in_minutes": get_password_reset_ttl_minutes() if preview_enabled else None,
+        "requires_support": not preview_enabled,
+        "support_email": support_email,
+    }
+
+
+@app.post("/api/auth/reset-password")
+def reset_password(req: ResetPasswordReq, db: Session = Depends(get_db)):
+    try:
+        user = reset_password_with_token(
+            db,
+            email=req.email,
+            reset_token=req.reset_token,
+            new_password=req.new_password,
+        )
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+    return {
+        "message": "Password updated successfully. Sign in with your new password.",
+        "user": {"id": user.id, "name": user.name},
+    }
 
 # ── User profile ─────────────────────────────────────────────────────────────
 @app.get("/api/me")
 def get_me(user: User = Depends(get_user), db: Session = Depends(get_db)):
+    sync_current_day_plan(db, user)
     abilities = db.query(UserAbility).filter_by(user_id=user.id).all()
     skills = db.query(Skill).all()
     skill_map = {s.id: s for s in skills}
@@ -130,7 +304,7 @@ def get_me(user: User = Depends(get_user), db: Session = Depends(get_db)):
         "is_admin": user.is_admin,
         "mock_attempts": user.mock_attempts,
         "mock_score": user.mock_score,
-        "mock_max_attempts": int((db.query(AppConfig).get("mock_max_attempts") or type('', (), {'value': '2'})).value),
+        "mock_max_attempts": get_mock_max(db),
         "predicted_score": score,
         "abilities": [{
             "skill_id": a.skill_id,
@@ -185,6 +359,7 @@ def diagnostic_next(user: User = Depends(get_user), db: Session = Depends(get_db
     next_skill = remaining_skills[0]
     q = db.query(Question).filter(
         Question.skill_id == next_skill,
+        Question.status == "active",
         ~Question.id.in_(answered_ids) if answered_ids else True
     ).order_by(Question.difficulty).all()
 
@@ -223,8 +398,11 @@ def diagnostic_answer(req: AnswerReq, user: User = Depends(get_user), db: Sessio
     return {
         "is_correct": is_correct,
         "correct_option": q.correct_option,
-        "explanation_ar": q.explanation_ar,
-        "solution_steps_ar": json.loads(q.solution_steps_ar) if q.solution_steps_ar else None,
+        "explanation_ar": get_render_content(q)["explanation_ar"],
+        "solution_steps_ar": get_render_content(q)["solution_steps_ar"],
+        "content_format": get_render_content(q)["content_format"],
+        "comparison_columns": get_render_content(q)["comparison_columns"],
+        **serialize_question_visuals(q),
     }
 
 @app.post("/api/diagnostic/complete")
@@ -240,6 +418,7 @@ def complete_diagnostic(user: User = Depends(get_user), db: Session = Depends(ge
 # ── Study Plan ───────────────────────────────────────────────────────────────
 @app.get("/api/study-plan")
 def get_study_plan(user: User = Depends(get_user), db: Session = Depends(get_db)):
+    sync_current_day_plan(db, user)
     plan = db.query(StudyPlan).filter_by(user_id=user.id).order_by(StudyPlan.day_number).all()
     skills = {s.id: s for s in db.query(Skill).all()}
     return [{
@@ -256,7 +435,7 @@ def get_study_plan(user: User = Depends(get_user), db: Session = Depends(get_db)
 
 @app.get("/api/study-plan/today")
 def get_today(user: User = Depends(get_user), db: Session = Depends(get_db)):
-    plan = db.query(StudyPlan).filter_by(user_id=user.id, day_number=user.current_day).first()
+    plan = sync_current_day_plan(db, user)
     if not plan:
         return {"day": user.current_day, "phase": "", "focus_skills": [], "target_questions": 0,
                 "completed_questions": 0, "is_mock_day": False, "is_rest_day": False, "remaining": 0,
@@ -276,6 +455,10 @@ def get_today(user: User = Depends(get_user), db: Session = Depends(get_db)):
 # ── Practice Session ─────────────────────────────────────────────────────────
 @app.get("/api/practice/next")
 def practice_next(user: User = Depends(get_user), db: Session = Depends(get_db)):
+    plan = sync_current_day_plan(db, user)
+    if plan and plan.is_mock_day and not plan.completed:
+        raise HTTPException(400, "Today's session is a mock exam")
+
     # Get today's answered questions
     today_start = datetime.datetime.combine(datetime.date.today(), datetime.time.min)
     today_responses = db.query(UserResponse).filter(
@@ -289,10 +472,25 @@ def practice_next(user: User = Depends(get_user), db: Session = Depends(get_db))
     if not q:
         return {"done": True, "message": "You have completed all available questions!"}
 
-    return {"done": False, "question": format_question(q)}
+    skill = db.query(Skill).filter(Skill.id == q.skill_id).first()
+    ability = db.query(UserAbility).filter(
+        UserAbility.user_id == user.id,
+        UserAbility.skill_id == q.skill_id,
+    ).first()
+
+    return {
+        "done": False,
+        "question": format_question(q),
+        "adaptive": build_practice_adaptive_payload(q, skill, ability),
+        "assistment": build_practice_assistment_payload(q),
+    }
 
 @app.post("/api/practice/answer")
 def practice_answer(req: AnswerReq, user: User = Depends(get_user), db: Session = Depends(get_db)):
+    plan = sync_current_day_plan(db, user)
+    if plan and plan.is_mock_day and not plan.completed:
+        raise HTTPException(400, "Today's session is a mock exam")
+
     q = db.query(Question).get(req.question_id)
     if not q:
         raise HTTPException(404, "Question not found")
@@ -307,7 +505,6 @@ def practice_answer(req: AnswerReq, user: User = Depends(get_user), db: Session 
     update_question_stats(q, is_correct, req.time_spent_seconds)
 
     # Update plan progress
-    plan = db.query(StudyPlan).filter_by(user_id=user.id, day_number=user.current_day).first()
     if plan:
         plan.completed_questions += 1
         if plan.completed_questions >= plan.target_questions:
@@ -334,8 +531,11 @@ def practice_answer(req: AnswerReq, user: User = Depends(get_user), db: Session 
     return {
         "is_correct": is_correct,
         "correct_option": q.correct_option,
-        "explanation_ar": q.explanation_ar,
-        "solution_steps_ar": json.loads(q.solution_steps_ar) if q.solution_steps_ar else None,
+        "explanation_ar": get_render_content(q)["explanation_ar"],
+        "solution_steps_ar": get_render_content(q)["solution_steps_ar"],
+        "content_format": get_render_content(q)["content_format"],
+        "comparison_columns": get_render_content(q)["comparison_columns"],
+        **serialize_question_visuals(q),
         "xp_earned": 10 if is_correct else 5,
     }
 
@@ -343,12 +543,14 @@ def practice_answer(req: AnswerReq, user: User = Depends(get_user), db: Session 
 @app.post("/api/advance-day")
 def advance_day(user: User = Depends(get_user), db: Session = Depends(get_db)):
     if user.current_day >= 30:
+        sync_current_day_plan(db, user)
         return {"current_day": user.current_day}
-    plan = db.query(StudyPlan).filter_by(user_id=user.id, day_number=user.current_day).first()
+    plan = sync_current_day_plan(db, user)
     if plan and not plan.is_rest_day and plan.completed_questions < plan.target_questions:
         raise HTTPException(400, "Complete today's questions first")
     user.current_day += 1
     db.commit()
+    sync_current_day_plan(db, user)
     return {"current_day": user.current_day}
 
 # ── Analytics ────────────────────────────────────────────────────────────────
@@ -417,21 +619,243 @@ def get_skills(db: Session = Depends(get_db)):
              "exam_weight": s.exam_weight, "icon": s.icon} for s in db.query(Skill).all()]
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
-def format_question(q: Question):
+def parse_solution_steps(raw_value: Optional[str]):
+    if not raw_value:
+        return None
+    try:
+        return json.loads(raw_value)
+    except json.JSONDecodeError:
+        return [raw_value]
+
+
+def get_render_content(q: Question) -> dict[str, Any]:
+    content_format = validate_content_format(getattr(q, "content_format", None))
+    text_ar = q.text_ar
+    passage_ar = q.passage_ar
+    options = {
+        "a": q.option_a,
+        "b": q.option_b,
+        "c": q.option_c,
+        "d": q.option_d,
+    }
+    explanation_ar = q.explanation_ar
+    solution_steps_ar = parse_solution_steps(q.solution_steps_ar)
+
+    comparison_columns = getattr(q, "comparison_columns", None)
+    if isinstance(comparison_columns, str):
+        try:
+            comparison_columns = deserialize_comparison_columns(comparison_columns)
+        except ValueError:
+            comparison_columns = None
+
+    if not comparison_columns and q.question_type == "comparison":
+        text_ar, comparison_columns = extract_comparison_columns(text_ar)
+
+    if content_format != CONTENT_FORMAT_MARKDOWN_MATH and q.skill_id in HIGH_PRIORITY_QUANT_SKILLS:
+        normalized_values = {
+            "text_ar": normalize_math_markdown(text_ar) or text_ar,
+            "passage_ar": normalize_math_markdown(passage_ar),
+            "option_a": normalize_math_markdown(options["a"]) or options["a"],
+            "option_b": normalize_math_markdown(options["b"]) or options["b"],
+            "option_c": normalize_math_markdown(options["c"]) or options["c"],
+            "option_d": normalize_math_markdown(options["d"]) or options["d"],
+            "explanation_ar": normalize_math_markdown(explanation_ar),
+            "solution_steps_ar": [
+                normalize_math_markdown(step) or step
+                for step in (solution_steps_ar or [])
+            ] if solution_steps_ar else None,
+        }
+        if any(
+            normalized_values[key] != value
+            for key, value in (
+                ("text_ar", text_ar),
+                ("passage_ar", passage_ar),
+                ("option_a", options["a"]),
+                ("option_b", options["b"]),
+                ("option_c", options["c"]),
+                ("option_d", options["d"]),
+                ("explanation_ar", explanation_ar),
+                ("solution_steps_ar", solution_steps_ar),
+            )
+        ):
+            content_format = CONTENT_FORMAT_MARKDOWN_MATH
+            text_ar = normalized_values["text_ar"]
+            passage_ar = normalized_values["passage_ar"]
+            options = {
+                "a": normalized_values["option_a"],
+                "b": normalized_values["option_b"],
+                "c": normalized_values["option_c"],
+                "d": normalized_values["option_d"],
+            }
+            explanation_ar = normalized_values["explanation_ar"]
+            solution_steps_ar = normalized_values["solution_steps_ar"]
+
+    figure_alt = clean_optional_text(getattr(q, "figure_alt", None))
+    table_caption = clean_optional_text(getattr(q, "table_caption", None))
+
+    if q.figure_svg and not figure_alt:
+        figure_alt = suggest_figure_alt(q.skill_id, q.question_type, text_ar or "")
+    if q.table_ar and not table_caption:
+        table_caption = suggest_table_caption(q.skill_id, q.question_type)
+
     return {
+        "content_format": content_format,
+        "text_ar": text_ar,
+        "passage_ar": passage_ar,
+        "options": options,
+        "explanation_ar": explanation_ar,
+        "solution_steps_ar": solution_steps_ar,
+        "comparison_columns": comparison_columns,
+        "figure_alt": figure_alt,
+        "table_caption": table_caption,
+    }
+
+
+def serialize_question_visuals(q: Question):
+    render_content = get_render_content(q)
+    return {
+        "figure_svg": q.figure_svg,
+        "table_ar": deserialize_table_payload(q.table_ar),
+        "figure_alt": render_content["figure_alt"],
+        "table_caption": render_content["table_caption"],
+    }
+
+
+def build_question_review_payload(q: Question, skill: Optional[Skill] = None):
+    render_content = get_render_content(q)
+    payload = {
+        "question_id": q.id,
+        "text_ar": render_content["text_ar"],
+        "passage_ar": render_content["passage_ar"],
+        "options": [
+            {"key": "a", "text_ar": render_content["options"]["a"]},
+            {"key": "b", "text_ar": render_content["options"]["b"]},
+            {"key": "c", "text_ar": render_content["options"]["c"]},
+            {"key": "d", "text_ar": render_content["options"]["d"]},
+        ],
+        "selected_option": None,
+        "correct_option": q.correct_option,
+        "is_correct": None,
+        "time_spent_seconds": 0,
+        "explanation_ar": render_content["explanation_ar"],
+        "solution_steps_ar": render_content["solution_steps_ar"],
+        "skill_id": q.skill_id,
+        "skill_name_ar": skill.name_ar if skill else "",
+        "section": skill.section if skill else "",
+        "content_format": render_content["content_format"],
+        "comparison_columns": render_content["comparison_columns"],
+    }
+    payload.update(serialize_question_visuals(q))
+    return payload
+
+
+def format_question(q: Question):
+    render_content = get_render_content(q)
+    payload = {
         "id": q.id,
         "skill_id": q.skill_id,
         "question_type": q.question_type,
         "difficulty": q.difficulty,
-        "text_ar": q.text_ar,
-        "passage_ar": q.passage_ar,
+        "text_ar": render_content["text_ar"],
+        "passage_ar": render_content["passage_ar"],
         "options": [
-            {"key": "a", "label": "A", "text_ar": q.option_a},
-            {"key": "b", "label": "B", "text_ar": q.option_b},
-            {"key": "c", "label": "C", "text_ar": q.option_c},
-            {"key": "d", "label": "D", "text_ar": q.option_d},
+            {"key": "a", "label": "A", "text_ar": render_content["options"]["a"]},
+            {"key": "b", "label": "B", "text_ar": render_content["options"]["b"]},
+            {"key": "c", "label": "C", "text_ar": render_content["options"]["c"]},
+            {"key": "d", "label": "D", "text_ar": render_content["options"]["d"]},
         ],
         "paper_only": q.paper_only,
+        "content_format": render_content["content_format"],
+        "comparison_columns": render_content["comparison_columns"],
+    }
+    payload.update(serialize_question_visuals(q))
+    return payload
+
+
+def compute_question_analytics_flags(q: Question) -> list[str]:
+    ta = q.times_answered or 0
+    tc = q.times_correct or 0
+    accuracy = tc / max(1, ta) if ta > 0 else None
+    flags: list[str] = []
+    if ta >= 10 and accuracy is not None and accuracy < 0.2:
+        flags.append("very_low_accuracy")
+    if ta >= 10 and accuracy is not None and accuracy > 0.95:
+        flags.append("too_easy")
+    if ta >= 10 and (q.discrimination or 0) < 0.1:
+        flags.append("low_discrimination")
+    return flags
+
+
+def build_admin_question_payload(q: Question, skills_map: dict[str, Skill]) -> dict[str, Any]:
+    render_content = get_render_content(q)
+    ta = q.times_answered or 0
+    tc = q.times_correct or 0
+    issues = collect_question_content_issues(q)
+    quality = collect_question_quality_metadata(q, issues)
+    analytics_flags = compute_question_analytics_flags(q)
+
+    return {
+        "id": q.id,
+        "source_key": quality["source_key"],
+        "batch_id": quality["batch_id"],
+        "generation_prompt_version": quality["generation_prompt_version"],
+        "authoring_source": quality["authoring_source"] or "human",
+        "variant_group": quality["variant_group"],
+        "skill_id": q.skill_id,
+        "skill_name_ar": skills_map[q.skill_id].name_ar if q.skill_id in skills_map else q.skill_id,
+        "section": skills_map[q.skill_id].section if q.skill_id in skills_map else "",
+        "question_type": q.question_type,
+        "difficulty": q.difficulty,
+        "text_ar": render_content["text_ar"],
+        "passage_ar": render_content["passage_ar"],
+        "content_format": render_content["content_format"],
+        "figure_svg": q.figure_svg,
+        "figure_alt": render_content["figure_alt"],
+        "table_ar": deserialize_table_payload(q.table_ar),
+        "table_caption": render_content["table_caption"],
+        "comparison_columns": render_content["comparison_columns"],
+        "option_a": render_content["options"]["a"],
+        "option_b": render_content["options"]["b"],
+        "option_c": render_content["options"]["c"],
+        "option_d": render_content["options"]["d"],
+        "correct_option": q.correct_option,
+        "explanation_ar": render_content["explanation_ar"],
+        "solution_steps_ar": render_content["solution_steps_ar"],
+        "tags": q.tags or "",
+        "stage": q.stage or "general",
+        "status": q.status or "active",
+        "times_answered": ta,
+        "times_correct": tc,
+        "accuracy": round(tc / max(1, ta), 2),
+        "avg_time_seconds": round(q.avg_time_seconds or 0, 1),
+        "discrimination": round(q.discrimination or 0, 3),
+        "original_difficulty": round(q.original_difficulty, 3) if q.original_difficulty is not None else None,
+        "last_calibrated_at": q.last_calibrated_at.isoformat() if q.last_calibrated_at else None,
+        "rating_overall": round(q.rating_overall, 2) if q.rating_overall else None,
+        "rating_clarity": q.rating_clarity,
+        "rating_cognitive": q.rating_cognitive,
+        "rating_distractors": q.rating_distractors,
+        "rating_difficulty_align": q.rating_difficulty_align,
+        "rating_explanation": q.rating_explanation,
+        "rating_fairness": q.rating_fairness,
+        "rating_discrimination": q.rating_discrimination,
+        "rating_passes_done": q.rating_passes_done or 0,
+        "rating_notes": q.rating_notes,
+        "ratings_complete": quality["ratings_complete"],
+        "missing_review_ratings": quality["missing_review_ratings"],
+        "content_classification": quality["content_classification"],
+        "recommended_action": quality["recommended_action"],
+        "content_issue_counts": quality["content_issue_counts"],
+        "analytics_flags": analytics_flags,
+        "content_issues": [
+            {
+                "severity": issue.severity,
+                "code": issue.code,
+                "field": issue.field,
+                "message": issue.message,
+            }
+            for issue in issues
+        ],
     }
 
 def check_badges(db: Session, user_id: int, total_questions: int, streak: int, mock_done: bool = False, mock_score: int = 0):
@@ -541,7 +965,8 @@ MOCK_QUANT_MINUTES = 35
 
 def get_mock_max(db):
     cfg = db.query(AppConfig).get("mock_max_attempts")
-    return int(cfg.value) if cfg else 2
+    configured = int(cfg.value) if cfg else 2
+    return max(configured, len(SCHEDULED_MOCK_DAYS))
 
 class MockAnswerReq(BaseModel):
     question_id: int
@@ -552,11 +977,13 @@ class MockAnswerReq(BaseModel):
 @app.post("/api/mock/start")
 def mock_start(preview: bool = Query(False), user: User = Depends(get_user), db: Session = Depends(get_db)):
     is_preview = preview and user.is_admin
+    current_plan = sync_current_day_plan(db, user)
+    required_mock_day = bool(current_plan and current_plan.is_mock_day and not current_plan.completed)
     if not is_preview:
         max_attempts = get_mock_max(db)
-        if user.mock_attempts >= max_attempts:
+        if user.mock_attempts >= max_attempts and not required_mock_day:
             raise HTTPException(400, f"Maximum attempts exceeded ({max_attempts})")
-        if user.current_day < 25:
+        if user.current_day < 25 and not required_mock_day:
             raise HTTPException(400, "Mock exam available from day 25")
 
     import random
@@ -570,21 +997,29 @@ def mock_start(preview: bool = Query(False), user: User = Depends(get_user), db:
     # Get unseen questions first — prefer mock-stage, then general, then any
     mock_stages = ["mock", "general"]
     unseen_verbal = [q for q in db.query(Question).filter(
-        Question.skill_id.in_(verbal_skills), Question.stage.in_(mock_stages), Question.status != "disabled"
+        Question.skill_id.in_(verbal_skills), Question.stage.in_(mock_stages), Question.status == "active"
     ).all() if q.id not in practiced_ids]
     unseen_quant = [q for q in db.query(Question).filter(
-        Question.skill_id.in_(quant_skills), Question.stage.in_(mock_stages), Question.status != "disabled"
+        Question.skill_id.in_(quant_skills), Question.stage.in_(mock_stages), Question.status == "active"
     ).all() if q.id not in practiced_ids]
     random.shuffle(unseen_verbal)
     random.shuffle(unseen_quant)
 
     # If not enough unseen, fill with least-recently-answered questions
     if len(unseen_verbal) < MOCK_VERBAL_COUNT:
-        seen_verbal = db.query(Question).filter(Question.skill_id.in_(verbal_skills), Question.id.in_(practiced_ids)).all()
+        seen_verbal = db.query(Question).filter(
+            Question.skill_id.in_(verbal_skills),
+            Question.id.in_(practiced_ids),
+            Question.status == "active",
+        ).all()
         random.shuffle(seen_verbal)
         unseen_verbal += seen_verbal
     if len(unseen_quant) < MOCK_QUANT_COUNT:
-        seen_quant = db.query(Question).filter(Question.skill_id.in_(quant_skills), Question.id.in_(practiced_ids)).all()
+        seen_quant = db.query(Question).filter(
+            Question.skill_id.in_(quant_skills),
+            Question.id.in_(practiced_ids),
+            Question.status == "active",
+        ).all()
         random.shuffle(seen_quant)
         unseen_quant += seen_quant
 
@@ -672,6 +1107,11 @@ def mock_complete(req: MockCompleteReq, user: User = Depends(get_user), db: Sess
     attempt.quant_total = quant_total
     attempt.completed_at = datetime.datetime.utcnow()
 
+    current_plan = sync_current_day_plan(db, user)
+    if current_plan and current_plan.is_mock_day:
+        current_plan.completed_questions = max(current_plan.completed_questions, current_plan.target_questions)
+        current_plan.completed = True
+
     if not attempt.is_preview:
         user.mock_attempts = (user.mock_attempts or 0) + 1
         if score > (user.mock_score or 0):
@@ -736,16 +1176,14 @@ def mock_attempt_detail(attempt_id: int, user: User = Depends(get_user), db: Ses
         if not q:
             continue
         skill = skills_map.get(q.skill_id)
-        questions_detail.append({
-            "question_id": q.id, "text_ar": q.text_ar, "passage_ar": q.passage_ar,
-            "options": [{"key": "a", "text_ar": q.option_a}, {"key": "b", "text_ar": q.option_b},
-                        {"key": "c", "text_ar": q.option_c}, {"key": "d", "text_ar": q.option_d}],
-            "selected_option": r.selected_option, "correct_option": q.correct_option,
-            "is_correct": r.is_correct, "time_spent_seconds": r.time_spent_seconds,
-            "explanation_ar": q.explanation_ar,
-            "skill_id": q.skill_id, "skill_name_ar": skill.name_ar if skill else "",
-            "section": skill.section if skill else "",
+        question_payload = build_question_review_payload(q, skill)
+        question_payload.update({
+            "selected_option": r.selected_option,
+            "correct_option": q.correct_option,
+            "is_correct": r.is_correct,
+            "time_spent_seconds": r.time_spent_seconds,
         })
+        questions_detail.append(question_payload)
         if q.skill_id not in skill_stats:
             skill_stats[q.skill_id] = {"skill_id": q.skill_id, "skill_name_ar": skill.name_ar if skill else "", "correct": 0, "total": 0}
         skill_stats[q.skill_id]["total"] += 1
@@ -790,15 +1228,26 @@ def admin_get_config(admin: User = Depends(get_admin), db: Session = Depends(get
 
 @app.put("/api/admin/config/mock-attempts")
 def admin_set_mock_attempts(req: ConfigReq, admin: User = Depends(get_admin), db: Session = Depends(get_db)):
+    effective_value = max(req.value, len(SCHEDULED_MOCK_DAYS))
     cfg = db.query(AppConfig).get("mock_max_attempts")
     if cfg:
-        cfg.value = str(req.value)
+        cfg.value = str(effective_value)
     else:
-        db.add(AppConfig(key="mock_max_attempts", value=str(req.value)))
+        db.add(AppConfig(key="mock_max_attempts", value=str(effective_value)))
     db.commit()
-    return {"mock_max_attempts": req.value}
+    return {"mock_max_attempts": effective_value}
 
 # ── Question Bank (Admin) ───────────────────────────────────────────────────
+
+class QuestionTableReq(BaseModel):
+    headers: List[str]
+    rows: List[List[str]]
+
+
+class ComparisonColumnsReq(BaseModel):
+    a: str
+    b: str
+
 
 class QuestionReq(BaseModel):
     skill_id: str
@@ -806,6 +1255,12 @@ class QuestionReq(BaseModel):
     difficulty: float = 0.5
     text_ar: str
     passage_ar: Optional[str] = None
+    content_format: Optional[str] = "plain"
+    figure_svg: Optional[str] = None
+    figure_alt: Optional[str] = None
+    table_ar: Optional[QuestionTableReq] = None
+    table_caption: Optional[str] = None
+    comparison_columns: Optional[ComparisonColumnsReq] = None
     option_a: str
     option_b: str
     option_c: str
@@ -816,6 +1271,70 @@ class QuestionReq(BaseModel):
     tags: Optional[str] = None
     stage: Optional[str] = "general"
     status: Optional[str] = "active"
+    rating_clarity: Optional[float] = None
+    rating_cognitive: Optional[float] = None
+    rating_distractors: Optional[float] = None
+    rating_difficulty_align: Optional[float] = None
+    rating_explanation: Optional[float] = None
+    rating_fairness: Optional[float] = None
+    rating_discrimination: Optional[float] = None
+    rating_overall: Optional[float] = None
+    rating_passes_done: int = 0
+    rating_notes: Optional[str] = None
+
+
+def validate_admin_question_payload(req: QuestionReq) -> tuple[str, Optional[str], Optional[str], Optional[str]]:
+    content_format = validate_content_format(req.content_format)
+    figure_alt = clean_optional_text(req.figure_alt)
+    table_caption = clean_optional_text(req.table_caption)
+    comparison_columns = validate_comparison_columns(
+        req.comparison_columns.model_dump() if req.comparison_columns else None
+    )
+
+    if req.figure_svg and not figure_alt:
+        raise HTTPException(400, "figure_alt is required when figure_svg is provided")
+
+    preview_question = type(
+        "QuestionPreview",
+        (),
+        {
+            "skill_id": req.skill_id,
+            "question_type": req.question_type,
+            "text_ar": req.text_ar,
+            "passage_ar": req.passage_ar,
+            "option_a": req.option_a,
+            "option_b": req.option_b,
+            "option_c": req.option_c,
+            "option_d": req.option_d,
+            "explanation_ar": req.explanation_ar,
+            "solution_steps_ar": req.solution_steps_ar,
+            "figure_svg": req.figure_svg,
+            "figure_alt": figure_alt,
+            "table_ar": req.table_ar.model_dump() if req.table_ar else None,
+            "table_caption": table_caption,
+            "comparison_columns": comparison_columns,
+            "content_format": content_format,
+            "correct_option": req.correct_option,
+            "rating_clarity": req.rating_clarity,
+            "rating_cognitive": req.rating_cognitive,
+            "rating_distractors": req.rating_distractors,
+            "rating_difficulty_align": req.rating_difficulty_align,
+            "rating_explanation": req.rating_explanation,
+            "rating_fairness": req.rating_fairness,
+            "rating_discrimination": req.rating_discrimination,
+            "rating_passes_done": req.rating_passes_done,
+        },
+    )()
+    blockers = activation_blockers(preview_question) if req.status == "active" else []
+    if blockers:
+        raise HTTPException(400, blockers[0])
+
+    return (
+        content_format,
+        figure_alt,
+        table_caption,
+        serialize_comparison_columns(comparison_columns),
+    )
 
 @app.get("/api/admin/questions")
 def admin_questions(
@@ -823,6 +1342,13 @@ def admin_questions(
     stage: Optional[str] = None,
     status: Optional[str] = None,
     tag: Optional[str] = None,
+    batch_id: Optional[str] = None,
+    authoring_source: Optional[str] = None,
+    variant_group: Optional[str] = None,
+    classification: Optional[str] = None,
+    issue_code: Optional[str] = None,
+    ratings_complete_filter: Optional[bool] = Query(None, alias="ratings_complete"),
+    analytics_risk: Optional[str] = None,
     difficulty_min: Optional[float] = None,
     difficulty_max: Optional[float] = None,
     sort: Optional[str] = None,
@@ -837,6 +1363,12 @@ def admin_questions(
         query = query.filter(Question.status == status)
     if tag:
         query = query.filter(Question.tags.contains(tag))
+    if batch_id:
+        query = query.filter(Question.batch_id == batch_id)
+    if authoring_source:
+        query = query.filter(Question.authoring_source == authoring_source)
+    if variant_group:
+        query = query.filter(Question.variant_group == variant_group)
     if difficulty_min is not None:
         query = query.filter(Question.difficulty >= difficulty_min)
     if difficulty_max is not None:
@@ -845,37 +1377,24 @@ def admin_questions(
     questions = query.all()
     skills_map = {s.id: s for s in db.query(Skill).all()}
 
-    result = []
-    for q in questions:
-        ta = q.times_answered or 0
-        tc = q.times_correct or 0
-        result.append({
-            "id": q.id, "skill_id": q.skill_id,
-            "skill_name_ar": skills_map[q.skill_id].name_ar if q.skill_id in skills_map else q.skill_id,
-            "section": skills_map[q.skill_id].section if q.skill_id in skills_map else "",
-            "question_type": q.question_type, "difficulty": q.difficulty,
-            "text_ar": q.text_ar, "passage_ar": q.passage_ar,
-            "option_a": q.option_a, "option_b": q.option_b,
-            "option_c": q.option_c, "option_d": q.option_d,
-            "correct_option": q.correct_option,
-            "explanation_ar": q.explanation_ar,
-            "solution_steps_ar": json.loads(q.solution_steps_ar) if q.solution_steps_ar else None,
-            "tags": q.tags or "", "stage": q.stage or "general", "status": q.status or "active",
-            "times_answered": ta, "times_correct": tc,
-            "accuracy": round(tc / max(1, ta), 2),
-            "avg_time_seconds": round(q.avg_time_seconds or 0, 1),
-            "discrimination": round(q.discrimination or 0, 3),
-            "original_difficulty": round(q.original_difficulty, 3) if q.original_difficulty is not None else None,
-            "last_calibrated_at": q.last_calibrated_at.isoformat() if q.last_calibrated_at else None,
-            "rating_overall": round(q.rating_overall, 2) if q.rating_overall else None,
-            "rating_clarity": q.rating_clarity,
-            "rating_cognitive": q.rating_cognitive,
-            "rating_distractors": q.rating_distractors,
-            "rating_difficulty_align": q.rating_difficulty_align,
-            "rating_explanation": q.rating_explanation,
-            "rating_fairness": q.rating_fairness,
-            "rating_discrimination": q.rating_discrimination,
-        })
+    result = [build_admin_question_payload(q, skills_map) for q in questions]
+
+    if classification:
+        result = [item for item in result if item["content_classification"] == classification]
+    if issue_code:
+        result = [
+            item
+            for item in result
+            if any(issue["code"] == issue_code for issue in item["content_issues"])
+        ]
+    if ratings_complete_filter is not None:
+        result = [
+            item for item in result if item["ratings_complete"] is ratings_complete_filter
+        ]
+    if analytics_risk:
+        result = [
+            item for item in result if analytics_risk in item["analytics_flags"]
+        ]
 
     if sort == "accuracy":
         result.sort(key=lambda x: x["accuracy"])
@@ -897,25 +1416,74 @@ def admin_question_analysis(admin: User = Depends(get_admin), db: Session = Depe
     stage_counts = Counter(q.stage or "general" for q in questions)
     status_counts = Counter(q.status or "active" for q in questions)
     skill_counts = Counter(q.skill_id for q in questions)
+    authoring_counts = Counter(clean_optional_text(q.authoring_source) or "human" for q in questions)
+    classification_counts = Counter()
+    recommended_actions = Counter()
+    batch_rollups: dict[str, dict[str, Any]] = {}
     flagged = []
     for q in questions:
+        issues = collect_question_content_issues(q)
+        quality = collect_question_quality_metadata(q, issues)
+        classification_counts[quality["content_classification"]] += 1
+        recommended_actions[quality["recommended_action"]] += 1
+        batch_key = quality["batch_id"] or "unbatched"
+        batch_rollup = batch_rollups.setdefault(
+            batch_key,
+            {
+                "batch_id": quality["batch_id"],
+                "authoring_source": quality["authoring_source"] or "human",
+                "total": 0,
+                "active": 0,
+                "review": 0,
+                "disabled": 0,
+                "auto_published": 0,
+                "held_in_review": 0,
+            },
+        )
+        batch_rollup["total"] += 1
+        batch_rollup[q.status or "active"] = batch_rollup.get(q.status or "active", 0) + 1
+        if (quality["authoring_source"] or "human") == "ai_generated":
+            if (q.status or "active") == "active":
+                batch_rollup["auto_published"] += 1
+            elif (q.status or "active") == "review":
+                batch_rollup["held_in_review"] += 1
+        analytics_flags = compute_question_analytics_flags(q)
         ta = q.times_answered or 0
         tc = q.times_correct or 0
         acc = tc / max(1, ta) if ta > 0 else None
-        issues = []
-        if ta >= 10 and acc is not None and acc < 0.2:
-            issues.append("very_low_accuracy")
-        if ta >= 10 and acc is not None and acc > 0.95:
-            issues.append("too_easy")
-        if ta >= 10 and (q.discrimination or 0) < 0.1:
-            issues.append("low_discrimination")
-        if issues:
-            flagged.append({"id": q.id, "skill_id": q.skill_id, "difficulty": q.difficulty, "accuracy": acc, "discrimination": q.discrimination, "issues": issues})
+        issue_codes = sorted({issue.code for issue in issues})
+        combined_flags = sorted(set(issue_codes + analytics_flags))
+        if combined_flags:
+            flagged.append(
+                {
+                    "id": q.id,
+                    "source_key": quality["source_key"],
+                    "batch_id": quality["batch_id"],
+                    "authoring_source": quality["authoring_source"] or "human",
+                    "skill_id": q.skill_id,
+                    "difficulty": q.difficulty,
+                    "accuracy": acc,
+                    "discrimination": q.discrimination,
+                    "issues": combined_flags,
+                    "analytics_flags": analytics_flags,
+                    "content_classification": quality["content_classification"],
+                    "recommended_action": quality["recommended_action"],
+                    "ratings_complete": quality["ratings_complete"],
+                    "issue_counts": quality["content_issue_counts"],
+                }
+            )
     return {
         "total": len(questions),
         "by_stage": dict(stage_counts),
         "by_status": dict(status_counts),
         "by_skill": dict(skill_counts),
+        "by_authoring_source": dict(authoring_counts),
+        "by_classification": dict(classification_counts),
+        "by_recommended_action": dict(recommended_actions),
+        "by_batch": sorted(
+            batch_rollups.values(),
+            key=lambda item: (item["batch_id"] is None, item["batch_id"] or ""),
+        )[:100],
         "flagged_count": len(flagged),
         "flagged": flagged[:50],
     }
@@ -937,13 +1505,38 @@ def admin_calibrate(
 
 @app.post("/api/admin/questions")
 def admin_add_question(req: QuestionReq, admin: User = Depends(get_admin), db: Session = Depends(get_db)):
+    try:
+        figure_svg, table_ar = prepare_question_visual_fields(
+            req.figure_svg,
+            req.table_ar.model_dump() if req.table_ar else None,
+        )
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    content_format, figure_alt, table_caption, comparison_columns = validate_admin_question_payload(req)
+
     q = Question(skill_id=req.skill_id, question_type=req.question_type, difficulty=req.difficulty,
                  text_ar=req.text_ar, passage_ar=req.passage_ar,
+                 figure_svg=figure_svg, table_ar=table_ar,
+                 content_format=content_format, figure_alt=figure_alt,
+                 table_caption=table_caption, comparison_columns=comparison_columns,
                  option_a=req.option_a, option_b=req.option_b,
                  option_c=req.option_c, option_d=req.option_d,
                  correct_option=req.correct_option, explanation_ar=req.explanation_ar,
                  solution_steps_ar=req.solution_steps_ar,
-                 tags=req.tags, stage=req.stage, status=req.status)
+                 tags=req.tags, stage=req.stage, status=req.status,
+                 source_key=f"admin:{uuid4().hex}",
+                 authoring_source="human",
+                 original_difficulty=req.difficulty,
+                 rating_clarity=req.rating_clarity,
+                 rating_cognitive=req.rating_cognitive,
+                 rating_distractors=req.rating_distractors,
+                 rating_difficulty_align=req.rating_difficulty_align,
+                 rating_explanation=req.rating_explanation,
+                 rating_fairness=req.rating_fairness,
+                 rating_discrimination=req.rating_discrimination,
+                 rating_overall=req.rating_overall,
+                 rating_passes_done=req.rating_passes_done,
+                 rating_notes=req.rating_notes)
     db.add(q)
     db.commit()
     db.refresh(q)
@@ -954,10 +1547,33 @@ def admin_update_question(question_id: int, req: QuestionReq, admin: User = Depe
     q = db.query(Question).get(question_id)
     if not q:
         raise HTTPException(404, "Question not found")
+    try:
+        figure_svg, table_ar = prepare_question_visual_fields(
+            req.figure_svg,
+            req.table_ar.model_dump() if req.table_ar else None,
+        )
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    content_format, figure_alt, table_caption, comparison_columns = validate_admin_question_payload(req)
+
     for field in ["skill_id", "question_type", "difficulty", "text_ar", "passage_ar",
                    "option_a", "option_b", "option_c", "option_d", "correct_option",
-                   "explanation_ar", "solution_steps_ar", "tags", "stage", "status"]:
+                   "explanation_ar", "solution_steps_ar", "tags", "stage", "status",
+                   "rating_clarity", "rating_cognitive", "rating_distractors",
+                   "rating_difficulty_align", "rating_explanation", "rating_fairness",
+                   "rating_discrimination", "rating_overall", "rating_passes_done",
+                   "rating_notes"]:
         setattr(q, field, getattr(req, field))
+    q.figure_svg = figure_svg
+    q.table_ar = table_ar
+    q.content_format = content_format
+    q.figure_alt = figure_alt
+    q.table_caption = table_caption
+    q.comparison_columns = comparison_columns
+    if not q.source_key:
+        q.source_key = generate_admin_source_key(q.id)
+    if not q.authoring_source:
+        q.authoring_source = "human"
     db.commit()
     return {"message": "Question updated"}
 
@@ -974,7 +1590,10 @@ def admin_delete_question(question_id: int, admin: User = Depends(get_admin), db
 # ── Health check ─────────────────────────────────────────────────────────────
 @app.get("/health")
 async def health_check():
-    return {"status": "ok", "timestamp": datetime.datetime.utcnow().isoformat()}
+    return {
+        "status": "ok",
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    }
 
 # ── Serve frontend ───────────────────────────────────────────────────────────
 # Try multiple paths for Railway and local development
@@ -984,7 +1603,6 @@ possible_dirs = [
     "/app/frontend/dist",  # Railway specific path
 ]
 
-FRONTEND_DIR = None
 for d in possible_dirs:
     print(f"Checking FRONTEND_DIR: {d} - exists: {os.path.exists(d)}")
     if os.path.exists(d):
@@ -1010,9 +1628,7 @@ if FRONTEND_DIR and os.path.exists(FRONTEND_DIR):
                 resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
             return resp
         # Serve index.html for all other routes (SPA behavior)
-        index_file = os.path.join(FRONTEND_DIR, "index.html")
-        if os.path.exists(index_file):
-            resp = FileResponse(index_file)
-            resp.headers["Cache-Control"] = "no-cache"
-            return resp
+        index_response = frontend_index_response()
+        if index_response:
+            return index_response
         raise HTTPException(status_code=404, detail="Not found")

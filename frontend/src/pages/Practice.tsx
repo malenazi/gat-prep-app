@@ -1,8 +1,23 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
+import { nowMs, todayIsoDate } from '@/lib/time';
+import { PracticeAdaptivePanel } from '@/components/practice/PracticeAdaptivePanel';
+import { PracticeHintPanel } from '@/components/practice/PracticeHintPanel';
+import { QuestionFeedbackCard } from '@/components/questions/QuestionFeedbackCard';
+import { QuestionOptions } from '@/components/questions/QuestionOptions';
+import { QuestionPrompt } from '@/components/questions/QuestionPrompt';
 import { useAuth } from '@/hooks/useAuth';
-import type { ApiQuestion, PracticeAnswerFeedback, TodayPlan } from '@/types';
+import { pageShell } from '@/lib/layout';
+import { defaultQuestionAppearance } from '@/lib/questionPresentation';
+import type {
+  ApiQuestion,
+  PracticeAdaptiveMeta,
+  PracticeAnswerFeedback,
+  PracticeAssistment,
+  PracticeNextResponse,
+  TodayPlan,
+} from '@/types';
 
 const PRACTICE_SESSION_KEY = 'practice_session';
 
@@ -46,11 +61,12 @@ export default function Practice() {
   const { loadUser } = useAuth();
   const nav = useNavigate();
   const [question, setQuestion] = useState<ApiQuestion | null>(null);
+  const [adaptive, setAdaptive] = useState<PracticeAdaptiveMeta | null>(null);
+  const [assistment, setAssistment] = useState<PracticeAssistment | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<FeedbackWithLate | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [startTime, setStartTime] = useState<number | null>(null);
   const [sessionStats, setStats] = useState<SessionStats>({ total: 0, correct: 0, xp: 0 });
   const [done, setDone] = useState(false);
   const [streak, setStreak] = useState(0);
@@ -59,8 +75,16 @@ export default function Practice() {
   const [todayTarget, setTodayTarget] = useState(15);
   const [todayCompleted, setTodayCompleted] = useState(0);
   const [countdown, setCountdown] = useState(90);
-  const [_isLate, setIsLate] = useState(false);
+  const [revealedHints, setRevealedHints] = useState(0);
   const feedbackRef = useRef<HTMLDivElement>(null);
+  const startTimeRef = useRef(0);
+  const initRef = useRef(false);
+  const appearance = defaultQuestionAppearance;
+  const [questionTransition, setQuestionTransition] = useState<'enter' | 'exit' | ''>('enter');
+  const [submitting, setSubmitting] = useState(false);
+  const [showVignette, setShowVignette] = useState(false);
+  const [streakBroken, setStreakBroken] = useState(false);
+  const [feedbackCollapsing, setFeedbackCollapsing] = useState(false);
 
   const QUESTION_TIME = 90; // seconds estimated per question
 
@@ -80,6 +104,14 @@ export default function Practice() {
     return () => clearInterval(interval);
   }, [question, selected]);
 
+  // Timer vignette flash when time expires
+  useEffect(() => {
+    if (countdown === 0 && !selected && question) {
+      setShowVignette(true);
+      setTimeout(() => setShowVignette(false), 1500);
+    }
+  }, [countdown, selected, question]);
+
   // Restore session stats from localStorage
   useEffect(() => {
     const saved = loadPracticeSession();
@@ -89,43 +121,77 @@ export default function Practice() {
     }
   }, []);
 
+  const loadNext = useCallback(async () => {
+    if (feedback) {
+      setFeedbackCollapsing(true);
+      await new Promise(r => setTimeout(r, 250));
+      setFeedbackCollapsing(false);
+    }
+    if (question) {
+      setQuestionTransition('exit');
+      await new Promise(r => setTimeout(r, 200));
+    }
+    setLoading(true);
+    setSelected(null);
+    setSubmitting(false);
+    setFeedback(null);
+    setError('');
+    setXpPopup(null);
+    setCountdown(QUESTION_TIME);
+    setRevealedHints(0);
+    try {
+      const data: PracticeNextResponse = await api.practiceNext();
+      if (data.done) {
+        setDone(true);
+        setQuestion(null);
+        setAdaptive(null);
+        setAssistment(null);
+      } else {
+        setQuestion(data.question ?? null);
+        setAdaptive(data.adaptive ?? null);
+        setAssistment(data.assistment ?? null);
+        startTimeRef.current = nowMs();
+        setCountdown(QUESTION_TIME);
+      }
+    } catch (e: unknown) {
+      if (sessionStats.total > 0) setDone(true);
+      else setError(e instanceof Error ? e.message : 'Error loading question');
+    }
+    setLoading(false);
+    setQuestionTransition('enter');
+  }, [QUESTION_TIME, sessionStats.total, feedback, question]);
+
   useEffect(() => {
+    if (initRef.current) return;
+    initRef.current = true;
     api.today().then((t: TodayPlan) => {
       setTodayTarget(t.target_questions || 15);
       setTodayCompleted(t.completed_questions || 0);
     }).catch(() => {});
-    loadNext();
-  }, []);
-
-  const loadNext = async () => {
-    setLoading(true); setSelected(null); setFeedback(null); setError(''); setXpPopup(null); setIsLate(false); setCountdown(QUESTION_TIME);
-    try {
-      const data = await api.practiceNext();
-      if (data.done) setDone(true);
-      else { setQuestion(data.question!); setStartTime(Date.now()); setCountdown(QUESTION_TIME); }
-    } catch (e: any) {
-      if (sessionStats.total > 0) setDone(true);
-      else setError(e.message || 'Error loading question');
-    }
-    setLoading(false);
-  };
+    void loadNext();
+  }, [loadNext]);
 
   const submitAnswer = async (key: string) => {
     if (selected) return;
-    if (!startTime) return;
+    if (!question || !startTimeRef.current) return;
     setSelected(key);
+    setSubmitting(true);
     const wasLate = countdown <= 0;
-    setIsLate(wasLate);
     try {
-      const elapsed = Math.round((Date.now() - startTime!) / 1000);
-      const data: PracticeAnswerFeedback = await api.practiceAnswer({ question_id: question!.id, selected_option: key, time_spent_seconds: elapsed });
+      const elapsed = Math.round((nowMs() - startTimeRef.current) / 1000);
+      const data: PracticeAnswerFeedback = await api.practiceAnswer({ question_id: question.id, selected_option: key, time_spent_seconds: elapsed });
+      setSubmitting(false);
       setFeedback({ ...data, wasLate });
       const newStreak = data.is_correct ? streak + 1 : 0;
+      if (!data.is_correct && streak > 0) {
+        setStreakBroken(true);
+        setTimeout(() => setStreakBroken(false), 2000);
+      }
       setStreak(newStreak);
       const newStats = { total: sessionStats.total + 1, correct: sessionStats.correct + (data.is_correct ? 1 : 0), xp: sessionStats.xp + data.xp_earned };
       setStats(newStats);
       savePracticeSession({
-        date: new Date().toISOString().split('T')[0],
+        date: todayIsoDate(),
         stats: newStats,
         streak: newStreak,
       });
@@ -134,43 +200,82 @@ export default function Practice() {
       const bonusText = newStreak >= 3 ? ` (×2 🔥)` : '';
       setXpPopup(`+${data.xp_earned} XP${bonusText}`);
       setTimeout(() => setXpPopup(null), 2000);
-    } catch (e: any) { setError(e.message || 'Error occurred'); setSelected(null); }
+    } catch (e: unknown) { setSubmitting(false); setError(e instanceof Error ? e.message : 'Error occurred'); setSelected(null); }
   };
 
   const finish = async () => { clearPracticeSession(); await loadUser(); nav('/'); };
   const tryExit = () => { if (sessionStats.total > 0 && !done) setShowExitConfirm(true); else finish(); };
+  const revealNextHint = () => {
+    if (!assistment || selected) return;
+    setRevealedHints((count) => Math.min(count + 1, assistment.hints.length));
+  };
+  // Keyboard shortcuts: A/B/C/D to answer, Enter for next, H for hint
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const k = e.key.toLowerCase();
+      if (!selected && question && !done && ['a', 'b', 'c', 'd'].includes(k)) {
+        e.preventDefault();
+        submitAnswer(k);
+      }
+      if (k === 'h' && !selected && assistment) {
+        e.preventDefault();
+        revealNextHint();
+      }
+      if (e.key === 'Enter' && feedback && !done) {
+        e.preventDefault();
+        loadNext();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  });
+
   const accuracy = sessionStats.total > 0 ? Math.round(sessionStats.correct / sessionStats.total * 100) : 0;
   const dailyPct = Math.min(100, Math.round((todayCompleted / Math.max(1, todayTarget)) * 100));
 
   if (error && !question) return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center page-enter">
+    <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center page-enter text-slate-800 dark:text-slate-100">
       <div className="text-5xl mb-4">⚠️</div>
       <p className="text-red-500 mb-4">{error}</p>
       <div className="flex gap-3">
         <button onClick={loadNext} className="bg-teal-600 text-white font-bold py-2.5 px-6 rounded-xl shadow-brand">Retry</button>
-        <button onClick={finish} className="bg-white shadow-card text-slate-600 font-bold py-2.5 px-6 rounded-xl">Back</button>
+        <button onClick={finish} className="bg-white shadow-card text-slate-600 font-bold py-2.5 px-6 rounded-xl dark:bg-slate-900 dark:text-slate-300">Back</button>
       </div>
     </div>
   );
 
   if (done) return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center page-enter">
+    <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center page-enter text-slate-800 dark:text-slate-100">
       <div className="relative">
         <div className="text-7xl mb-4 animate-score-reveal">💪</div>
         <Confetti />
       </div>
-      <h1 className="text-3xl font-black text-slate-800 mb-2">Well Done!</h1>
-      <p className="text-slate-500 mb-8">You completed your training session</p>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-lg mb-8">
+      <h1 className="text-3xl font-black text-slate-800 mb-2 dark:text-slate-100">Well Done!</h1>
+      <p className="text-slate-500 mb-2 dark:text-slate-400">You completed your training session</p>
+      {accuracy >= 80 && <p className="text-emerald-500 text-sm font-bold mb-4 stagger-1">Excellent accuracy! You're mastering this material.</p>}
+      {accuracy >= 50 && accuracy < 80 && <p className="text-teal-500 text-sm font-bold mb-4 stagger-1">Good work! Review the questions you missed to keep improving.</p>}
+      {accuracy > 0 && accuracy < 50 && <p className="text-amber-500 text-sm font-bold mb-4 stagger-1">Keep practicing! Focus on the feedback from each question.</p>}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-lg mb-6">
         <StatBox label="Questions" value={sessionStats.total} icon="📝" className="stagger-1" />
         <StatBox label="Correct" value={sessionStats.correct} icon="✅" color="text-emerald-500" className="stagger-2" />
         <StatBox label="Accuracy" value={`${accuracy}%`} icon="🎯" color="text-teal-600" className="stagger-3" />
         <StatBox label="XP" value={`+${sessionStats.xp}`} icon="⚡" color="text-amber-500" className="stagger-4" />
       </div>
+      {streak >= 3 && (
+        <div className="mb-4 flex items-center gap-2 text-amber-500 font-bold text-sm stagger-5">
+          <span className="animate-fire">🔥</span> You kept a {streak}-question streak with ×2 XP bonus!
+        </div>
+      )}
       {dailyPct >= 100 && (
         <div className="mb-6 bg-gradient-to-l from-emerald-500 to-emerald-600 text-white rounded-2xl px-6 py-3 font-bold animate-slide-up flex items-center gap-2">
           <Confetti /> 🎉 You completed today's goal!
         </div>
+      )}
+      {dailyPct < 100 && (
+        <p className="mb-4 text-slate-400 dark:text-slate-500 text-sm stagger-5">
+          {todayTarget - todayCompleted} more questions to complete today's goal.
+        </p>
       )}
       <button onClick={finish} className="bg-gradient-to-l from-teal-600 to-teal-500 text-white font-bold py-3.5 px-12 rounded-xl shadow-brand hover:shadow-lg transition-all">
         Back to Home
@@ -178,33 +283,79 @@ export default function Practice() {
     </div>
   );
 
+  // Skip question (counts as wrong)
+  const skipQuestion = () => {
+    if (!question || selected) return;
+    submitAnswer(['a', 'b', 'c', 'd'].find(k => k !== 'a') || 'b');
+  };
+
   if (loading && !question) return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="w-8 h-8 border-3 border-teal-400 border-t-transparent rounded-full animate-spin" />
+    <div className={`${pageShell.standard} pt-14 lg:pt-10`}>
+      {/* Skeleton: progress bar */}
+      <div className="mb-2 rounded-2xl bg-white dark:bg-slate-900 p-3 shadow-card lg:mb-6 lg:p-4">
+        <div className="flex justify-between mb-2"><div className="skeleton h-4 w-40" /><div className="skeleton h-4 w-20" /></div>
+        <div className="skeleton h-2.5 w-full rounded-full" />
+      </div>
+      {/* Skeleton: adaptive panel */}
+      <div className="rounded-3xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-card mb-5">
+        <div className="flex gap-2 mb-4"><div className="skeleton h-6 w-28 rounded-full" /><div className="skeleton h-6 w-24 rounded-full" /><div className="skeleton h-6 w-20 rounded-full" /></div>
+        <div className="skeleton h-7 w-64 mb-2" /><div className="skeleton h-4 w-40" />
+      </div>
+      {/* Skeleton: question */}
+      <div className="rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-card mb-5">
+        <div className="skeleton h-5 w-20 rounded-full mb-4" />
+        <div className="skeleton h-8 w-full mb-3" /><div className="skeleton h-8 w-3/4" />
+      </div>
+      {/* Skeleton: 4 options */}
+      <div className="space-y-4">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 flex items-center gap-4">
+            <div className="skeleton h-11 w-11 rounded-2xl shrink-0" />
+            <div className="flex-1"><div className="skeleton h-5 w-full" /></div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 
   return (
-    <div className="p-3 lg:p-10 pt-12 lg:pt-10 max-w-6xl mx-auto page-enter">
+    <div className={`${pageShell.standard} page-enter pt-14 lg:pt-10 text-slate-800 dark:text-slate-100`} data-testid="practice-page">
       {/* Exit confirmation */}
+      {showVignette && <div className="timer-vignette" />}
+
       {showExitConfirm && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-6">
-          <div className="bg-white rounded-2xl p-8 w-full max-w-sm text-center shadow-card-lg animate-slide-up">
-            <p className="text-slate-800 font-bold text-lg mb-1">End Session?</p>
-            <p className="text-slate-500 text-sm mb-6">You've answered {sessionStats.total} questions so far</p>
+          <div className="bg-white rounded-2xl p-8 w-full max-w-sm text-center shadow-card-lg animate-slide-up dark:bg-slate-900" data-testid="practice-exit-confirm">
+            <p className="text-slate-800 font-bold text-lg mb-1 dark:text-slate-100">End Session?</p>
+            <p className="text-slate-500 text-sm mb-4 dark:text-slate-400">Your progress so far:</p>
+            <div className="grid grid-cols-3 gap-2 mb-5">
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-2">
+                <p className="font-black text-lg text-slate-800 dark:text-slate-100">{sessionStats.total}</p>
+                <p className="text-xs text-slate-500">Questions</p>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-2">
+                <p className="font-black text-lg text-emerald-500">{accuracy}%</p>
+                <p className="text-xs text-slate-500">Accuracy</p>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-2">
+                <p className="font-black text-lg text-amber-500">+{sessionStats.xp}</p>
+                <p className="text-xs text-slate-500">XP</p>
+              </div>
+            </div>
+            {streak >= 3 && <p className="text-amber-500 text-sm font-bold mb-3">🔥 You'll lose your {streak}-question streak!</p>}
             <div className="flex gap-3">
-              <button onClick={() => setShowExitConfirm(false)} className="flex-1 bg-slate-100 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-200 transition">Continue</button>
-              <button onClick={finish} className="flex-1 bg-red-500 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition">End</button>
+              <button onClick={() => setShowExitConfirm(false)} className="flex-1 bg-slate-100 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-200 transition dark:bg-slate-800 dark:text-slate-300" data-testid="practice-exit-continue">Continue</button>
+              <button onClick={finish} className="flex-1 bg-red-500 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition" data-testid="practice-exit-end">End</button>
             </div>
           </div>
         </div>
       )}
 
       {/* ═══ Daily Progress Bar (top) ═══ */}
-      <div className="bg-white shadow-card rounded-2xl p-2 lg:p-4 mb-2 lg:mb-6 stagger-1">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-slate-600 text-sm font-bold">Question {sessionStats.total + 1} • Daily Goal</span>
-          <div className="flex items-center gap-3">
+      <div className="mb-2 rounded-2xl bg-white p-3 shadow-card stagger-1 lg:mb-6 lg:p-4 dark:bg-slate-900" data-testid="practice-daily-progress">
+        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <span className="text-slate-600 text-sm font-bold dark:text-slate-400">Question {sessionStats.total + 1} {todayTarget > 0 && <span className="text-slate-400 dark:text-slate-500 font-medium">of {todayTarget}</span>} • Daily Goal</span>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {/* Estimated time to finish today */}
             {todayCompleted < todayTarget && (
               <span className="text-sm text-slate-500 flex items-center gap-1">
@@ -215,25 +366,39 @@ export default function Practice() {
             <span className="text-sm font-bold text-teal-600">{todayCompleted}/{todayTarget}</span>
           </div>
         </div>
-        <div className="h-2 lg:h-2.5 bg-slate-100 rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-l from-teal-400 to-teal-600 rounded-full transition-all duration-500" style={{ width: `${dailyPct}%` }} />
+        <div className="h-2 lg:h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
+          <div className="h-full bg-gradient-to-l from-teal-400 to-teal-600 rounded-full transition-all duration-500 progress-bar-animated" style={{ width: `${dailyPct}%` }} />
+          <div className="progress-milestone-marker" style={{ left: '25%' }} />
+          <div className="progress-milestone-marker" style={{ left: '50%' }} />
+          <div className="progress-milestone-marker" style={{ left: '75%' }} />
         </div>
         {dailyPct >= 100 && <p className="text-emerald-500 text-sm font-bold mt-1.5">🎉 Goal completed! Keep going for excellence</p>}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-8">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_19rem] 2xl:gap-8">
         {/* ═══ Main Question Area ═══ */}
         <div>
           <div className="flex items-center justify-between mb-3 lg:mb-6">
-            <button onClick={tryExit} className="text-slate-500 hover:text-slate-700 text-sm transition flex items-center gap-1.5">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-              End
-            </button>
+            <div className="flex items-center gap-3">
+              <button onClick={tryExit} className="text-slate-500 hover:text-slate-700 text-sm transition flex items-center gap-1.5 dark:text-slate-400 dark:hover:text-slate-100" data-testid="practice-end">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                End
+              </button>
+              {!selected && question && (
+                <button onClick={skipQuestion} className="text-slate-400 hover:text-amber-500 text-sm transition flex items-center gap-1 dark:text-slate-500 dark:hover:text-amber-400">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
+                  Skip
+                </button>
+              )}
+            </div>
             <div className="flex items-center gap-2">
               {streak >= 3 && (
                 <div className="flex items-center gap-1 bg-gradient-to-l from-amber-500 to-orange-500 text-white text-sm font-bold px-3 py-1.5 rounded-full animate-pulse-glow">
-                  🔥 {streak} Streak • ×2 XP
+                  <span className={`${streak >= 7 ? 'streak-flame-lg' : streak >= 5 ? 'streak-flame-md' : 'streak-flame-sm'} animate-fire`}>🔥</span> {streak} Streak • ×2 XP
                 </div>
+              )}
+              {streakBroken && (
+                <div className="text-red-500 dark:text-red-400 font-bold text-sm animate-streak-break">Streak broken!</div>
               )}
               {/* XP Popup */}
               {xpPopup && (
@@ -249,7 +414,7 @@ export default function Practice() {
           )}
 
           {question && (
-            <div className="mb-3 lg:mb-5 flex items-center justify-between">
+            <div className="hidden">
               <span className="bg-slate-100 text-slate-500 text-sm px-4 py-1.5 rounded-full font-medium">
                 {question.skill_id.startsWith('verbal') ? '📖 Verbal' : '🔢 Quant'} • {question.question_type}
               </span>
@@ -259,7 +424,7 @@ export default function Practice() {
                   ${countdown > 30 ? 'bg-slate-100 text-slate-500' :
                     countdown > 10 ? 'bg-amber-50 text-amber-600' :
                     countdown > 0 ? 'bg-red-50 text-red-500 animate-pulse' :
-                    'bg-red-100 text-red-600'}`}>
+                    'bg-red-100 text-red-600'}`} data-testid="practice-legacy-timer">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   {countdown > 0 ? (
                     <span>{Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, '0')}</span>
@@ -278,69 +443,71 @@ export default function Practice() {
           )}
 
           {question && (
-            <div>
-              {question.passage_ar && (
-                <div className="bg-slate-50 border border-slate-200 rounded-xl lg:rounded-2xl p-3 lg:p-6 mb-3 lg:mb-5 text-sm text-slate-600 leading-relaxed max-h-28 lg:max-h-none overflow-y-auto">
-                  {question.passage_ar}
-                </div>
+            <div data-testid="practice-question-card" className={`${questionTransition === 'enter' ? 'question-enter' : questionTransition === 'exit' ? 'question-exit' : ''} ${!selected && countdown <= 10 && countdown > 0 ? 'timer-urgent rounded-3xl' : ''}`}>
+              {adaptive && (
+                <PracticeAdaptivePanel
+                  adaptive={adaptive}
+                  question={question}
+                  countdown={countdown}
+                  selected={!!selected}
+                  wasLate={feedback?.wasLate ?? false}
+                />
               )}
 
-              <h2 className="text-base lg:text-2xl font-bold text-slate-800 mb-3 lg:mb-8 leading-relaxed lg:leading-loose whitespace-pre-line math-text">{question.text_ar}</h2>
+              {assistment && !selected && (
+                <PracticeHintPanel
+                  assistment={assistment}
+                  contentFormat={question.content_format}
+                  revealedCount={revealedHints}
+                  onReveal={revealNextHint}
+                />
+              )}
 
-              <div className="space-y-2 lg:space-y-3">
-                {question.options.map(opt => {
-                  let cls = 'bg-white border-slate-200 hover:border-teal-300 hover:shadow-sm active:scale-[0.99]';
-                  if (selected && feedback) {
-                    if (opt.key === feedback.correct_option) cls = 'bg-emerald-50 border-emerald-400 shadow-sm';
-                    else if (opt.key === selected && !feedback.is_correct) cls = 'bg-red-50 border-red-400 shadow-sm';
-                    else cls = 'bg-slate-50 border-slate-100 opacity-40';
-                  } else if (selected && opt.key === selected) {
-                    cls = 'bg-teal-50 border-teal-400 shadow-sm';
-                  }
-                  const anim = selected && feedback && opt.key === selected ? (feedback.is_correct ? 'animate-correct' : 'animate-wrong') : '';
+              <QuestionPrompt
+                passage_ar={question.passage_ar}
+                table_ar={question.table_ar}
+                table_caption={question.table_caption}
+                figure_svg={question.figure_svg}
+                figure_alt={question.figure_alt}
+                text_ar={question.text_ar}
+                content_format={question.content_format}
+                comparison_columns={question.comparison_columns}
+                testIdPrefix="practice-question"
+                appearance={appearance}
+              />
 
-                  return (
-                    <button key={opt.key} onClick={() => submitAnswer(opt.key)} disabled={!!selected}
-                      className={`w-full text-left border-2 rounded-xl p-2.5 lg:p-5 transition-all ${cls} ${anim}`}>
-                      <div className="flex items-start gap-3 lg:gap-4">
-                        <span className={`w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-xl flex items-center justify-center text-xs lg:text-sm font-bold shrink-0 transition-all
-                          ${selected && feedback && opt.key === feedback.correct_option ? 'bg-emerald-500 text-white' :
-                            selected && feedback && opt.key === selected && !feedback.is_correct ? 'bg-red-500 text-white' :
-                            selected && !feedback && opt.key === selected ? 'bg-teal-500 text-white' :
-                            'bg-slate-100 text-slate-600'}`}>
-                          {opt.label}
-                        </span>
-                        <span className="text-sm lg:text-base text-slate-700 leading-relaxed">{opt.text_ar}</span>
-                      </div>
-                    </button>
-                  );
-                })}
+              <div className={submitting && selected ? 'option-submitting rounded-[2rem]' : ''}>
+                <QuestionOptions
+                  options={question.options}
+                  contentFormat={question.content_format}
+                  selectedKey={selected}
+                  correctOption={feedback?.correct_option ?? null}
+                  disabled={!!selected}
+                  onSelect={submitAnswer}
+                  testIdPrefix="practice"
+                  appearance={appearance}
+                />
               </div>
 
               {feedback && (
-                <div ref={feedbackRef} className="mt-3 lg:mt-6 animate-slide-up">
-                  <div className={`rounded-xl lg:rounded-2xl p-3 lg:p-6 ${feedback.is_correct ? 'bg-emerald-50 border border-emerald-200' : 'bg-amber-50 border border-amber-200'}`}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl">{feedback.is_correct ? '💪' : '🤔'}</span>
-                      <p className={`font-bold text-sm lg:text-base ${feedback.is_correct ? 'text-emerald-600' : 'text-amber-600'}`}>
-                        {feedback.is_correct ? 'Correct! Well done' : 'Wrong — no worries'}
-                      </p>
-                      {feedback.wasLate && (
-                        <span className="text-red-400 text-sm font-medium mr-auto">⏰ Late</span>
-                      )}
-                    </div>
-                    <p className="text-slate-600 text-sm leading-loose whitespace-pre-line math-text">{feedback.explanation_ar}</p>
-                    {feedback.solution_steps_ar && (
-                      <div className="mt-3 space-y-1 border-t border-current/10 pt-3">
-                        {feedback.solution_steps_ar.map((step, i) => (
-                          <p key={i} className="text-slate-500 text-sm">{step}</p>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <button onClick={loadNext}
+                <div ref={feedbackRef} className={`mt-3 lg:mt-6 ${feedbackCollapsing ? 'feedback-collapsing' : 'animate-slide-up'}`} data-testid="practice-feedback">
+                  <QuestionFeedbackCard
+                    feedback={feedback}
+                    selectedOption={selected}
+                    appearance={appearance}
+                    title={feedback.is_correct ? 'Correct answer' : 'Review & Learn'}
+                  />
+                  {adaptive && (
+                    <p className="mt-3 text-sm font-semibold text-slate-600 dark:text-slate-300" data-testid="practice-adaptive-recap">
+                      You just solved a {adaptive.challenge_band} {adaptive.skill_name} item.
+                    </p>
+                  )}
+                  {feedback.wasLate && (
+                    <p className="mt-3 text-sm font-semibold text-red-500">Time note: the answer was submitted after the target timer expired.</p>
+                  )}
+                  <button onClick={loadNext} data-testid="practice-next"
                     className="w-full mt-3 lg:mt-4 bg-gradient-to-l from-teal-600 to-teal-500 text-white font-bold py-3 lg:py-4 rounded-xl shadow-brand hover:shadow-lg transition-all active:scale-[0.98]">
-                    Next Question ←
+                    Next Question ← <span className="hidden lg:inline ml-2 key-badge">Enter ↵</span>
                   </button>
                 </div>
               )}
@@ -349,10 +516,10 @@ export default function Practice() {
         </div>
 
         {/* ═══ Desktop Stats Sidebar ═══ */}
-        <div className="hidden lg:block">
+        <div className="hidden xl:block">
           <div className="sticky top-24 space-y-4">
-            <div className="bg-white shadow-card rounded-2xl p-5">
-              <h3 className="text-slate-800 font-bold text-sm mb-4">Session Statistics</h3>
+            <div className="bg-white shadow-card rounded-2xl p-5 dark:bg-slate-900" data-testid="practice-session-stats">
+              <h3 className="text-slate-800 font-bold text-sm mb-4 dark:text-slate-100">Session Statistics</h3>
               <div className="space-y-4">
                 <SideStatRow label="Questions" value={sessionStats.total} />
                 <SideStatRow label="Correct" value={sessionStats.correct} color="text-emerald-500" />
@@ -374,8 +541,31 @@ export default function Practice() {
               </div>
             </div>
 
+            {adaptive && (
+              <div className="bg-white shadow-card rounded-2xl p-5 dark:bg-slate-900" data-testid="practice-session-trajectory">
+                <h3 className="text-slate-800 font-bold text-sm mb-4 dark:text-slate-100">Adaptive Trajectory</h3>
+                <div className="space-y-4">
+                  <SideStatRow label="Current Skill" value={adaptive.skill_name} />
+                  <SideStatRow label="Question Level" value={`${adaptive.difficulty_label} ${adaptive.difficulty_score}/100`} color="text-indigo-600" />
+                  <SideStatRow
+                    label="Skill Mastery"
+                    value={adaptive.challenge_band === 'Calibrating' ? 'Starting level' : `${adaptive.skill_mastery}%`}
+                    color="text-teal-600"
+                  />
+                </div>
+                <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">Why now</p>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                    {adaptive.challenge_band === 'Calibrating'
+                      ? 'We are using this question to estimate your starting level in this skill.'
+                      : adaptive.selection_reason}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {streak >= 3 && (
-              <div className="bg-gradient-to-l from-amber-500 to-orange-500 rounded-2xl p-4 text-center text-white shadow-card-lg">
+              <div className="bg-gradient-to-l from-amber-500 to-orange-500 rounded-2xl p-4 text-center text-white shadow-card-lg animate-badge-bounce">
                 <div className="text-3xl animate-fire mb-1">🔥</div>
                 <p className="font-bold text-sm">{streak} Streak!</p>
                 <p className="text-white/90 text-sm">×2 XP Multiplier</p>
@@ -385,15 +575,31 @@ export default function Practice() {
         </div>
 
         {/* ═══ Mobile Stats Bar ═══ */}
-        <div className="lg:hidden fixed top-0 inset-x-0 glass border-b border-slate-200/50 z-40 px-4 py-2.5">
-          <div className="flex items-center justify-between max-w-lg mx-auto">
+        <div className="lg:hidden fixed top-0 inset-x-0 glass border-b border-slate-200/50 z-40 px-3 py-2 dark:border-slate-800/80">
+          <div className="flex items-center justify-between max-w-lg mx-auto gap-2">
             <div className="flex items-center gap-2 text-sm">
               <span className="text-emerald-500 font-bold">{sessionStats.correct}</span>
-              <span className="text-slate-500">/</span>
+              <span className="text-slate-400">/</span>
               <span className="text-slate-500">{sessionStats.total}</span>
             </div>
-            {xpPopup && <span className="xp-popup text-teal-600 font-bold text-sm">{xpPopup}</span>}
-            <div className="text-sm text-amber-500 font-bold">+{sessionStats.xp} XP</div>
+            {/* Mobile timer */}
+            {!selected && question && (
+              <div className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                countdown > 30 ? 'text-slate-500' :
+                countdown > 10 ? 'text-amber-600 bg-amber-50 dark:bg-amber-500/15' :
+                countdown > 0 ? 'text-red-500 bg-red-50 dark:bg-red-500/15 animate-pulse' :
+                'text-red-600 bg-red-100 dark:bg-red-500/20'
+              }`}>
+                {countdown > 0 ? `${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, '0')}` : 'Time!'}
+              </div>
+            )}
+            {streak >= 3 && <span className="text-amber-500 text-xs font-bold animate-fire">🔥{streak}</span>}
+            {xpPopup && <span className="xp-popup text-teal-600 font-black text-xs">{xpPopup}</span>}
+            <div className="text-xs text-amber-500 font-bold">+{sessionStats.xp} XP</div>
+          </div>
+          {/* Mini progress bar on mobile */}
+          <div className="h-0.5 bg-slate-100 dark:bg-slate-800 rounded-full mt-1 overflow-hidden">
+            <div className="h-full bg-teal-500 rounded-full transition-all duration-500" style={{ width: `${dailyPct}%` }} />
           </div>
         </div>
       </div>

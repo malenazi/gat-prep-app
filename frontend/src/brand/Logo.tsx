@@ -7,7 +7,7 @@ interface LogoProps {
 }
 
 export const Logo: React.FC<LogoProps> = ({ size = 40, variant = 'full', className = '' }) => {
-  const gradientId = `logoGradient-${Math.random().toString(36).substr(2, 9)}`;
+  const gradientId = `logoGradient-${React.useId().replace(/:/g, '-')}`;
   
   if (variant === 'icon') {
     return (

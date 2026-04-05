@@ -31,6 +31,8 @@ env/
 *.db
 *.sqlite
 *.sqlite3
+backups/
+*.bak
 
 # Node.js
 node_modules/
@@ -61,7 +63,19 @@ Thumbs.db
 # Testing
 test-results/
 playwright-report/
+e2e-results/
+
+# Verification builds
+dist-verify-*/
+
+# Python cache
+.pytest_cache/
 
 # Temporary files
 *.tmp
 *.temp
+
+# Debug screenshots
+*.png
+!frontend/src/**/*.png
+!frontend/public/**/*.png

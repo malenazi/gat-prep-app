@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from models import UserAbility, Question, UserResponse, StudyPlan, Skill, User
 
+SCHEDULED_MOCK_DAYS = (11, 18, 24, 27)
+
 # ── Elo-based ability tracking ──────────────────────────────────────────────
 
 def update_ability(db: Session, user_id: int, skill_id: str, is_correct: bool, item_difficulty: float):
@@ -77,7 +79,7 @@ def select_next_question(db: Session, user_id: int, session_type: str = "drill",
     base_filter = [
         Question.skill_id == target_skill,
         Question.stage.in_(stages),
-        Question.status != "disabled",
+        Question.status == "active",
     ]
     if excluded_ids:
         base_filter.append(~Question.id.in_(excluded_ids))
@@ -86,7 +88,7 @@ def select_next_question(db: Session, user_id: int, session_type: str = "drill",
 
     if not questions:
         # Fallback: any active question not yet seen (ignore stage)
-        fallback_filter = [Question.status != "disabled"]
+        fallback_filter = [Question.status == "active"]
         if excluded_ids:
             fallback_filter.append(~Question.id.in_(excluded_ids))
         questions = db.query(Question).filter(*fallback_filter).all()
@@ -111,7 +113,7 @@ def select_diagnostic_question(db: Session, user_id: int, current_theta: float, 
     base_filter = [
         Question.skill_id.in_(skill_ids),
         Question.stage.in_(["diagnostic", "general"]),
-        Question.status != "disabled",
+        Question.status == "active",
     ]
     if excluded_ids:
         base_filter.append(~Question.id.in_(excluded_ids))
@@ -120,7 +122,7 @@ def select_diagnostic_question(db: Session, user_id: int, current_theta: float, 
 
     if not questions:
         # Fallback: any active question in these skills
-        fallback = [Question.skill_id.in_(skill_ids), Question.status != "disabled"]
+        fallback = [Question.skill_id.in_(skill_ids), Question.status == "active"]
         if excluded_ids:
             fallback.append(~Question.id.in_(excluded_ids))
         questions = db.query(Question).filter(*fallback).all()
@@ -171,7 +173,7 @@ def generate_study_plan(db: Session, user_id: int, daily_minutes: int):
             # Focus on top 2 weakest + general review
             focus = [s["skill_id"] for s in skill_needs[:2]]
 
-        is_mock = day in [11, 18, 24, 27]
+        is_mock = day in SCHEDULED_MOCK_DAYS
         is_rest = day == 30
         target = 120 if is_mock else (questions_per_day // 2 if is_rest else questions_per_day)
 

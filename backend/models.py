@@ -29,6 +29,16 @@ class User(Base):
     abilities = relationship("UserAbility", back_populates="user")
     responses = relationship("UserResponse", back_populates="user")
 
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    token_hash = Column(String, unique=True, index=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    expires_at = Column(DateTime, nullable=False)
+    used_at = Column(DateTime, nullable=True)
+
 class Skill(Base):
     __tablename__ = "skills"
     id = Column(String, primary_key=True)
@@ -53,11 +63,22 @@ class UserAbility(Base):
 class Question(Base):
     __tablename__ = "questions"
     id = Column(Integer, primary_key=True, index=True)
+    source_key = Column(String, index=True, nullable=True)
+    batch_id = Column(String, index=True, nullable=True)
+    generation_prompt_version = Column(String, nullable=True)
+    authoring_source = Column(String, nullable=True)
+    variant_group = Column(String, index=True, nullable=True)
     skill_id = Column(String, ForeignKey("skills.id"), nullable=False)
     question_type = Column(String, nullable=False)
     difficulty = Column(Float, default=0.5)
     text_ar = Column(Text, nullable=False)
     passage_ar = Column(Text, nullable=True)
+    content_format = Column(String, default="plain")
+    figure_svg = Column(Text, nullable=True)
+    figure_alt = Column(Text, nullable=True)
+    table_ar = Column(Text, nullable=True)
+    table_caption = Column(Text, nullable=True)
+    comparison_columns = Column(Text, nullable=True)
     option_a = Column(String, nullable=False)
     option_b = Column(String, nullable=False)
     option_c = Column(String, nullable=False)

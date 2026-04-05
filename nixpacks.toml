@@ -1,4 +1,7 @@
-providers = ["python", "node"]
+providers = ["python"]
+
+[phases.setup]
+nixPkgs = ["...", "nodejs_23"]
 
 [phases.build]
 cmds = [

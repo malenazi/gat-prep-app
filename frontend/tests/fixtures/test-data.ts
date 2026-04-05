@@ -1,40 +1,6 @@
 /**
- * Test data for E2E tests
+ * Shared display text and generic selectors for E2E tests.
  */
-
-export const TEST_USERS = {
-  newStudent: {
-    email: 'student@gat.sa',
-    password: '123456',
-    name: 'New Student',
-  },
-  sara: {
-    email: 'sara@gat.sa',
-    password: '123456',
-    name: 'Sara Al-Mutairi',
-    day: 5,
-    phase: 'Foundation',
-  },
-  mohammed: {
-    email: 'mohammed@gat.sa',
-    password: '123456',
-    name: 'Mohammed Al-Ghamdi',
-    day: 15,
-    phase: 'Enhancement',
-  },
-  lujain: {
-    email: 'lujain@gat.sa',
-    password: '123456',
-    name: 'Lujain Al-Harbi',
-    day: 25,
-    phase: 'Mastery',
-  },
-  admin: {
-    email: 'admin@gat.sa',
-    password: 'admin123',
-    name: 'System Admin',
-  },
-};
 
 export const INVALID_USER = {
   email: 'invalid@example.com',
@@ -43,9 +9,9 @@ export const INVALID_USER = {
 
 export const EXPECTED_TEXT = {
   landing: {
-    title: 'General Aptitude Test Preparation Course',
-    subtitle: '30 Days of Intensive Adaptive Training',
-    ctaButton: 'Register Now',
+    title: 'Master the GAT Exam',
+    subtitle: 'AI-powered adaptive learning with 1,318+ practice questions.',
+    ctaButton: 'Get Started Free',
   },
   navigation: {
     home: 'Home',
@@ -74,7 +40,7 @@ export const SELECTORS = {
     navCurriculum: 'text=Curriculum',
     navReviews: 'text=Reviews',
     loginButton: 'text=Login',
-    registerButton: 'text=Register Now',
+    registerButton: 'text=Get Started Free',
     mobileMenuButton: 'button:has(svg)',
   },
   // Auth
@@ -83,7 +49,6 @@ export const SELECTORS = {
     passwordInput: 'input[type="password"]',
     nameInput: 'input[type="text"]',
     submitButton: 'button[type="submit"]',
-    demoAccount: (name: string) => `text=${name}`,
     createAccountButton: 'text=Create New Account',
   },
   // Dashboard

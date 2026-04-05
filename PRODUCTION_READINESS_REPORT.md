@@ -1,183 +1,83 @@
 # Qudra Academy - Production Readiness Report
 
-**Date:** 2026-03-26
-**Environment:** Railway Production
-**URL:** https://gat-prep-prod-production.up.railway.app
-
----
+Date: 2026-04-04
+Environment: Railway soft launch
+URL: https://gat-prep-prod-production.up.railway.app
 
 ## Executive Summary
 
-Qudra Academy GAT Prep platform is **PRODUCTION READY** for soft launch. All critical systems are operational.
+Qudra Academy is ready for a controlled soft launch, not an unrestricted public scale-up.
 
----
+The critical production items are now in place:
 
-## Phase 1: Infrastructure ✅ COMPLETE
+- shared demo, test, and seeded admin accounts removed from normal startup
+- secure admin bootstrap added
+- password hashing upgraded for production use
+- registration and login hardened with normalization and throttling
+- browser-saveable email and password fields enabled
+- active landing page copy rewritten to avoid unsupported trust or endorsement claims
 
-### Deployment Status
-| Component | Status | Details |
-|-----------|--------|---------|
-| Railway Service | ✅ Running | gat-prep-prod |
-| Health Check | ✅ OK | API responding |
-| SSL/HTTPS | ✅ Enabled | Auto-configured by Railway |
-| Environment Variables | ✅ Set | SECRET_KEY, CORS_ORIGINS |
+The remaining operational constraint is SQLite. This launch is safe only if every deploy follows the backup and smoke-check runbook in [SOFT_LAUNCH_RUNBOOK.md](SOFT_LAUNCH_RUNBOOK.md).
 
-### API Endpoints Tested
-| Endpoint | Status | Response |
-|----------|--------|----------|
-| GET / | ✅ 200 | {"message": "Qudra Academy API"} |
-| GET /api/skills | ✅ 200 | 9 skills loaded |
-| POST /api/auth/login | ✅ 200 | JWT token returned |
-| GET /api/practice/next | ✅ 200 | Questions returned |
+## Release Status
 
----
+| Area | Status | Notes |
+|------|--------|-------|
+| Auth and registration | Complete | bcrypt, normalized email lookup, throttling |
+| Admin access | Complete | bootstrap-only admin creation |
+| Demo-account removal | Complete | no public demo login path |
+| Browser credential saving | Complete | proper form semantics on login and register |
+| Public launch copy | Complete | beta-safe messaging on active landing page |
+| SQLite guardrails | Complete | backup script, smoke script, and runbook added |
 
-## Phase 2: Security ✅ COMPLETE
+## Production Controls
 
-### Authentication & Authorization
-- ✅ Password hashing with SHA256 + salt
-- ✅ JWT token authentication
-- ✅ CORS configured for all origins
-- ✅ Input validation on all endpoints
-- ✅ SQL injection prevention via SQLAlchemy
+Required configuration:
 
-### Data Security
-- ✅ Environment variables for secrets
-- ✅ No hardcoded credentials
-- ✅ HTTPS enforced
+- `SECRET_KEY`
+- `CORS_ORIGINS`
+- recommended: `BOOTSTRAP_ADMIN_EMAIL`
+- recommended: `BOOTSTRAP_ADMIN_PASSWORD`
 
----
+Operational rules:
 
-## Phase 3: Data Integrity ✅ COMPLETE
+- run one Railway instance only
+- do not scale out while SQLite is the primary database
+- create a SQLite backup before every deploy
+- run smoke checks immediately after deploy
+- limit releases during beta to bug fixes and essential content changes
 
-### Question Bank
-- ✅ 1,318 questions loaded
-- ✅ All 9 skills covered
-- ✅ All questions in English
-- ✅ All options labeled A/B/C/D
+## Deploy Workflow
 
-### Demo Users Created
-| User | Email | Password | Status |
-|------|-------|----------|--------|
-| New Student | student@gat.sa | 123456 | ✅ Active |
-| Sara | sara@gat.sa | 123456 | ✅ Day 5 |
-| Mohammed | mohammed@gat.sa | 123456 | ✅ Day 15 |
-| Lujain | lujain@gat.sa | 123456 | ✅ Day 25 |
-| Admin | admin@gat.sa | admin123 | ✅ Admin |
+Before deploy:
 
----
+```bash
+python sqlite_backup.py --label railway-predeploy
+```
 
-## Phase 4: Feature Verification ✅ COMPLETE
+After deploy:
 
-### Core Features
-| Feature | Status | Notes |
-|---------|--------|-------|
-| User Registration | ✅ Working | Email/password |
-| User Login | ✅ Working | JWT-based |
-| Practice (9 skills) | ✅ Working | All skills tested |
-| Diagnostic Test | ✅ Working | 9 questions |
-| Study Plan | ✅ Working | 30-day plan |
-| Mock Exam | ✅ Working | Day 25+ access |
-| Analytics | ✅ Working | Progress tracking |
-| Admin Panel | ✅ Working | Question management |
-| Feedback | ✅ Working | Star ratings |
+```bash
+python production_check.py
+python smoke_check.py --admin-email admin@qudra.academy --admin-password '<secure-admin-password>'
+```
 
-### UI/UX
-| Item | Status |
-|------|--------|
-| All text in English | ✅ Verified |
-| Option labels A/B/C/D | ✅ Verified |
-| Pricing shows "FREE" | ✅ Verified |
-| Mobile responsive | ✅ Tested |
+## Known Limitations
 
----
+1. SQLite remains the highest operational risk.
+   Use backups before deploys and keep the app on a single instance.
 
-## Phase 5: Performance Metrics
+2. PostgreSQL migration is still required before broader launch or scale-out.
 
-### Response Times
-| Metric | Target | Actual | Status |
-|--------|--------|--------|--------|
-| API Response | < 500ms | ~100ms | ✅ |
-| Page Load | < 3s | ~1.5s | ✅ |
-| Database Query | < 100ms | ~50ms | ✅ |
+3. The frontend build still emits a large chunk warning.
+   This is not a soft-launch blocker, but it should be addressed after beta stabilization.
 
-### Load Capacity
-- ✅ Tested with 10 concurrent users
-- ✅ Estimated capacity: 100 concurrent users
-- ⚠️ SQLite limit: Consider PostgreSQL for >1000 users
+## Soft Launch Recommendation
 
----
+Approved for soft launch with guardrails.
 
-## Phase 6: Known Limitations
+Do not treat this as final-scale production until:
 
-### Current Limitations
-1. **SQLite Database**: Ephemeral filesystem on Railway (resets on redeploy)
-   - Mitigation: Seed data auto-reloads on startup
-   - Future: Migrate to PostgreSQL for persistence
-
-2. **No Email Service**: Password reset via email not available
-   - Mitigation: Manual password reset by admin
-   - Future: Integrate SendGrid/AWS SES
-
-3. **No CDN**: Static assets served from Railway
-   - Mitigation: Railway has global edge network
-   - Future: Add Cloudflare CDN
-
-### Risks & Mitigation
-| Risk | Level | Mitigation |
-|------|-------|------------|
-| Railway free tier limits | Medium | Monitor usage; upgrade if needed |
-| SQLite concurrency | Medium | Limit to 100 concurrent users |
-| Data loss on redeploy | Low | Auto-seeding; user data in DB |
-
----
-
-## Phase 7: Soft Launch Checklist
-
-### Pre-Launch
-- [x] All tests passing
-- [x] Environment variables set
-- [x] Demo users created
-- [x] Questions loaded (1,318)
-- [x] All text in English
-- [x] FREE pricing visible
-- [x] HTTPS enabled
-
-### Launch Day
-- [ ] Send invites to beta testers (target: 50 users)
-- [ ] Monitor error logs hourly
-- [ ] Track user registrations
-- [ ] Collect feedback
-
-### Post-Launch (Week 1)
-- [ ] Daily uptime checks
-- [ ] Daily error log review
-- [ ] User feedback analysis
-- [ ] Performance monitoring
-
----
-
-## Recommendation
-
-**APPROVED FOR SOFT LAUNCH**
-
-The platform is ready for soft launch with up to 100 initial users. All critical features are working, and the system is stable.
-
-### Next Steps
-1. Invite beta testers
-2. Monitor for 1 week
-3. Collect feedback
-4. Fix critical bugs (if any)
-5. Prepare for public launch
-
----
-
-## Contact & Support
-
-- **Live URL:** https://gat-prep-prod-production.up.railway.app
-- **Demo Account:** student@gat.sa / 123456
-- **Admin Panel:** admin@gat.sa / admin123
-
----
-
-*Report generated by automated production readiness checker*
+- PostgreSQL replaces SQLite
+- deploy backup and restore flow is routine
+- the team is comfortable with observed beta traffic and incident handling

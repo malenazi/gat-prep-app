@@ -17,6 +17,29 @@ export interface AuthResponse {
   user: { id: number; name: string };
 }
 
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+  reset_token_preview?: string | null;
+  expires_in_minutes?: number | null;
+  requires_support: boolean;
+  support_email?: string | null;
+}
+
+export interface ResetPasswordPayload {
+  email: string;
+  reset_token: string;
+  new_password: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+  user: { id: number; name: string };
+}
+
 // ── User (GET /api/me) ──────────────────────────────────────────────────────
 export type LeagueTier = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'champion';
 
@@ -65,6 +88,18 @@ export interface QuestionOption {
   text_ar: string;
 }
 
+export type QuestionContentFormat = 'plain' | 'markdown_math';
+
+export interface ComparisonColumns {
+  a: string;
+  b: string;
+}
+
+export interface QuestionTable {
+  headers: string[];
+  rows: string[][];
+}
+
 export interface ApiQuestion {
   id: number;
   skill_id: string;
@@ -72,6 +107,12 @@ export interface ApiQuestion {
   difficulty: number;
   text_ar: string;
   passage_ar: string | null;
+  content_format?: QuestionContentFormat;
+  comparison_columns?: ComparisonColumns | null;
+  figure_svg: string | null;
+  figure_alt?: string | null;
+  table_ar: QuestionTable | null;
+  table_caption?: string | null;
   options: QuestionOption[];
   paper_only: boolean;
 }
@@ -101,10 +142,37 @@ export interface AnswerFeedback {
   correct_option: string;
   explanation_ar: string;
   solution_steps_ar: string[] | null;
+  content_format?: QuestionContentFormat;
+  comparison_columns?: ComparisonColumns | null;
+  figure_svg?: string | null;
+  figure_alt?: string | null;
+  table_ar?: QuestionTable | null;
+  table_caption?: string | null;
 }
 
 export interface PracticeAnswerFeedback extends AnswerFeedback {
   xp_earned: number;
+}
+
+export interface PracticeAdaptiveMeta {
+  skill_name: string;
+  skill_section: string;
+  difficulty_score: number;
+  difficulty_label: string;
+  skill_mastery: number;
+  challenge_band: string;
+  selection_reason: string;
+}
+
+export interface PracticeHint {
+  index: number;
+  title: string;
+  text_ar: string;
+}
+
+export interface PracticeAssistment {
+  hints_available: boolean;
+  hints: PracticeHint[];
 }
 
 export interface DiagnosticCompleteResponse {
@@ -147,6 +215,8 @@ export interface PracticeNextResponse {
   done: boolean;
   question?: ApiQuestion;
   message?: string;
+  adaptive?: PracticeAdaptiveMeta;
+  assistment?: PracticeAssistment;
 }
 
 // ── Analytics ───────────────────────────────────────────────────────────────
@@ -223,6 +293,11 @@ export interface AdminFeedbackAnalytics {
 
 export interface AdminQuestion {
   id: number;
+  source_key?: string | null;
+  batch_id?: string | null;
+  generation_prompt_version?: string | null;
+  authoring_source?: string | null;
+  variant_group?: string | null;
   skill_id: string;
   skill_name_ar: string;
   section: string;
@@ -230,6 +305,12 @@ export interface AdminQuestion {
   difficulty: number;
   text_ar: string;
   passage_ar: string | null;
+  content_format?: QuestionContentFormat;
+  comparison_columns?: ComparisonColumns | null;
+  figure_svg: string | null;
+  figure_alt?: string | null;
+  table_ar: QuestionTable | null;
+  table_caption?: string | null;
   option_a: string;
   option_b: string;
   option_c: string;
@@ -255,6 +336,20 @@ export interface AdminQuestion {
   rating_explanation: number | null;
   rating_fairness: number | null;
   rating_discrimination: number | null;
+  rating_passes_done?: number;
+  rating_notes?: string | null;
+  ratings_complete?: boolean;
+  missing_review_ratings?: string[];
+  content_classification?: string;
+  recommended_action?: string;
+  content_issue_counts?: Record<string, number>;
+  analytics_flags?: string[];
+  content_issues?: Array<{
+    severity: string;
+    code: string;
+    field: string;
+    message: string;
+  }>;
 }
 
 export interface QuestionAnalysis {
@@ -262,14 +357,35 @@ export interface QuestionAnalysis {
   by_stage: Record<string, number>;
   by_status: Record<string, number>;
   by_skill: Record<string, number>;
+  by_authoring_source?: Record<string, number>;
+  by_classification?: Record<string, number>;
+  by_recommended_action?: Record<string, number>;
+  by_batch?: Array<{
+    batch_id?: string | null;
+    authoring_source?: string | null;
+    total: number;
+    active: number;
+    review: number;
+    disabled: number;
+    auto_published: number;
+    held_in_review: number;
+  }>;
   flagged_count: number;
   flagged: Array<{
     id: number;
+    source_key?: string | null;
+    batch_id?: string | null;
+    authoring_source?: string | null;
     skill_id: string;
     difficulty: number;
     accuracy: number | null;
     discrimination: number;
     issues: string[];
+    analytics_flags?: string[];
+    content_classification?: string;
+    recommended_action?: string;
+    ratings_complete?: boolean;
+    issue_counts?: Record<string, number>;
   }>;
 }
 
@@ -279,6 +395,12 @@ export interface QuestionPayload {
   difficulty: number;
   text_ar: string;
   passage_ar?: string | null;
+  content_format?: QuestionContentFormat;
+  comparison_columns?: ComparisonColumns | null;
+  figure_svg?: string | null;
+  figure_alt?: string | null;
+  table_ar?: QuestionTable | null;
+  table_caption?: string | null;
   option_a: string;
   option_b: string;
   option_c: string;
@@ -286,6 +408,19 @@ export interface QuestionPayload {
   correct_option: string;
   explanation_ar?: string | null;
   solution_steps_ar?: string | null;
+  tags?: string | null;
+  stage?: string | null;
+  status?: string | null;
+  rating_clarity?: number | null;
+  rating_cognitive?: number | null;
+  rating_distractors?: number | null;
+  rating_difficulty_align?: number | null;
+  rating_explanation?: number | null;
+  rating_fairness?: number | null;
+  rating_discrimination?: number | null;
+  rating_overall?: number | null;
+  rating_passes_done?: number;
+  rating_notes?: string | null;
 }
 
 export interface AdminUsersResponse {
@@ -354,12 +489,19 @@ export interface MockAttemptDetailQuestion {
   question_id: number;
   text_ar: string;
   passage_ar: string | null;
+  content_format?: QuestionContentFormat;
+  comparison_columns?: ComparisonColumns | null;
+  figure_svg: string | null;
+  figure_alt?: string | null;
+  table_ar: QuestionTable | null;
+  table_caption?: string | null;
   options: { key: string; text_ar: string }[];
   selected_option: string;
   correct_option: string;
   is_correct: boolean;
   time_spent_seconds: number;
   explanation_ar: string | null;
+  solution_steps_ar?: string[] | null;
   skill_id: string;
   skill_name_ar: string;
   section: string;

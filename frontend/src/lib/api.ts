@@ -2,6 +2,10 @@ import type {
   AuthResponse,
   RegisterPayload,
   LoginPayload,
+  ForgotPasswordPayload,
+  ForgotPasswordResponse,
+  ResetPasswordPayload,
+  ResetPasswordResponse,
   ApiUser,
   DiagnosticStartResponse,
   DiagnosticNextResponse,
@@ -49,9 +53,12 @@ async function req<T>(path: string, opts: RequestInit = {}): Promise<T> {
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(`${BASE}${path}`, { ...opts, headers });
   if (res.status === 401) {
-    clearToken();
-    window.location.href = '/';
-    throw new Error('unauthorized');
+    const isAuthEndpoint = path.startsWith('/auth/');
+    if (token && !isAuthEndpoint) {
+      clearToken();
+      window.location.href = '/';
+      throw new Error('unauthorized');
+    }
   }
   if (!res.ok) {
     const e = await res.json().catch(() => ({}));
@@ -64,6 +71,8 @@ export const api = {
   // Auth
   register: (d: RegisterPayload) => req<AuthResponse>('/auth/register', { method: 'POST', body: JSON.stringify(d) }),
   login: (d: LoginPayload) => req<AuthResponse>('/auth/login', { method: 'POST', body: JSON.stringify(d) }),
+  forgotPassword: (d: ForgotPasswordPayload) => req<ForgotPasswordResponse>('/auth/forgot-password', { method: 'POST', body: JSON.stringify(d) }),
+  resetPassword: (d: ResetPasswordPayload) => req<ResetPasswordResponse>('/auth/reset-password', { method: 'POST', body: JSON.stringify(d) }),
 
   // User
   me: () => req<ApiUser>('/me'),

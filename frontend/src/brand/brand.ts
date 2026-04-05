@@ -213,14 +213,14 @@ export const brandMessages = {
     },
   },
   cta: {
-    primary: 'Start Your Journey Now',
-    secondary: 'See How It Works',
+    primary: 'Start Your 30-Day Plan',
+    secondary: 'Try A Sample Session',
     startFree: 'Start for Free',
   },
   stats: {
-    students: '10K+ Students',
-    questions: '50K+ Questions',
-    success: '95% Success Rate',
+    students: '30-Day Plan',
+    questions: '1,318+ Questions',
+    success: '9 Core Skills',
   },
   feedback: {
     excellent: 'Excellent performance! Keep progressing 🎉',

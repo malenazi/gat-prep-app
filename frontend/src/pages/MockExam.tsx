@@ -1,9 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '@/lib/api';
+import { QuestionFeedbackCard } from '@/components/questions/QuestionFeedbackCard';
+import { QuestionOptions } from '@/components/questions/QuestionOptions';
+import { QuestionPrompt } from '@/components/questions/QuestionPrompt';
 import { useAuth } from '@/hooks/useAuth';
 import { ScoreRing } from '@/components/shared/ScoreRing';
-import type { ApiQuestion, MockStartResponse, MockCompleteResponse, MockAttemptSummary, MockAttemptDetail } from '@/types';
+import { defaultQuestionAppearance } from '@/lib/questionPresentation';
+import { nowMs } from '@/lib/time';
+import type { ApiQuestion, MockStartResponse, MockCompleteResponse, MockAttemptSummary, MockAttemptDetail, TodayPlan } from '@/types';
 import { Clock, BookOpen, Calculator, AlertTriangle, CheckCircle, Shield, ChevronRight, ArrowRight, History, XCircle, RotateCcw } from 'lucide-react';
 
 const MOCK_SESSION_KEY = 'mock_exam_session';
@@ -46,6 +51,7 @@ export default function MockExam() {
   const [config, setConfig] = useState<MockStartResponse | null>(null);
   const [results, setResults] = useState<MockCompleteResponse | null>(null);
   const [attemptId, setAttemptId] = useState<number | null>(null);
+  const [todayPlan, setTodayPlan] = useState<TodayPlan | null | undefined>(isPreview ? null : undefined);
 
   // History / detail state
   const [attempts, setAttempts] = useState<MockAttemptSummary[]>([]);
@@ -61,18 +67,108 @@ export default function MockExam() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [_answers, setAnswers] = useState<{ qid: number; option: string }[]>([]);
+  const [, setAnswers] = useState<{ qid: number; option: string }[]>([]);
   const startTimeRef = useRef<number>(0);
+  const initCheckedRef = useRef(false);
+  const appearance = defaultQuestionAppearance;
 
   const attemptsUsed = user?.mock_attempts ?? 0;
   const maxAttempts = user?.mock_max_attempts ?? 1;
-  const allAttemptsUsed = attemptsUsed >= maxAttempts && !isPreview;
+  const isRequiredTodayMock = Boolean(
+    todayPlan &&
+    todayPlan.is_mock_day &&
+    todayPlan.completed_questions < todayPlan.target_questions,
+  );
+  const displayMaxAttempts = Math.max(
+    maxAttempts,
+    isRequiredTodayMock ? attemptsUsed + 1 : maxAttempts,
+  );
+  const allAttemptsUsed = attemptsUsed >= maxAttempts && !isPreview && !isRequiredTodayMock;
   const nextAttemptNumber = attemptsUsed + 1;
-  const isLastAttempt = nextAttemptNumber === maxAttempts;
+  const isLastAttempt = !isRequiredTodayMock && nextAttemptNumber === maxAttempts;
   const hasMoreAttempts = attemptsUsed < maxAttempts;
+
+  useEffect(() => {
+    if (isPreview) {
+      setTodayPlan(null);
+      return;
+    }
+
+    let cancelled = false;
+    api.today()
+      .then((plan) => {
+        if (!cancelled) setTodayPlan(plan);
+      })
+      .catch(() => {
+        if (!cancelled) setTodayPlan(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isPreview]);
+
+  const loadHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const list = await api.mockAttempts();
+      setAttempts(list);
+      setPhase('history');
+    } catch {
+      // Ignore history load failures and keep the current state unchanged.
+    }
+    setHistoryLoading(false);
+  }, []);
+
+  const loadQuestion = useCallback(async (qid: number) => {
+    setSelected(null);
+    setQuestion(null);
+    try {
+      const nextQuestion = await api.mockQuestion(qid);
+      setQuestion(nextQuestion);
+      startTimeRef.current = nowMs();
+    } catch {
+      setError('Error loading question');
+    }
+  }, []);
+
+  const finishExam = useCallback(async () => {
+    if (attemptId === null) return;
+    setLoading(true);
+    try {
+      const res = await api.mockComplete(attemptId);
+      setResults(res);
+      setPhase('results');
+      clearMockSession();
+      await loadUser();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'An error occurred');
+    }
+    setLoading(false);
+  }, [attemptId, loadUser]);
+
+  const handleSectionTimeout = useCallback(() => {
+    if (section === 'verbal' && config) {
+      const quantStart = config.verbal_count;
+      if (quantStart >= questionIds.length || config.quant_count <= 0) {
+        void finishExam();
+        return;
+      }
+      setSection('quant');
+      setCurrentIndex(quantStart);
+      setTimeLeft(config.quant_minutes * 60);
+      void loadQuestion(questionIds[quantStart]);
+      return;
+    }
+
+    void finishExam();
+  }, [config, finishExam, loadQuestion, questionIds, section]);
 
   // On mount: try to resume saved session, else check history
   useEffect(() => {
+    if (initCheckedRef.current) return;
+    if (!isPreview && todayPlan === undefined) return;
+    initCheckedRef.current = true;
     const saved = loadMockSession();
 
     // Priority 1: Resume an in-progress exam from localStorage
@@ -95,31 +191,29 @@ export default function MockExam() {
             quant_minutes: 35,
             question_ids: saved.questionIds,
           });
-          api.mockQuestion(saved.questionIds[saved.currentIndex]).then(q => {
-            setQuestion(q);
-            startTimeRef.current = Date.now();
+          loadQuestion(saved.questionIds[saved.currentIndex]).then(() => {
             setPhase('exam');
           }).catch(() => {
             clearMockSession();
-            if (allAttemptsUsed) loadHistory();
+            if (allAttemptsUsed) void loadHistory();
           });
         } else {
           // Attempt already completed — clear and show history or start
           clearMockSession();
-          if (allAttemptsUsed) loadHistory();
+          if (allAttemptsUsed) void loadHistory();
         }
       }).catch(() => {
         clearMockSession();
-        if (allAttemptsUsed) loadHistory();
+        if (allAttemptsUsed) void loadHistory();
       });
       return; // Don't fall through
     }
 
     // Priority 2: No saved session — show history if all attempts used
     if (allAttemptsUsed) {
-      loadHistory();
+      void loadHistory();
     }
-  }, []);
+  }, [allAttemptsUsed, isPreview, loadHistory, loadQuestion, todayPlan]);
 
   // Timer
   useEffect(() => {
@@ -140,17 +234,7 @@ export default function MockExam() {
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [phase, section]);
-
-  const loadHistory = async () => {
-    setHistoryLoading(true);
-    try {
-      const list = await api.mockAttempts();
-      setAttempts(list);
-      setPhase('history');
-    } catch { /* ignore */ }
-    setHistoryLoading(false);
-  };
+  }, [handleSectionTimeout, phase, timeLeft]);
 
   const loadAttemptDetail = async (id: number) => {
     setHistoryLoading(true);
@@ -160,18 +244,6 @@ export default function MockExam() {
       setPhase('detail');
     } catch { /* ignore */ }
     setHistoryLoading(false);
-  };
-
-  const handleSectionTimeout = () => {
-    if (section === 'verbal' && config) {
-      const quantStart = config.verbal_count;
-      setSection('quant');
-      setCurrentIndex(quantStart);
-      setTimeLeft(config.quant_minutes * 60);
-      loadQuestion(questionIds[quantStart]);
-    } else {
-      finishExam();
-    }
   };
 
   const startExam = async () => {
@@ -187,7 +259,6 @@ export default function MockExam() {
       setCurrentIndex(0);
       setAnswers([]);
       await loadQuestion(cfg.question_ids[0]);
-      startTimeRef.current = Date.now();
       setPhase('exam');
       saveMockSession({
         attemptId: cfg.attempt_id,
@@ -204,22 +275,10 @@ export default function MockExam() {
     setLoading(false);
   };
 
-  const loadQuestion = async (qid: number) => {
-    setSelected(null);
-    setQuestion(null);
-    try {
-      const q = await api.mockQuestion(qid);
-      setQuestion(q);
-      startTimeRef.current = Date.now();
-    } catch {
-      setError('Error loading question');
-    }
-  };
-
   const submitAnswer = async (option: string) => {
     if (selected || !question || attemptId === null) return;
     setSelected(option);
-    const elapsed = Math.round((Date.now() - startTimeRef.current) / 1000);
+    const elapsed = Math.round((nowMs() - startTimeRef.current) / 1000);
 
     try {
       await api.mockAnswer({ question_id: question.id, selected_option: option, time_spent_seconds: elapsed, attempt_id: attemptId });
@@ -230,37 +289,22 @@ export default function MockExam() {
 
     setTimeout(() => {
       const nextIndex = currentIndex + 1;
-      if (config && section === 'verbal' && nextIndex >= config.verbal_count) {
+      if (config && nextIndex >= questionIds.length) {
+        void finishExam();
+      } else if (config && section === 'verbal' && nextIndex >= config.verbal_count) {
         setSection('quant');
         setCurrentIndex(nextIndex);
         setTimeLeft(config.quant_minutes * 60);
         const saved = loadMockSession();
         if (saved) saveMockSession({ ...saved, currentIndex: nextIndex, section: 'quant', timeLeft: config.quant_minutes * 60 });
-        loadQuestion(questionIds[nextIndex]);
-      } else if (config && nextIndex >= questionIds.length) {
-        finishExam();
+        void loadQuestion(questionIds[nextIndex]);
       } else {
         setCurrentIndex(nextIndex);
         const saved = loadMockSession();
         if (saved) saveMockSession({ ...saved, currentIndex: nextIndex });
-        loadQuestion(questionIds[nextIndex]);
+        void loadQuestion(questionIds[nextIndex]);
       }
     }, 500);
-  };
-
-  const finishExam = async () => {
-    if (attemptId === null) return;
-    setLoading(true);
-    try {
-      const res = await api.mockComplete(attemptId);
-      setResults(res);
-      setPhase('results');
-      clearMockSession();
-      await loadUser();
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'An error occurred');
-    }
-    setLoading(false);
   };
 
   const formatTime = (s: number) => {
@@ -281,21 +325,29 @@ export default function MockExam() {
     score >= 80 ? 'text-emerald-600' : score >= 65 ? 'text-teal-600' : score >= 50 ? 'text-amber-600' : 'text-red-500';
 
   // ── Instructions Phase ──
+  if (phase === 'instructions' && !isPreview && todayPlan === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="w-8 h-8 border-3 border-amber-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   if (phase === 'instructions' && !allAttemptsUsed) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 text-slate-800 dark:bg-slate-950 dark:text-slate-100" data-testid="mock-page">
         <div className="max-w-2xl w-full">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
               <Shield className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-3xl font-black text-slate-800 mb-2">Final Mock Exam</h1>
-            <p className="text-slate-500">Full simulation of the general aptitude test</p>
+            <h1 className="text-3xl font-black text-slate-800 mb-2 dark:text-slate-100">Final Mock Exam</h1>
+            <p className="text-slate-500 dark:text-slate-400">Full simulation of the general aptitude test</p>
 
             {/* Attempt counter */}
             <div className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 text-sm font-bold px-4 py-2 rounded-full mt-3">
-              Attempt {nextAttemptNumber} of {maxAttempts}
+              Attempt {nextAttemptNumber} of {displayMaxAttempts}
             </div>
 
             {isPreview && (
@@ -306,8 +358,8 @@ export default function MockExam() {
           </div>
 
           {/* Exam Info Card */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 space-y-4">
-            <h2 className="font-bold text-slate-800 text-lg mb-3">Exam Instructions</h2>
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6 space-y-4 dark:border-slate-800 dark:bg-slate-900">
+            <h2 className="font-bold text-slate-800 text-lg mb-3 dark:text-slate-100">Exam Instructions</h2>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
@@ -348,7 +400,7 @@ export default function MockExam() {
               </div>
             </div>
 
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 dark:border-slate-800 dark:bg-slate-950">
               <p className="text-sm text-slate-600"><strong>Tip:</strong> Read each question carefully. If you don't know the answer, choose your best guess and move to the next question. Don't spend too much time on one question.</p>
             </div>
           </div>
@@ -370,7 +422,7 @@ export default function MockExam() {
               className="flex-1 text-slate-500 font-medium py-4 hover:text-slate-700 transition">
               Back
             </button>
-            <button onClick={startExam} disabled={loading}
+            <button onClick={startExam} disabled={loading} data-testid="mock-start"
               className="flex-1 bg-gradient-to-l from-amber-600 to-amber-500 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] disabled:opacity-50">
               {loading ? '...' : 'Start Exam'}
             </button>
@@ -395,7 +447,7 @@ export default function MockExam() {
     const isWarning = timeLeft < 300 && !isUrgent;
 
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col">
+      <div className="min-h-screen bg-slate-50 flex flex-col dark:bg-slate-950" data-testid="mock-page">
         {/* Exam Header */}
         <div className={`px-4 py-3 flex items-center justify-between ${section === 'verbal' ? 'bg-blue-600' : 'bg-violet-600'} text-white`}>
           <div className="flex items-center gap-2">
@@ -403,7 +455,7 @@ export default function MockExam() {
             <span className="font-bold text-sm">{sectionLabel}</span>
             <span className="text-xs opacity-75">— Question {sectionProgress}</span>
           </div>
-          <div className={`flex items-center gap-2 font-mono font-bold text-lg ${isUrgent ? 'text-red-200 animate-pulse' : isWarning ? 'text-amber-200' : ''}`}>
+          <div className={`flex items-center gap-2 font-mono font-bold text-lg ${isUrgent ? 'text-red-200 animate-pulse' : isWarning ? 'text-amber-200' : ''}`} data-testid="mock-timer">
             <Clock className="w-4 h-4" />
             {formatTime(timeLeft)}
           </div>
@@ -416,36 +468,33 @@ export default function MockExam() {
         </div>
 
         {/* Question */}
-        <div className="flex-1 p-3 lg:p-8 max-w-3xl mx-auto w-full">
-          {question.passage_ar && (
-            <div className="bg-white border border-slate-200 rounded-xl p-3 lg:p-5 mb-3 text-xs lg:text-sm text-slate-600 leading-relaxed max-h-32 lg:max-h-48 overflow-y-auto">
-              {question.passage_ar}
-            </div>
-          )}
+        <div className="flex-1 p-3 lg:p-8 max-w-3xl mx-auto w-full" data-testid="mock-question-card">
+          <QuestionPrompt
+            passage_ar={question.passage_ar}
+            table_ar={question.table_ar}
+            table_caption={question.table_caption}
+            figure_svg={question.figure_svg}
+            figure_alt={question.figure_alt}
+            text_ar={question.text_ar}
+            content_format={question.content_format}
+            comparison_columns={question.comparison_columns}
+            testIdPrefix="mock-question"
+            passageClassName="bg-white border border-slate-200 rounded-xl p-3 lg:p-5 mb-3 text-xs lg:text-sm text-slate-600 leading-relaxed max-h-32 lg:max-h-48 overflow-y-auto"
+            questionClassName="text-base lg:text-xl font-bold text-slate-800 mb-4 lg:mb-6 leading-relaxed whitespace-pre-line math-text"
+            appearance={appearance}
+          />
 
-          <h2 className="text-base lg:text-xl font-bold text-slate-800 mb-4 lg:mb-6 leading-relaxed whitespace-pre-line math-text">
-            {question.text_ar}
-          </h2>
-
-          <div className="space-y-2 lg:space-y-3">
-            {question.options.map(opt => (
-              <button key={opt.key} onClick={() => submitAnswer(opt.key)} disabled={!!selected}
-                className={`w-full text-left border-2 rounded-xl p-3 lg:p-4 transition-all
-                  ${selected === opt.key
-                    ? (section === 'verbal' ? 'bg-blue-50 border-blue-400' : 'bg-violet-50 border-violet-400')
-                    : 'bg-white border-slate-200 hover:border-slate-300'}`}>
-                <div className="flex items-start gap-3">
-                  <span className={`w-8 h-8 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center text-xs lg:text-sm font-bold shrink-0
-                    ${selected === opt.key
-                      ? (section === 'verbal' ? 'bg-blue-500 text-white' : 'bg-violet-500 text-white')
-                      : 'bg-slate-100 text-slate-600'}`}>
-                    {opt.label}
-                  </span>
-                  <span className="text-sm lg:text-base text-slate-700 leading-relaxed">{opt.text_ar}</span>
-                </div>
-              </button>
-            ))}
-          </div>
+          <QuestionOptions
+            options={question.options}
+            contentFormat={question.content_format}
+            selectedKey={selected}
+            disabled={!!selected}
+            onSelect={submitAnswer}
+            testIdPrefix="mock"
+            appearance={appearance}
+            accent={section === 'verbal' ? 'blue' : 'violet'}
+            maskUnselected={false}
+          />
         </div>
       </div>
     );
@@ -454,7 +503,7 @@ export default function MockExam() {
   // ── Loading during exam ──
   if (phase === 'exam' && !question) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="w-8 h-8 border-3 border-amber-400 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -464,7 +513,7 @@ export default function MockExam() {
   if (phase === 'results' && results) {
     const passed = results.score >= 65;
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 text-slate-800 dark:bg-slate-950 dark:text-slate-100" data-testid="mock-results">
         <div className="max-w-lg w-full text-center">
           <div className="text-6xl mb-4">{passed ? '🎉' : '💪'}</div>
           <h1 className="text-3xl font-black text-slate-800 mb-2">
@@ -473,11 +522,11 @@ export default function MockExam() {
           <p className="text-slate-500 mb-2">
             {passed ? 'Your score shows good readiness for the real exam' : 'Continue training and your score will improve'}
           </p>
-          <p className="text-sm text-slate-400 mb-8">Attempt {results.attempt_number} of {maxAttempts}</p>
+          <p className="text-sm text-slate-400 mb-8">Attempt {results.attempt_number} of {displayMaxAttempts}</p>
 
           {/* Score Ring */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-8 mb-6">
-            <p className="text-slate-500 text-sm mb-4">Predicted Score</p>
+          <div className="bg-white rounded-2xl border border-slate-200 p-8 mb-6 dark:border-slate-800 dark:bg-slate-900">
+            <p className="text-slate-500 text-sm mb-4 dark:text-slate-400">Predicted Score</p>
             <ScoreRing score={results.score} label="of 100" />
           </div>
 
@@ -498,7 +547,7 @@ export default function MockExam() {
           </div>
 
           {/* Stats */}
-          <div className="bg-white border border-slate-200 rounded-xl p-4 mb-6">
+          <div className="bg-white border border-slate-200 rounded-xl p-4 mb-6 dark:border-slate-800 dark:bg-slate-900">
             <div className="grid grid-cols-3 gap-3 text-center">
               <div>
                 <p className="text-xl font-black text-slate-800">{results.total}</p>
@@ -515,8 +564,24 @@ export default function MockExam() {
             </div>
           </div>
 
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-left">
+            <p className="text-sm font-bold text-amber-800">Review comes after the exam</p>
+            <p className="mt-1 text-sm text-amber-700">
+              Practice questions show feedback right away. Mock exams keep answers hidden until the full attempt is complete, then you can open the full review.
+            </p>
+          </div>
+
           {/* Action buttons */}
           <div className="space-y-3">
+            <button
+              onClick={() => { void loadAttemptDetail(results.attempt_id); }}
+              data-testid="mock-review-attempt"
+              className="w-full flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 font-bold py-4 rounded-xl hover:border-teal-300 hover:text-teal-700 transition-all dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:hover:text-teal-300"
+            >
+              <History className="w-5 h-5" />
+              Review This Attempt
+            </button>
+
             {hasMoreAttempts && !isPreview && (
               <button onClick={() => { setPhase('instructions'); setResults(null); setAttemptId(null); }}
                 className="w-full flex items-center justify-center gap-2 bg-gradient-to-l from-amber-600 to-amber-500 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98]">
@@ -544,7 +609,7 @@ export default function MockExam() {
   // ── History Phase ──
   if (phase === 'history') {
     return (
-      <div className="min-h-screen bg-slate-50 p-4">
+      <div className="min-h-screen bg-slate-50 p-4 text-slate-800 dark:bg-slate-950 dark:text-slate-100" data-testid="mock-history">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
@@ -625,7 +690,7 @@ export default function MockExam() {
     const quantPct = detail.quant_total > 0 ? Math.round((detail.quant_correct / detail.quant_total) * 100) : 0;
 
     return (
-      <div className="min-h-screen bg-slate-50 p-4">
+      <div className="min-h-screen bg-slate-50 p-4 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
         <div className="max-w-3xl mx-auto">
           {/* Back button */}
           <button onClick={() => { setPhase('history'); setDetail(null); }}
@@ -638,6 +703,9 @@ export default function MockExam() {
           <div className="text-center mb-8">
             <p className="text-sm text-slate-400 mb-3">Attempt {detail.attempt_number}</p>
             <ScoreRing score={detail.score} label="out of 100" />
+            <p className="mt-4 text-sm text-slate-500">
+              This review is shown after the full mock attempt is finished. Practice mode still gives immediate question-by-question feedback.
+            </p>
           </div>
 
           {/* Section Breakdown */}
@@ -694,9 +762,24 @@ export default function MockExam() {
                         }
                         <span className="text-xs text-slate-400 font-mono">{i + 1}</span>
                       </div>
-                      <p className="text-sm text-slate-700 leading-relaxed flex-1 text-left">
-                        {q.text_ar.length > 100 ? q.text_ar.slice(0, 100) + '...' : q.text_ar}
-                      </p>
+                      <div className="flex-1 text-left">
+                        <QuestionPrompt
+                          passage_ar={q.passage_ar}
+                          table_ar={q.table_ar}
+                          table_caption={q.table_caption}
+                          figure_svg={q.figure_svg}
+                          figure_alt={q.figure_alt}
+                          text_ar={q.text_ar}
+                          content_format={q.content_format}
+                          comparison_columns={q.comparison_columns}
+                          testIdPrefix={`mock-review-question-${q.question_id}`}
+                          compact
+                          passageClassName="bg-white border border-slate-200 rounded-lg p-3 mb-3 text-xs text-slate-600 leading-relaxed"
+                          questionClassName="text-sm text-slate-700 leading-relaxed whitespace-pre-line math-text"
+                          figureFrameClassName="mb-3 rounded-lg border border-slate-200 bg-white p-3"
+                          appearance={appearance}
+                        />
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between text-xs">
@@ -713,8 +796,25 @@ export default function MockExam() {
 
                     {/* Show explanation for wrong answers */}
                     {!isCorrect && q.explanation_ar && (
-                      <div className="mt-3 bg-white border border-slate-200 rounded-lg p-3 text-xs text-slate-600 leading-relaxed">
-                        <span className="font-bold text-slate-700">Explanation: </span>{q.explanation_ar}
+                      <div className="mt-3">
+                        <QuestionFeedbackCard
+                          feedback={{
+                            is_correct: q.is_correct,
+                            correct_option: q.correct_option,
+                            explanation_ar: q.explanation_ar,
+                            solution_steps_ar: q.solution_steps_ar ?? null,
+                            content_format: q.content_format,
+                            comparison_columns: q.comparison_columns,
+                            figure_svg: q.figure_svg,
+                            figure_alt: q.figure_alt,
+                            table_ar: q.table_ar,
+                            table_caption: q.table_caption,
+                          }}
+                          selectedOption={q.selected_option}
+                          appearance={appearance}
+                          title="Post-mock review"
+                          className="text-sm"
+                        />
                       </div>
                     )}
                   </div>

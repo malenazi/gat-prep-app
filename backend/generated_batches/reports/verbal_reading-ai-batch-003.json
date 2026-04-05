@@ -1,0 +1,103 @@
+{
+  "batch_id": "verbal_reading-ai-batch-003",
+  "generated_at": null,
+  "generation_prompt_version": "ai-question-wave1-v1",
+  "authoring_source": "ai_generated",
+  "metadata": {},
+  "summary": {
+    "generated": 1,
+    "auto_published": 1,
+    "held_in_review": 0,
+    "blocked_by_qa": 0,
+    "rejected": 0,
+    "duplicate_rate": 0.0
+  },
+  "by_skill": {
+    "verbal_reading": 1
+  },
+  "quota_summary": {
+    "verbal_reading": {
+      "stage_target": {
+        "diagnostic": 0,
+        "foundation": 0,
+        "building": 1,
+        "peak": 0,
+        "mock": 0
+      },
+      "stage_actual": {
+        "general": 1
+      },
+      "difficulty_target": {
+        "foundation": 0,
+        "target_core": 1,
+        "challenging": 0,
+        "stretch": 0
+      },
+      "difficulty_actual": {
+        "target_core": 1
+      },
+      "issues": []
+    }
+  },
+  "quota_issues": [],
+  "items": [
+    {
+      "index": 1,
+      "source_key": "generated:verbal_reading:verbal_reading-ai-batch-003:0001",
+      "batch_id": "verbal_reading-ai-batch-003",
+      "generation_prompt_version": "ai-question-wave1-v1",
+      "authoring_source": "ai_generated",
+      "variant_group": "variant-group-1",
+      "blueprint_id": "main-idea",
+      "skill_id": "verbal_reading",
+      "stage": "general",
+      "difficulty": 0.5,
+      "difficulty_bucket": "target_core",
+      "status": "active",
+      "auto_publish": true,
+      "content_classification": "ready",
+      "recommended_action": "keep-active",
+      "content_issue_counts": {
+        "error": 0,
+        "warning": 0,
+        "info": 0
+      },
+      "duplicate_matches": [],
+      "issues": [],
+      "question": {
+        "source_key": "generated:verbal_reading:verbal_reading-ai-batch-003:0001",
+        "batch_id": "verbal_reading-ai-batch-003",
+        "generation_prompt_version": "ai-question-wave1-v1",
+        "authoring_source": "ai_generated",
+        "blueprint_id": "main-idea",
+        "variant_group": "variant-group-1",
+        "skill_id": "verbal_reading",
+        "question_type": "reading",
+        "difficulty": 0.5,
+        "text_ar": "This is a short passage about the impact of climate change on local wildlife.",
+        "passage_ar": null,
+        "content_format": "plain",
+        "figure_svg": null,
+        "figure_alt": null,
+        "table_ar": null,
+        "table_caption": null,
+        "comparison_columns": null,
+        "option_a": "The main cause of climate change is human activity.",
+        "option_b": "Climate change has no impact on local wildlife.",
+        "option_c": "Human activity is not the main cause of climate change.",
+        "option_d": "Climate change will have a positive impact on local wildlife.",
+        "correct_option": "a",
+        "explanation_ar": "The correct answer is A. Human activity is the main cause of climate change, which has a significant impact on local wildlife.",
+        "solution_steps_ar": [
+          "Step 1: Identify the main cause of climate change.",
+          "Step 2: Analyze how human activity affects local wildlife.",
+          "Step 3: Determine the correct answer based on the analysis."
+        ],
+        "tags": null,
+        "paper_only": false,
+        "stage": "general",
+        "status": "active"
+      }
+    }
+  ]
+}

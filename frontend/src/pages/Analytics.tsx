@@ -2,6 +2,7 @@ import { useState, useEffect, useId } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid } from 'recharts';
 import { api } from '@/lib/api';
 import { ScoreRing } from '@/components/shared/ScoreRing';
+import { pageShell, pageStack } from '@/lib/layout';
 import type { ApiAnalytics, SkillBreakdown } from '@/types';
 
 function SkeletonCard({ className = '' }: { className?: string }) {
@@ -17,7 +18,7 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon, gradient }: StatCardProps) {
   return (
-    <div className={`bg-gradient-to-br ${gradient} rounded-2xl p-3 lg:p-6 text-white shadow-card-lg card-hover`}>
+    <div className={`bg-gradient-to-br ${gradient} rounded-2xl p-3 lg:p-6 text-white shadow-card-lg card-hover stat-card-shine`}>
       <div className="text-xl lg:text-2xl mb-1 lg:mb-2">{icon}</div>
       <div className="font-black text-2xl lg:text-3xl">{value}</div>
       <div className="text-white/90 text-sm lg:text-sm">{label}</div>
@@ -35,14 +36,14 @@ function SkillBar({ skill, color }: SkillBarProps) {
   return (
     <div>
       <div className="flex justify-between text-sm mb-1.5">
-        <span className="text-slate-600 flex items-center gap-1.5 font-medium">
+        <span className="text-slate-600 dark:text-slate-300 flex items-center gap-1.5 font-medium">
           <span>{skill.icon}</span>
           <span>{skill.name_ar}</span>
         </span>
         <span className="text-slate-500">{pct}% <span className="text-slate-500">({skill.correct}/{skill.total})</span></span>
       </div>
-      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-        <div className={`h-full ${color} rounded-full transition-all duration-700`} style={{ width: `${pct}%` }} />
+      <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+        <div className={`h-full ${color} rounded-full transition-all duration-700 animate-bar-fill`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
@@ -64,9 +65,9 @@ export default function Analytics() {
   useEffect(() => { loadData(); }, []);
 
   if (loading) return (
-    <div className="p-6 lg:p-10 max-w-6xl mx-auto space-y-6">
-      <div className="grid grid-cols-3 gap-4"><SkeletonCard className="bg-white shadow-card h-28" /><SkeletonCard className="bg-white shadow-card h-28" /><SkeletonCard className="bg-white shadow-card h-28" /></div>
-      <SkeletonCard className="bg-white shadow-card h-64" />
+    <div className={`${pageShell.wide} ${pageStack}`}>
+      <div className="grid grid-cols-3 gap-4"><SkeletonCard className="bg-white shadow-card h-28 dark:bg-slate-900" /><SkeletonCard className="bg-white shadow-card h-28 dark:bg-slate-900" /><SkeletonCard className="bg-white shadow-card h-28 dark:bg-slate-900" /></div>
+      <SkeletonCard className="bg-white shadow-card h-64 dark:bg-slate-900" />
     </div>
   );
 
@@ -89,11 +90,11 @@ export default function Analytics() {
   const strongest = allSkills.length > 0 ? allSkills.reduce((w, s) => s.accuracy > w.accuracy ? s : w, allSkills[0]) : null;
 
   return (
-    <div className="p-3 lg:p-10 max-w-6xl mx-auto space-y-3 lg:space-y-6 page-enter">
-      <h1 className="text-2xl lg:text-3xl font-black text-slate-800">Analytics</h1>
+    <div className={`${pageShell.wide} ${pageStack} page-enter text-slate-800 dark:text-slate-100`} data-testid="analytics-page">
+      <h1 className="text-2xl lg:text-3xl font-black text-slate-800 dark:text-slate-100">Analytics</h1>
 
       {/* Stat Cards Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 lg:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 lg:gap-6" data-testid="analytics-stats">
         <StatCard label="Questions" value={data.total_questions} icon="📝" gradient="from-slate-500 to-slate-600" />
         <StatCard label="Correct" value={data.total_correct} icon="✅" gradient="from-emerald-500 to-emerald-600" />
         <StatCard label="Accuracy" value={`${Math.round(data.accuracy * 100)}%`} icon="🎯" gradient="from-teal-500 to-teal-600" />
@@ -102,22 +103,22 @@ export default function Analytics() {
       {/* Recommendations */}
       {weakest && data.total_questions > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-gradient-to-l from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-4 stagger-1">
+          <div className="bg-gradient-to-l from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl p-5 flex items-start gap-4 stagger-1 card-hover">
             <div className="w-11 h-11 bg-white rounded-xl shadow-sm flex items-center justify-center text-xl shrink-0">{weakest.icon}</div>
             <div>
-              <p className="text-amber-800 font-bold text-sm">⚡ Improvement Point</p>
-              <p className="text-amber-700/70 text-sm mt-0.5">
+              <p className="text-amber-800 dark:text-amber-200 font-bold text-sm">⚡ Improvement Point</p>
+              <p className="text-amber-700/70 dark:text-amber-300/70 text-sm mt-0.5">
                 <span className="font-bold">{weakest.name_ar}</span> is your weakest skill at {Math.round(weakest.accuracy * 100)}% accuracy.
                 Focusing on it will significantly improve your score.
               </p>
             </div>
           </div>
           {strongest && strongest.skill_id !== weakest.skill_id && (
-            <div className="bg-gradient-to-l from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-5 flex items-start gap-4 stagger-2">
+            <div className="bg-gradient-to-l from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-5 flex items-start gap-4 stagger-2 card-hover">
               <div className="w-11 h-11 bg-white rounded-xl shadow-sm flex items-center justify-center text-xl shrink-0">{strongest.icon}</div>
               <div>
-                <p className="text-emerald-800 font-bold text-sm">🌟 Strong Point</p>
-                <p className="text-emerald-700/70 text-sm mt-0.5">
+                <p className="text-emerald-800 dark:text-emerald-200 font-bold text-sm">🌟 Strong Point</p>
+                <p className="text-emerald-700/70 dark:text-emerald-300/70 text-sm mt-0.5">
                   <span className="font-bold">{strongest.name_ar}</span> is your strongest skill at {Math.round(strongest.accuracy * 100)}% accuracy.
                   Well done — keep it up!
                 </p>
@@ -130,18 +131,18 @@ export default function Analytics() {
       {/* Score + Trend Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Predicted Score */}
-        <div className="bg-white shadow-card rounded-2xl p-6 flex flex-col items-center justify-center card-hover">
-          <p className="text-slate-500 text-sm mb-4">Predicted Score</p>
+        <div className="bg-white shadow-card rounded-2xl p-6 flex flex-col items-center justify-center card-hover dark:bg-slate-900" data-testid="analytics-score-card">
+          <p className="text-slate-500 text-sm mb-4 dark:text-slate-400">Predicted Score</p>
           <ScoreRing score={data.predicted_score.mid} label="out of 100" />
           <div className="flex gap-4 mt-5 w-full text-center">
             <div className="flex-1">
-              <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-1">
+              <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-1">
                 <div className="h-full bg-blue-400 rounded-full" style={{ width: `${data.predicted_score.verbal_mastery * 100}%` }} />
               </div>
               <span className="text-sm text-slate-500">Verbal {Math.round(data.predicted_score.verbal_mastery * 100)}%</span>
             </div>
             <div className="flex-1">
-              <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-1">
+              <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-1">
                 <div className="h-full bg-purple-400 rounded-full" style={{ width: `${data.predicted_score.quant_mastery * 100}%` }} />
               </div>
               <span className="text-sm text-slate-500">Quant {Math.round(data.predicted_score.quant_mastery * 100)}%</span>
@@ -150,8 +151,8 @@ export default function Analytics() {
         </div>
 
         {/* Daily Accuracy Trend */}
-        <div className="lg:col-span-2 bg-white shadow-card rounded-2xl p-6 card-hover">
-          <h3 className="text-slate-800 font-bold text-sm mb-4">Daily Accuracy Trend</h3>
+        <div className="lg:col-span-2 bg-white shadow-card rounded-2xl p-6 card-hover dark:bg-slate-900">
+          <h3 className="text-slate-800 font-bold text-sm mb-4 dark:text-slate-100">Daily Accuracy Trend</h3>
           {data.daily_trend && data.daily_trend.length > 1 ? (
             <div style={{ direction: 'ltr' }}>
               <ResponsiveContainer width="100%" height={200}>
@@ -182,9 +183,9 @@ export default function Analytics() {
       {/* Skill Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Verbal Skills */}
-        <div className="bg-white shadow-card rounded-2xl p-6 card-hover">
-          <h3 className="text-slate-800 font-bold text-sm mb-5 flex items-center gap-2">
-            <span className="w-6 h-6 bg-blue-50 rounded-lg flex items-center justify-center text-sm">📖</span>
+        <div className="bg-white shadow-card rounded-2xl p-6 card-hover dark:bg-slate-900" data-testid="analytics-verbal">
+          <h3 className="text-slate-800 font-bold text-sm mb-5 flex items-center gap-2 dark:text-slate-100">
+            <span className="w-6 h-6 bg-blue-50 dark:bg-blue-900/40 rounded-lg flex items-center justify-center text-sm">📖</span>
             Verbal Section
           </h3>
           {verbal.length > 0 ? (
@@ -197,9 +198,9 @@ export default function Analytics() {
         </div>
 
         {/* Quantitative Skills */}
-        <div className="bg-white shadow-card rounded-2xl p-6 card-hover">
-          <h3 className="text-slate-800 font-bold text-sm mb-5 flex items-center gap-2">
-            <span className="w-6 h-6 bg-purple-50 rounded-lg flex items-center justify-center text-sm">🔢</span>
+        <div className="bg-white shadow-card rounded-2xl p-6 card-hover dark:bg-slate-900" data-testid="analytics-quant">
+          <h3 className="text-slate-800 font-bold text-sm mb-5 flex items-center gap-2 dark:text-slate-100">
+            <span className="w-6 h-6 bg-purple-50 dark:bg-purple-900/40 rounded-lg flex items-center justify-center text-sm">🔢</span>
             Quantitative Section
           </h3>
           {quant.length > 0 ? (
@@ -214,8 +215,8 @@ export default function Analytics() {
 
       {/* Questions per Skill Chart */}
       {data.skill_breakdown && data.skill_breakdown.length > 0 && (
-        <div className="bg-white shadow-card rounded-2xl p-6 card-hover">
-          <h3 className="text-slate-800 font-bold text-sm mb-4">Questions per Skill</h3>
+        <div className="bg-white shadow-card rounded-2xl p-6 card-hover dark:bg-slate-900">
+          <h3 className="text-slate-800 font-bold text-sm mb-4 dark:text-slate-100">Questions per Skill</h3>
           <div style={{ direction: 'ltr' }}>
             <ResponsiveContainer width="100%" height={Math.max(200, data.skill_breakdown.length * 40)}>
               <BarChart data={data.skill_breakdown} layout="vertical" margin={{ left: 10 }}>

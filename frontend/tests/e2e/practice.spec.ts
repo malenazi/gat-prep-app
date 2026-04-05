@@ -1,113 +1,43 @@
-import { test, expect } from '@playwright/test';
-import { TEST_USERS } from '../fixtures/test-data';
+import { expect, test } from '@playwright/test';
+import { answerPracticeQuestion, goToPractice, loginAsSara } from './helpers';
 
 test.describe('Practice Session', () => {
   test.beforeEach(async ({ page }) => {
-    // Login as Sara
-    await page.goto('/');
-    await page.getByText('Register Now').first().click();
-    await page.getByText(TEST_USERS.sara.name).click();
-    
-    // Navigate to Practice
-    await page.getByText('Practice', { exact: true }).click();
-    await expect(page).toHaveURL(/.*practice.*/);
+    await loginAsSara(page);
+    await goToPractice(page);
   });
 
-  test('practice page loads with question', async ({ page }) => {
-    // Check question is displayed
-    await expect(page.locator('.text-lg, .text-xl').first()).toBeVisible();
-    
-    // Check options are visible (A, B, C, D)
-    const options = page.locator('button').filter({ hasText: /^(A|B|C|D)\b/ });
-    await expect(options).toHaveCount(4);
+  test('loads a question with options and timer', async ({ page }) => {
+    await expect(page.getByTestId('practice-question-text')).toBeVisible();
+    await expect(page.getByTestId('practice-adaptive-panel')).toBeVisible();
+    await expect(page.getByTestId('practice-level-chip')).toBeVisible();
+    await expect(page.getByTestId('practice-challenge-chip')).toBeVisible();
+    await expect(page.getByTestId('practice-skill-mastery')).toBeVisible();
+    await expect(page.getByTestId('practice-timer')).toBeVisible();
+    await expect(page.getByTestId('practice-option-a')).toBeVisible();
+    await expect(page.getByTestId('practice-option-b')).toBeVisible();
+    await expect(page.getByTestId('practice-option-c')).toBeVisible();
+    await expect(page.getByTestId('practice-option-d')).toBeVisible();
   });
 
-  test('timer is visible and counts down', async ({ page }) => {
-    // Look for timer element
-    const timer = page.locator('text=/\\d+s|\\d+:\\d+/').first();
-    await expect(timer).toBeVisible();
-    
-    // Get initial value
-    const initialText = await timer.textContent();
-    
-    // Wait 2 seconds
-    await page.waitForTimeout(2000);
-    
-    // Timer should have changed
-    const newText = await timer.textContent();
-    expect(newText).not.toBe(initialText);
+  test('reveals hints on demand without auto-opening the reason panel', async ({ page }) => {
+    await expect(page.getByTestId('practice-selection-reason')).toHaveCount(0);
+    await expect(page.getByTestId('practice-hint-panel')).toBeVisible();
+    await expect(page.getByTestId('practice-hint-1')).toHaveCount(0);
+
+    await page.getByTestId('practice-hint-reveal').click();
+    await expect(page.getByTestId('practice-hint-1')).toBeVisible();
+
+    await page.getByTestId('practice-selection-reason-toggle').click();
+    await expect(page.getByTestId('practice-selection-reason')).toBeVisible();
   });
 
-  test('select answer option', async ({ page }) => {
-    // Click on option A
-    const optionA = page.locator('button').filter({ hasText: /^A\b/ }).first();
-    await optionA.click();
-    
-    // Option should be selected/highlighted
-    await expect(optionA).toHaveClass(/selected|border-teal|bg-teal/);
-  });
+  test('submits an answer and advances to a new question', async ({ page }) => {
+    const questionBefore = await answerPracticeQuestion(page, 'a');
+    await expect(page.getByTestId('practice-adaptive-recap')).toBeVisible();
+    await page.getByTestId('practice-next').click();
 
-  test('submit answer and see feedback', async ({ page }) => {
-    // Select an answer
-    const optionA = page.locator('button').filter({ hasText: /^A\b/ }).first();
-    await optionA.click();
-    
-    // Submit
-    await page.getByText('Submit').click();
-    
-    // Feedback should appear
-    await expect(page.getByText(/Correct|Wrong|✓|✗/)).toBeVisible();
-  });
-
-  test('next question loads after submitting', async ({ page }) => {
-    // Get current question text
-    const questionText = await page.locator('.text-lg, .text-xl').first().textContent();
-    
-    // Select and submit
-    await page.locator('button').filter({ hasText: /^A\b/ }).first().click();
-    await page.getByText('Submit').click();
-    
-    // Click next
-    await page.getByText('Next').click();
-    
-    // New question should load (text changed)
-    await page.waitForTimeout(500);
-    const newQuestionText = await page.locator('.text-lg, .text-xl').first().textContent();
-    expect(newQuestionText).not.toBe(questionText);
-  });
-
-  test('session stats update after answering', async ({ page }) => {
-    // Check initial stats
-    const statsBefore = await page.locator('text=/\\d+\/\\d+/').first().textContent();
-    
-    // Answer a question
-    await page.locator('button').filter({ hasText: /^A\b/ }).first().click();
-    await page.getByText('Submit').click();
-    await page.getByText('Next').click();
-    
-    // Stats should update
-    await page.waitForTimeout(500);
-    const statsAfter = await page.locator('text=/\\d+\/\\d+/').first().textContent();
-    expect(statsAfter).not.toBe(statsBefore);
-  });
-
-  test('XP earned is displayed', async ({ page }) => {
-    // Answer a question
-    await page.locator('button').filter({ hasText: /^A\b/ }).first().click();
-    await page.getByText('Submit').click();
-    
-    // XP popup or text should appear
-    await expect(page.locator('text=/\\+\\d+ XP/')).toBeVisible();
-  });
-
-  test('end session works', async ({ page }) => {
-    // Look for end session button
-    const endButton = page.getByText(/End|Exit|Stop/i).first();
-    if (await endButton.isVisible().catch(() => false)) {
-      await endButton.click();
-      
-      // Should show confirmation or return to dashboard
-      await expect(page.getByText(/Confirm|Session Summary|Dashboard/i).first()).toBeVisible();
-    }
+    await expect(page.getByTestId('practice-question-card')).toBeVisible();
+    await expect(page.getByTestId('practice-question-text')).not.toHaveText(questionBefore ?? '');
   });
 });

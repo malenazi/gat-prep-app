@@ -2,7 +2,7 @@
 echo "🎯 قدرة أكاديمي — Qudra Academy"
 echo ""
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-python3 -m pip install fastapi uvicorn sqlalchemy "python-jose[cryptography]" --break-system-packages -q 2>/dev/null
+python3 -m pip install fastapi uvicorn sqlalchemy "python-jose[cryptography]" "passlib[bcrypt]" "bcrypt==4.0.1" --break-system-packages -q 2>/dev/null
 cd "$SCRIPT_DIR/frontend" && npm install -q 2>/dev/null && npm run build 2>/dev/null
 cd "$SCRIPT_DIR/backend" && rm -f gat_prep.db
 echo "🚀 Server: http://localhost:8000"

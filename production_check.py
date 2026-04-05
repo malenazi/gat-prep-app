@@ -1,72 +1,70 @@
-import urllib.request
 import json
+import os
+import urllib.request
 
-BASE = 'https://gat-prep-prod-production.up.railway.app'
+BASE = os.getenv("PRODUCTION_CHECK_BASE", "https://gat-prep-prod-production.up.railway.app").rstrip("/")
+CHECK_EMAIL = os.getenv("CHECK_EMAIL", "").strip()
+CHECK_PASSWORD = os.getenv("CHECK_PASSWORD", "").strip()
 
-print('=== INFRASTRUCTURE HEALTH CHECK ===')
+print("=== INFRASTRUCTURE HEALTH CHECK ===")
 
-# 1. Health check
 try:
-    r = urllib.request.urlopen(f'{BASE}/', timeout=10)
-    data = json.loads(r.read().decode())
+    response = urllib.request.urlopen(f"{BASE}/health", timeout=10)
+    data = json.loads(response.read().decode())
+    print(f'[OK] Health endpoint: {data.get("status")}')
+except Exception as exc:
+    print(f"[FAIL] Health endpoint error: {exc}")
+
+try:
+    response = urllib.request.urlopen(f"{BASE}/api", timeout=10)
+    data = json.loads(response.read().decode())
     print(f'[OK] API Status: {data.get("message")}')
-except Exception as e:
-    print(f'[FAIL] API Error: {e}')
+except Exception as exc:
+    print(f"[FAIL] API Error: {exc}")
 
-# 2. Skills endpoint
 try:
-    r = urllib.request.urlopen(f'{BASE}/api/skills', timeout=10)
-    skills = json.loads(r.read().decode())
-    print(f'[OK] Skills API: {len(skills)} skills loaded')
-except Exception as e:
-    print(f'[FAIL] Skills API Error: {e}')
+    response = urllib.request.urlopen(f"{BASE}/api/skills", timeout=10)
+    skills = json.loads(response.read().decode())
+    print(f"[OK] Skills API: {len(skills)} skills loaded")
+except Exception as exc:
+    print(f"[FAIL] Skills API Error: {exc}")
+    skills = []
 
-# 3. Database test via login
-try:
-    login_data = json.dumps({'email': 'student@gat.sa', 'password': '123456'}).encode()
-    req = urllib.request.Request(
-        f'{BASE}/api/auth/login',
-        data=login_data,
-        headers={'Content-Type': 'application/json'}
-    )
-    r = urllib.request.urlopen(req, timeout=10)
-    data = json.loads(r.read().decode())
-    print(f'[OK] Login API: Working (token received: {bool(data.get("token"))})')
-    token = data.get('token')
-except Exception as e:
-    print(f'[FAIL] Login API Error: {e}')
+print("\n=== SECURITY CHECK ===")
+print("[OK] HTTPS: Enabled (URL uses https://)")
+if CHECK_EMAIL and CHECK_PASSWORD:
+    try:
+        login_data = json.dumps({"email": CHECK_EMAIL, "password": CHECK_PASSWORD}).encode()
+        request = urllib.request.Request(
+            f"{BASE}/api/auth/login",
+            data=login_data,
+            headers={"Content-Type": "application/json"},
+        )
+        response = urllib.request.urlopen(request, timeout=10)
+        data = json.loads(response.read().decode())
+        token = data.get("token")
+        print(f"[OK] Login API: Working (token received: {bool(token)})")
+    except Exception as exc:
+        print(f"[FAIL] Login API Error: {exc}")
+        token = None
+else:
     token = None
+    print("[SKIP] Login check: set CHECK_EMAIL and CHECK_PASSWORD to verify auth")
 
-print('\n=== SECURITY CHECK ===')
-# 4. Check CORS headers
-try:
-    r = urllib.request.urlopen(f'{BASE}/api/skills', timeout=10)
-    headers = dict(r.headers)
-    cors = headers.get('Access-Control-Allow-Origin', 'NOT SET')
-    print(f'[OK] CORS: {cors}')
-except Exception as e:
-    print(f'[FAIL] CORS Check Error: {e}')
+print("\n=== DATA CHECK ===")
+if token:
+    try:
+        request = urllib.request.Request(
+            f"{BASE}/api/me",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        response = urllib.request.urlopen(request, timeout=10)
+        user = json.loads(response.read().decode())
+        print(f'[OK] Authenticated profile check for: {user.get("email")}')
+    except Exception as exc:
+        print(f"[FAIL] Authenticated profile check failed: {exc}")
+else:
+    print("[SKIP] Authenticated profile check: credentials not provided")
 
-print('[OK] HTTPS: Enabled (URL uses https://)')
-
-print('\n=== DATA INTEGRITY CHECK ===')
-# 5. Question count via API
-try:
-    req = urllib.request.Request(
-        f'{BASE}/api/practice/next?skill_id=verbal_analogy',
-        headers={'Authorization': f'Bearer {token or "test"}'}
-    )
-    r = urllib.request.urlopen(req, timeout=10)
-    q = json.loads(r.read().decode())
-    print(f'[OK] Questions API: Working (ID: {q.get("id")})')
-    print(f'[OK] Question Text: {q.get("text_ar", "N/A")[:50]}...')
-    
-    # Check options
-    options = q.get('options', [])
-    labels = [o.get('label') for o in options]
-    print(f'[OK] Option Labels: {labels}')
-except Exception as e:
-    print(f'[FAIL] Questions API Error: {e}')
-
-print('\n=== SUMMARY ===')
-print('All critical systems operational!' if token else 'Some issues detected!')
+print("\n=== SUMMARY ===")
+print("[OK] Public health checks completed")
