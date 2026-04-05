@@ -3,13 +3,12 @@ import {
   CheckCircle, BookOpen, Brain, BarChart3, Zap,
   Clock, ChevronDown, ChevronUp, Layers,
   Shield, MessageCircle, Award, Target,
-  PlayCircle, ArrowRight, Sparkles, CheckSquare
+  ArrowRight, Sparkles, CheckSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface LandingPageProps {
   onStart: () => void;
-  onTrial?: () => void;
 }
 
 // Animated counter hook
@@ -58,7 +57,7 @@ function useCountUp(end: number, duration: number = 2000) {
   return { count, ref };
 }
 
-export function LandingPage({ onStart, onTrial }: LandingPageProps) {
+export function LandingPage({ onStart }: LandingPageProps) {
   const [scrolled, setScrolled] = useState(false);
   const [openPhase, setOpenPhase] = useState<number | null>(0);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -424,15 +423,6 @@ export function LandingPage({ onStart, onTrial }: LandingPageProps) {
                 >
                   Start Free Today
                   <ArrowRight className="w-5 h-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={onTrial || onStart}
-                  data-testid="landing-watch-demo"
-                  className="h-14 lg:h-16 px-8 text-base border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 rounded-2xl flex items-center gap-2"
-                >
-                  <PlayCircle className="w-5 h-5" />
-                  Try Sample Session
                 </Button>
               </div>
 

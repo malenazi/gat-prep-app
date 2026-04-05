@@ -8,7 +8,6 @@ import { Toaster } from '@/components/ui/sonner';
 
 const LandingPage = lazy(() => import('@/components/LandingPage').then(module => ({ default: module.LandingPage })));
 const AuthForm = lazy(() => import('@/components/AuthForm').then(module => ({ default: module.AuthForm })));
-const TrialSession = lazy(() => import('@/components/TrialSession').then(module => ({ default: module.TrialSession })));
 const AppShell = lazy(() => import('@/components/layout/AppShell'));
 const Diagnostic = lazy(() => import('@/pages/Diagnostic'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
@@ -34,30 +33,10 @@ function Spinner() {
 function AppRoutes() {
   const { user, isLoading } = useAuth();
   const [showAuth, setShowAuth] = useState(false);
-  const [showTrial, setShowTrial] = useState(false);
 
   if (isLoading) return <Spinner />;
 
   if (!user) {
-    if (showTrial) {
-      return (
-        <Routes>
-          <Route
-            path="*"
-            element={
-              <TrialSession
-                onRegister={() => {
-                  setShowTrial(false);
-                  setShowAuth(true);
-                }}
-                onBack={() => setShowTrial(false)}
-              />
-            }
-          />
-        </Routes>
-      );
-    }
-
     if (showAuth) {
       return (
         <Routes>
@@ -73,7 +52,6 @@ function AppRoutes() {
           element={
             <LandingPage
               onStart={() => setShowAuth(true)}
-              onTrial={() => setShowTrial(true)}
             />
           }
         />

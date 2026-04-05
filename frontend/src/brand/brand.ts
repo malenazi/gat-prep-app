@@ -214,7 +214,7 @@ export const brandMessages = {
   },
   cta: {
     primary: 'Start Your 30-Day Plan',
-    secondary: 'Try A Sample Session',
+    secondary: 'Learn More',
     startFree: 'Start for Free',
   },
   stats: {
