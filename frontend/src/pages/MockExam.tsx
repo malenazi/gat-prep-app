@@ -346,7 +346,7 @@ export default function MockExam() {
             <p className="text-slate-500 dark:text-slate-400">Full simulation of the general aptitude test</p>
 
             {/* Attempt counter */}
-            <div className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 text-sm font-bold px-4 py-2 rounded-full mt-3">
+            <div className="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-bold px-4 py-2 rounded-full mt-3">
               Attempt {nextAttemptNumber} of {displayMaxAttempts}
             </div>
 
@@ -479,8 +479,8 @@ export default function MockExam() {
             content_format={question.content_format}
             comparison_columns={question.comparison_columns}
             testIdPrefix="mock-question"
-            passageClassName="bg-white border border-slate-200 rounded-xl p-3 lg:p-5 mb-3 text-xs lg:text-sm text-slate-600 leading-relaxed max-h-32 lg:max-h-48 overflow-y-auto"
-            questionClassName="text-base lg:text-xl font-bold text-slate-800 mb-4 lg:mb-6 leading-relaxed whitespace-pre-line math-text"
+            passageClassName="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 lg:p-5 mb-3 text-xs lg:text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-h-32 lg:max-h-48 overflow-y-auto"
+            questionClassName="text-base lg:text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 lg:mb-6 leading-relaxed whitespace-pre-line math-text"
             appearance={appearance}
           />
 
@@ -516,7 +516,7 @@ export default function MockExam() {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 text-slate-800 dark:bg-slate-950 dark:text-slate-100" data-testid="mock-results">
         <div className="max-w-lg w-full text-center">
           <div className="text-6xl mb-4">{passed ? '🎉' : '💪'}</div>
-          <h1 className="text-3xl font-black text-slate-800 mb-2">
+          <h1 className="text-3xl font-black text-slate-800 dark:text-slate-100 mb-2">
             {passed ? 'Excellent Performance!' : 'Good Attempt!'}
           </h1>
           <p className="text-slate-500 mb-2">
@@ -550,7 +550,7 @@ export default function MockExam() {
           <div className="bg-white border border-slate-200 rounded-xl p-4 mb-6 dark:border-slate-800 dark:bg-slate-900">
             <div className="grid grid-cols-3 gap-3 text-center">
               <div>
-                <p className="text-xl font-black text-slate-800">{results.total}</p>
+                <p className="text-xl font-black text-slate-800 dark:text-slate-100">{results.total}</p>
                 <p className="text-xs text-slate-500">Total Questions</p>
               </div>
               <div>
@@ -558,7 +558,7 @@ export default function MockExam() {
                 <p className="text-xs text-slate-500">Correct Answers</p>
               </div>
               <div>
-                <p className="text-xl font-black text-slate-800">{Math.round((results.correct / Math.max(1, results.total)) * 100)}%</p>
+                <p className="text-xl font-black text-slate-800 dark:text-slate-100">{Math.round((results.correct / Math.max(1, results.total)) * 100)}%</p>
                 <p className="text-xs text-slate-500">Overall Accuracy</p>
               </div>
             </div>
@@ -616,7 +616,7 @@ export default function MockExam() {
             <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
               <History className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-2xl font-black text-slate-800 mb-1">Attempt History</h1>
+            <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 mb-1">Attempt History</h1>
             <p className="text-slate-500 text-sm">{attemptsUsed} of {maxAttempts} attempts completed</p>
           </div>
 
@@ -634,7 +634,7 @@ export default function MockExam() {
           <div className="space-y-3 mb-8">
             {attempts.map(a => (
               <button key={a.id} onClick={() => loadAttemptDetail(a.id)}
-                className="w-full bg-white border border-slate-200 rounded-2xl p-5 hover:border-teal-300 hover:shadow-md transition-all text-left">
+                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 hover:border-teal-300 hover:shadow-md transition-all text-left">
                 <div className="flex items-center justify-between mb-3">
                   <ChevronRight className="w-5 h-5 text-slate-400" />
                   <div className="flex items-center gap-2">
@@ -726,15 +726,15 @@ export default function MockExam() {
 
           {/* Per-Skill Accuracy Table */}
           {detail.skill_breakdown.length > 0 && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-6">
-              <h3 className="font-bold text-slate-800 mb-4">Skill Performance</h3>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 mb-6">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4">Skill Performance</h3>
               <div className="space-y-2">
                 {detail.skill_breakdown.map(sk => {
                   const pct = sk.pct;
                   const barColor = pct >= 80 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-red-500';
                   return (
                     <div key={sk.skill_id} className="flex items-center gap-3">
-                      <span className="text-sm text-slate-700 font-medium w-32 shrink-0 text-left">{sk.skill_name_ar}</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-300 font-medium w-32 shrink-0 text-left">{sk.skill_name_ar}</span>
                       <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
                         <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
                       </div>
@@ -747,8 +747,8 @@ export default function MockExam() {
           )}
 
           {/* Question Review Table */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-6">
-            <h3 className="font-bold text-slate-800 mb-4">Question Review ({detail.questions.length})</h3>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 mb-6">
+            <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-4">Question Review ({detail.questions.length})</h3>
             <div className="space-y-3">
               {detail.questions.map((q, i) => {
                 const isCorrect = q.is_correct;
@@ -774,9 +774,9 @@ export default function MockExam() {
                           comparison_columns={q.comparison_columns}
                           testIdPrefix={`mock-review-question-${q.question_id}`}
                           compact
-                          passageClassName="bg-white border border-slate-200 rounded-lg p-3 mb-3 text-xs text-slate-600 leading-relaxed"
-                          questionClassName="text-sm text-slate-700 leading-relaxed whitespace-pre-line math-text"
-                          figureFrameClassName="mb-3 rounded-lg border border-slate-200 bg-white p-3"
+                          passageClassName="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 mb-3 text-xs text-slate-600 dark:text-slate-400 leading-relaxed"
+                          questionClassName="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line math-text"
+                          figureFrameClassName="mb-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3"
                           appearance={appearance}
                         />
                       </div>
@@ -829,15 +829,15 @@ export default function MockExam() {
 
   // ── Fallback: loading or all attempts used (loading history) ──
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
       {historyLoading ? (
         <div className="w-8 h-8 border-3 border-teal-400 border-t-transparent rounded-full animate-spin" />
       ) : (
         <div className="text-center">
           <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
-          <p className="text-slate-600 font-bold mb-4">All attempts completed</p>
+          <p className="text-slate-600 dark:text-slate-400 font-bold mb-4">All attempts completed</p>
           {user?.mock_score ? (
-            <p className="text-2xl font-black text-slate-800 mb-4">Best Score: {user.mock_score}</p>
+            <p className="text-2xl font-black text-slate-800 dark:text-slate-100 mb-4">Best Score: {user.mock_score}</p>
           ) : null}
           <button onClick={loadHistory} className="text-teal-600 font-medium">View Attempt History</button>
         </div>

@@ -262,13 +262,13 @@ export default function Admin() {
               ].map((kpi, i) => {
                 const Icon = kpi.icon;
                 return (
-                  <div key={i} className="bg-white border border-slate-200 rounded-xl p-4">
+                  <div key={i} className="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-800">
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${kpi.accent}`}>
                         <Icon className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-2xl font-black text-slate-800">{kpi.value}</p>
+                        <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{kpi.value}</p>
                         <p className="text-xs text-slate-500">{kpi.label}</p>
                       </div>
                     </div>
@@ -278,8 +278,8 @@ export default function Admin() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="bg-white border border-slate-200 rounded-xl p-5">
-                <h3 className="font-bold text-slate-700 mb-4 text-sm">Rating Distribution</h3>
+              <div className="bg-white border border-slate-200 rounded-xl p-5 dark:bg-slate-900 dark:border-slate-800">
+                <h3 className="font-bold text-slate-700 mb-4 text-sm dark:text-slate-200">Rating Distribution</h3>
                 <div style={{ direction: 'ltr' }}>
                   <ResponsiveContainer width="100%" height={180}>
                     <BarChart data={ratingData} layout="vertical">
@@ -294,17 +294,17 @@ export default function Admin() {
                 </div>
               </div>
 
-              <div className="bg-white border border-slate-200 rounded-xl p-5">
-                <h3 className="font-bold text-slate-700 mb-4 text-sm">Ratings by Context</h3>
+              <div className="bg-white border border-slate-200 rounded-xl p-5 dark:bg-slate-900 dark:border-slate-800">
+                <h3 className="font-bold text-slate-700 mb-4 text-sm dark:text-slate-200">Ratings by Context</h3>
                 <div className="space-y-3">
                   {Object.entries(analytics.by_trigger).map(([trigger, data]) => (
                     <div key={trigger} className="flex items-center justify-between">
-                      <span className="text-sm text-slate-600">{triggerLabels[trigger] || trigger}</span>
+                      <span className="text-sm text-slate-600 dark:text-slate-400">{triggerLabels[trigger] || trigger}</span>
                       <div className="flex items-center gap-3">
                         <span className="text-xs text-slate-400">{data.count} rating(s)</span>
                         <div className="flex items-center gap-1">
                           <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                          <span className="text-sm font-bold text-slate-700">{data.avg_rating}</span>
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{data.avg_rating}</span>
                         </div>
                       </div>
                     </div>
@@ -328,8 +328,8 @@ export default function Admin() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="bg-white border border-slate-200 rounded-2xl p-5">
-                <h3 className="text-sm font-bold text-slate-700 mb-3">User Activity</h3>
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 dark:bg-slate-900 dark:border-slate-800">
+                <h3 className="text-sm font-bold text-slate-700 mb-3 dark:text-slate-200">User Activity</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
                     <Pie data={[
@@ -340,8 +340,8 @@ export default function Admin() {
                 </ResponsiveContainer>
               </div>
 
-              <div className="bg-white border border-slate-200 rounded-2xl p-5">
-                <h3 className="text-sm font-bold text-slate-700 mb-3">Student Progress</h3>
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 dark:bg-slate-900 dark:border-slate-800">
+                <h3 className="text-sm font-bold text-slate-700 mb-3 dark:text-slate-200">Student Progress</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
                     <Pie data={(() => {
@@ -360,16 +360,16 @@ export default function Admin() {
             </div>
 
             {analytics.recent_comments.length > 0 && (
-              <div className="bg-white border border-slate-200 rounded-xl p-5">
-                <h3 className="font-bold text-slate-700 mb-4 text-sm">Recent Comments</h3>
+              <div className="bg-white border border-slate-200 rounded-xl p-5 dark:bg-slate-900 dark:border-slate-800">
+                <h3 className="font-bold text-slate-700 mb-4 text-sm dark:text-slate-200">Recent Comments</h3>
                 <div className="space-y-3">
                   {analytics.recent_comments.slice(0, 5).map((c, i) => (
                     <div key={i} className="flex items-start gap-3 border-b border-slate-50 pb-3 last:border-0">
                       <span className="text-xl">{ratingEmojis[c.rating]}</span>
                       <div className="flex-1">
-                        <p className="text-sm text-slate-700">{c.comment}</p>
+                        <p className="text-sm text-slate-700 dark:text-slate-300">{c.comment}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{triggerLabels[c.trigger] || c.trigger}</span>
+                          <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full dark:bg-slate-800 dark:text-slate-400">{triggerLabels[c.trigger] || c.trigger}</span>
                           <span className="text-xs text-slate-400">{new Date(c.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>
@@ -386,7 +386,7 @@ export default function Admin() {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <select value={triggerFilter} onChange={e => setTriggerFilter(e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300">
                 <option value="">All Contexts</option>
                 {Object.entries(triggerLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
@@ -394,13 +394,13 @@ export default function Admin() {
             </div>
 
             {filteredFeedback.length === 0 ? (
-              <div className="bg-white border border-slate-200 rounded-xl p-10 text-center">
+              <div className="bg-white border border-slate-200 rounded-xl p-10 text-center dark:bg-slate-900 dark:border-slate-800">
                 <p className="text-slate-400">📭 No feedback available</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {filteredFeedback.map(f => (
-                  <div key={f.id} className={`bg-white border rounded-xl p-4 flex items-start gap-4
+                  <div key={f.id} className={`bg-white border rounded-xl p-4 flex items-start gap-4 dark:bg-slate-900
                     ${f.rating <= 2 ? 'border-r-4 border-r-red-400 border-slate-200' :
                       f.rating === 3 ? 'border-r-4 border-r-amber-400 border-slate-200' :
                       'border-r-4 border-r-emerald-400 border-slate-200'}`}>
@@ -409,10 +409,10 @@ export default function Admin() {
                       <p className="text-xs font-bold text-slate-500">{f.rating}/5</p>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-slate-700">{f.comment || <span className="text-slate-400 italic">No comment</span>}</p>
+                      <p className="text-sm text-slate-700 dark:text-slate-300">{f.comment || <span className="text-slate-400 italic">No comment</span>}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <span className="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full font-medium">{triggerLabels[f.trigger] || f.trigger}</span>
-                        {f.page && <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{f.page}</span>}
+                        {f.page && <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full dark:bg-slate-800 dark:text-slate-400">{f.page}</span>}
                       </div>
                     </div>
                     <span className="text-xs text-slate-400 shrink-0">{new Date(f.created_at).toLocaleDateString()}</span>
@@ -431,16 +431,16 @@ export default function Admin() {
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input value={userSearch} onChange={e => setUserSearch(e.target.value)}
                   placeholder="Search by name or email..."
-                  className="w-full bg-white border border-slate-200 rounded-lg pr-10 pl-4 py-2 text-sm" />
+                  className="w-full bg-white border border-slate-200 rounded-lg pr-10 pl-4 py-2 text-sm dark:bg-slate-900 dark:border-slate-700 dark:text-slate-100" />
               </div>
               <span className="text-xs text-slate-400">{filteredUsers.length} user(s)</span>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden dark:bg-slate-900 dark:border-slate-800">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-slate-50 text-xs text-slate-500 uppercase">
+                    <tr className="bg-slate-50 text-xs text-slate-500 uppercase dark:bg-slate-800 dark:text-slate-400">
                       {[
                         { key: 'name', label: 'Name' },
                         { key: 'current_day', label: 'Day' },
@@ -449,7 +449,7 @@ export default function Admin() {
                         { key: 'last_active', label: 'Last Active', hideOnMobile: true },
                       ].map(col => (
                         <th key={col.key} onClick={() => toggleSort(col.key)}
-                          className={`px-3 lg:px-4 py-3 text-left cursor-pointer hover:bg-slate-100 transition select-none ${'hideOnMobile' in col && col.hideOnMobile ? 'hidden sm:table-cell' : ''}`}>
+                          className={`px-3 lg:px-4 py-3 text-left cursor-pointer hover:bg-slate-100 transition select-none dark:hover:bg-slate-700 ${'hideOnMobile' in col && col.hideOnMobile ? 'hidden sm:table-cell' : ''}`}>
                           <span className="flex items-center gap-1">
                             {col.label}
                             {sortCol === col.key && (sortAsc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)}
@@ -458,16 +458,16 @@ export default function Admin() {
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {filteredUsers.map((u, i) => (
-                      <tr key={u.id} className={`hover:bg-slate-50 transition ${i % 2 === 1 ? 'bg-slate-50/50' : ''}`}>
+                      <tr key={u.id} className={`hover:bg-slate-50 transition dark:hover:bg-slate-800 ${i % 2 === 1 ? 'bg-slate-50/50 dark:bg-slate-950/50' : ''}`}>
                         <td className="px-3 lg:px-4 py-3">
-                          <p className="font-medium text-sm text-slate-800">{u.name}</p>
+                          <p className="font-medium text-sm text-slate-800 dark:text-slate-100">{u.name}</p>
                           <p className="text-xs text-slate-400">{u.email}</p>
                         </td>
                         <td className="px-3 lg:px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <div className="h-1.5 w-12 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-1.5 w-12 bg-slate-100 rounded-full overflow-hidden dark:bg-slate-800">
                               <div className="h-full bg-teal-500 rounded-full" style={{ width: `${(u.current_day / 30) * 100}%` }} />
                             </div>
                             <span className="text-xs text-slate-600 font-medium">{u.current_day}/30</span>
@@ -505,8 +505,8 @@ export default function Admin() {
                 <p className="text-xl font-black text-white">{reviewReadyCount}</p>
                 <p className="text-xs text-slate-300">Ratings Complete</p>
               </div>
-              <div className="bg-white border border-slate-200 rounded-xl p-4 text-center">
-                <p className="text-xl font-black text-slate-800">{questions.length}</p>
+              <div className="bg-white border border-slate-200 rounded-xl p-4 text-center dark:bg-slate-900 dark:border-slate-800">
+                <p className="text-xl font-black text-slate-800 dark:text-slate-100">{questions.length}</p>
                 <p className="text-xs text-slate-500">Total Questions</p>
               </div>
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
@@ -522,8 +522,8 @@ export default function Admin() {
             {questionAnalysis && (
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
                 {/* Stage Distribution Pie */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-5">
-                  <h3 className="text-sm font-bold text-slate-700 mb-3">Stage Distribution</h3>
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 dark:bg-slate-900 dark:border-slate-800">
+                  <h3 className="text-sm font-bold text-slate-700 mb-3 dark:text-slate-200">Stage Distribution</h3>
                   <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
                       <Pie data={Object.entries(questionAnalysis.by_stage).map(([k, v]) => ({
@@ -536,8 +536,8 @@ export default function Admin() {
                 </div>
 
                 {/* Skill Distribution Bar */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-5">
-                  <h3 className="text-sm font-bold text-slate-700 mb-3">Questions by Skill</h3>
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 dark:bg-slate-900 dark:border-slate-800">
+                  <h3 className="text-sm font-bold text-slate-700 mb-3 dark:text-slate-200">Questions by Skill</h3>
                   <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={Object.entries(questionAnalysis.by_skill).map(([k, v]) => ({
                       name: k.replace('verbal_', '').replace('quant_', '').slice(0, 6),
@@ -557,8 +557,8 @@ export default function Admin() {
                 </div>
 
                 {/* Quality Rating Radar */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-5">
-                  <h3 className="text-sm font-bold text-slate-700 mb-3">Average Question Quality</h3>
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 dark:bg-slate-900 dark:border-slate-800">
+                  <h3 className="text-sm font-bold text-slate-700 mb-3 dark:text-slate-200">Average Question Quality</h3>
                   <ResponsiveContainer width="100%" height={200}>
                     <RadarChart
                       data={questionRatingMetrics.map((metric) => ({
@@ -575,8 +575,8 @@ export default function Admin() {
                   </ResponsiveContainer>
                 </div>
 
-                <div className="bg-white border border-slate-200 rounded-2xl p-5">
-                  <h3 className="text-sm font-bold text-slate-700 mb-3">Generation Sources</h3>
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 dark:bg-slate-900 dark:border-slate-800">
+                  <h3 className="text-sm font-bold text-slate-700 mb-3 dark:text-slate-200">Generation Sources</h3>
                   <div className="space-y-3">
                     {Object.entries(questionAnalysis.by_authoring_source || {}).map(([source, count]) => (
                       <div key={source}>
@@ -584,7 +584,7 @@ export default function Admin() {
                           <span>{source === 'ai_generated' ? 'AI generated' : source}</span>
                           <span>{count}</span>
                         </div>
-                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-2 bg-slate-100 rounded-full overflow-hidden dark:bg-slate-800">
                           <div
                             className={`${source === 'ai_generated' ? 'bg-teal-500' : 'bg-slate-400'} h-full rounded-full`}
                             style={{ width: `${(count / Math.max(1, questionAnalysis.total)) * 100}%` }}
@@ -627,12 +627,12 @@ export default function Admin() {
 
             <div className="flex items-center gap-2 flex-wrap">
               <select value={skillFilter} onChange={e => setSkillFilter(e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300">
                 <option value="">All Skills</option>
                 {skills.map(s => <option key={s.id} value={s.id}>{s.icon} {s.name_ar}</option>)}
               </select>
               <select value={stageFilter} onChange={e => setStageFilter(e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300">
                 <option value="">All Stages</option>
                 <option value="diagnostic">Diagnostic</option>
                 <option value="foundation">Foundation</option>
@@ -642,54 +642,54 @@ export default function Admin() {
                 <option value="general">General</option>
               </select>
               <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300">
                 <option value="">All Statuses</option>
                 <option value="active">Active</option>
                 <option value="review">Review</option>
                 <option value="disabled">Disabled</option>
               </select>
               <select value={batchFilter} onChange={e => setBatchFilter(e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300">
                 <option value="">All Batches</option>
                 {batchOptions.map((batch) => <option key={batch} value={batch}>{batch}</option>)}
               </select>
               <select value={authoringSourceFilter} onChange={e => setAuthoringSourceFilter(e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300">
                 <option value="">All Sources</option>
                 {authoringSourceOptions.map((source) => <option key={source} value={source}>{source}</option>)}
               </select>
               <select value={variantGroupFilter} onChange={e => setVariantGroupFilter(e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300">
                 <option value="">All Variant Groups</option>
                 {variantGroupOptions.map((group) => <option key={group} value={group}>{group}</option>)}
               </select>
               <select value={classificationFilter} onChange={e => setClassificationFilter(e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300">
                 <option value="">All Classifications</option>
                 {Object.entries(contentClassificationLabels).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
                 ))}
               </select>
               <select value={issueCodeFilter} onChange={e => setIssueCodeFilter(e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300">
                 <option value="">All Issue Codes</option>
                 {issueCodeOptions.map((code) => <option key={code} value={code}>{code}</option>)}
               </select>
               <select value={ratingsFilter} onChange={e => setRatingsFilter(e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300">
                 <option value="">All Rating States</option>
                 <option value="complete">Ratings Complete</option>
                 <option value="missing">Missing Ratings</option>
               </select>
               <select value={analyticsRiskFilter} onChange={e => setAnalyticsRiskFilter(e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300">
                 <option value="">All Analytics Flags</option>
                 <option value="very_low_accuracy">Very Low Accuracy</option>
                 <option value="too_easy">Too Easy</option>
                 <option value="low_discrimination">Low Discrimination</option>
               </select>
               <select value={questionSort} onChange={e => setQuestionSort(e.target.value)}
-                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700">
+                className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-300">
                 <option value="">Default Sort</option>
                 <option value="accuracy">Accuracy</option>
                 <option value="difficulty">Difficulty</option>
@@ -721,9 +721,9 @@ export default function Admin() {
 
             <div className="space-y-2">
               {filteredQuestions.map(q => (
-                <div key={q.id} className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                <div key={q.id} className="bg-white border border-slate-200 rounded-xl overflow-hidden dark:bg-slate-900 dark:border-slate-800">
                   <button onClick={() => setExpandedQ(expandedQ === q.id ? null : q.id)}
-                    className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition text-left">
+                    className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition text-left dark:hover:bg-slate-800">
                     <span className="text-xs font-bold text-slate-400 shrink-0">#{q.id}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${q.section === 'verbal' ? 'bg-blue-100 text-blue-600' : 'bg-violet-100 text-violet-600'}`}>
                       {q.skill_name_ar}
@@ -746,9 +746,9 @@ export default function Admin() {
                         {q.authoring_source}
                       </span>
                     )}
-                    <span className="flex-1 text-sm text-slate-700 truncate">{q.text_ar}</span>
+                    <span className="flex-1 text-sm text-slate-700 truncate dark:text-slate-300">{q.text_ar}</span>
                     <div className="flex items-center gap-2 shrink-0">
-                      <div className="h-1.5 w-10 bg-slate-100 rounded-full overflow-hidden" title={`Difficulty ${q.difficulty}`}>
+                      <div className="h-1.5 w-10 bg-slate-100 rounded-full overflow-hidden dark:bg-slate-800" title={`Difficulty ${q.difficulty}`}>
                         <div className={`h-full rounded-full ${q.difficulty < 0.4 ? 'bg-emerald-400' : q.difficulty < 0.7 ? 'bg-amber-400' : 'bg-red-400'}`}
                           style={{ width: `${q.difficulty * 100}%` }} />
                       </div>
@@ -761,7 +761,7 @@ export default function Admin() {
                   </button>
 
                   {expandedQ === q.id && (
-                    <div className="border-t border-slate-100 p-4 bg-slate-50/50 space-y-3">
+                    <div className="border-t border-slate-100 p-4 bg-slate-50/50 space-y-3 dark:border-slate-800 dark:bg-slate-950/50">
                       <QuestionPrompt
                         passage_ar={q.passage_ar}
                         table_ar={q.table_ar}
@@ -773,9 +773,9 @@ export default function Admin() {
                         comparison_columns={q.comparison_columns}
                         testIdPrefix={`admin-question-${q.id}`}
                         compact
-                        passageClassName="bg-white border border-slate-200 rounded-lg p-3 text-sm text-slate-600"
+                        passageClassName="bg-white border border-slate-200 rounded-lg p-3 text-sm text-slate-600 dark:text-slate-400"
                         questionClassName="text-sm text-slate-800 font-medium whitespace-pre-line"
-                        figureFrameClassName="rounded-lg border border-slate-200 bg-white p-3"
+                        figureFrameClassName="rounded-lg border border-slate-200 bg-white p-3 dark:bg-slate-900 dark:border-slate-700"
                         appearance={defaultQuestionAppearance}
                       />
                       <QuestionOptions
@@ -802,14 +802,14 @@ export default function Admin() {
                       {q.tags && (
                         <div className="flex flex-wrap gap-1">
                           {q.tags.split(',').map((tag, i) => (
-                            <span key={i} className="bg-slate-100 text-slate-500 text-xs px-2 py-0.5 rounded-full">{tag.trim()}</span>
+                            <span key={i} className="bg-slate-100 text-slate-500 text-xs px-2 py-0.5 rounded-full dark:bg-slate-800 dark:text-slate-400">{tag.trim()}</span>
                           ))}
                         </div>
                       )}
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 text-xs">
-                        <div className="rounded-lg border border-slate-200 bg-white p-3">
-                          <p className="font-bold text-slate-700 mb-2">Content Queue</p>
-                          <div className="space-y-1 text-slate-600">
+                        <div className="rounded-lg border border-slate-200 bg-white p-3 dark:bg-slate-900 dark:border-slate-700">
+                          <p className="font-bold text-slate-700 mb-2 dark:text-slate-200">Content Queue</p>
+                          <div className="space-y-1 text-slate-600 dark:text-slate-400">
                             <p>Source key: <span className="font-mono">{q.source_key || 'admin question'}</span></p>
                             <p>Batch: {q.batch_id || 'Unbatched'}</p>
                             <p>Source: {q.authoring_source || 'human'}</p>
@@ -821,9 +821,9 @@ export default function Admin() {
                             <p>Ratings complete: {q.ratings_complete ? 'Yes' : 'No'}</p>
                           </div>
                         </div>
-                        <div className="rounded-lg border border-slate-200 bg-white p-3">
-                          <p className="font-bold text-slate-700 mb-2">Review State</p>
-                          <div className="space-y-1 text-slate-600">
+                        <div className="rounded-lg border border-slate-200 bg-white p-3 dark:bg-slate-900 dark:border-slate-700">
+                          <p className="font-bold text-slate-700 mb-2 dark:text-slate-200">Review State</p>
+                          <div className="space-y-1 text-slate-600 dark:text-slate-400">
                             <p>Review passes: {q.rating_passes_done || 0}</p>
                             <p>Missing ratings: {q.missing_review_ratings?.length ? q.missing_review_ratings.join(', ') : 'None'}</p>
                             <p>Analytics flags: {q.analytics_flags?.length ? q.analytics_flags.join(', ') : 'None'}</p>
@@ -885,7 +885,7 @@ export default function Admin() {
             {/* Preview Button */}
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-slate-800">Final Mock Exam</h3>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100">Final Mock Exam</h3>
                 <p className="text-xs text-slate-500">65 questions • 70 minutes • Verbal + Quant</p>
               </div>
               <a href="/mock?preview=true"
@@ -896,14 +896,14 @@ export default function Admin() {
             </div>
 
             {/* Config */}
-            <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between">
+            <div className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between dark:bg-slate-900 dark:border-slate-800">
               <div>
-                <p className="font-bold text-slate-700 text-sm">Max Attempts</p>
+                <p className="font-bold text-slate-700 text-sm dark:text-slate-200">Max Attempts</p>
                 <p className="text-xs text-slate-500">Number of attempts allowed per student</p>
               </div>
               <div className="flex items-center gap-2">
                 <input type="number" min="1" max="10" value={mockMaxAttempts} onChange={e => setMockMaxAttempts(Number(e.target.value))}
-                  className="w-16 border border-slate-200 rounded-lg px-2 py-1.5 text-center text-sm" />
+                  className="w-16 border border-slate-200 rounded-lg px-2 py-1.5 text-center text-sm dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100" />
                 <button onClick={saveMockConfig} className="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg">
                   Save
                 </button>
@@ -912,46 +912,46 @@ export default function Admin() {
 
             {/* Mock Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <div className="bg-white border border-slate-200 rounded-xl p-4">
+              <div className="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-800">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-amber-50 text-amber-600">
                     <Trophy className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-2xl font-black text-slate-800">{users.mock_taken}</p>
+                    <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{users.mock_taken}</p>
                     <p className="text-xs text-slate-500">Completed Exam</p>
                   </div>
                 </div>
               </div>
-              <div className="bg-white border border-slate-200 rounded-xl p-4">
+              <div className="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-800">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600">
                     <Star className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-2xl font-black text-slate-800">{users.mock_avg_score || '—'}</p>
+                    <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{users.mock_avg_score || '—'}</p>
                     <p className="text-xs text-slate-500">Average Score</p>
                   </div>
                 </div>
               </div>
-              <div className="bg-white border border-slate-200 rounded-xl p-4">
+              <div className="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-800">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-emerald-50 text-emerald-600">
                     <Users className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-2xl font-black text-slate-800">{users.users.filter(u => u.mock_attempts > 0 && u.mock_score >= 65).length}</p>
+                    <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{users.users.filter(u => u.mock_attempts > 0 && u.mock_score >= 65).length}</p>
                     <p className="text-xs text-slate-500">Passed (65+)</p>
                   </div>
                 </div>
               </div>
-              <div className="bg-white border border-slate-200 rounded-xl p-4">
+              <div className="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-800">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-violet-50 text-violet-600">
                     <Users className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-2xl font-black text-slate-800">{users.users.filter(u => u.mock_attempts > 0 && u.mock_score >= 80).length}</p>
+                    <p className="text-2xl font-black text-slate-800 dark:text-slate-100">{users.users.filter(u => u.mock_attempts > 0 && u.mock_score >= 80).length}</p>
                     <p className="text-xs text-slate-500">Excellent (80+)</p>
                   </div>
                 </div>
@@ -960,8 +960,8 @@ export default function Admin() {
 
             {/* Score distribution */}
             {users.mock_taken > 0 && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-5">
-                <h3 className="text-sm font-bold text-slate-700 mb-3">Score Distribution</h3>
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 dark:bg-slate-900 dark:border-slate-800">
+                <h3 className="text-sm font-bold text-slate-700 mb-3 dark:text-slate-200">Score Distribution</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={(() => {
                     const mockUsers = (users?.users || []).filter(u => u.mock_attempts > 0);
@@ -984,33 +984,33 @@ export default function Admin() {
             )}
 
             {/* Users who took the mock */}
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-              <div className="px-4 py-3 border-b border-slate-100">
-                <h3 className="font-bold text-slate-700 text-sm">Student Results</h3>
+            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden dark:bg-slate-900 dark:border-slate-800">
+              <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+                <h3 className="font-bold text-slate-700 text-sm dark:text-slate-200">Student Results</h3>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-slate-50 text-xs text-slate-500 uppercase">
+                    <tr className="bg-slate-50 text-xs text-slate-500 uppercase dark:bg-slate-800 dark:text-slate-400">
                       <th className="px-4 py-3 text-left">Student</th>
                       <th className="px-4 py-3 text-left">Day</th>
                       <th className="px-4 py-3 text-left">Status</th>
                       <th className="px-4 py-3 text-left">Score</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {users.users.filter(u => u.current_day >= 25).map((u, i) => (
-                      <tr key={u.id} className={`hover:bg-slate-50 ${i % 2 === 1 ? 'bg-slate-50/50' : ''}`}>
+                      <tr key={u.id} className={`hover:bg-slate-50 dark:hover:bg-slate-800 ${i % 2 === 1 ? 'bg-slate-50/50 dark:bg-slate-950/50' : ''}`}>
                         <td className="px-4 py-3">
-                          <p className="font-medium text-sm text-slate-800">{u.name}</p>
+                          <p className="font-medium text-sm text-slate-800 dark:text-slate-100">{u.name}</p>
                           <p className="text-xs text-slate-400">{u.email}</p>
                         </td>
-                        <td className="px-4 py-3 text-sm text-slate-600">{u.current_day}/30</td>
+                        <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{u.current_day}/30</td>
                         <td className="px-4 py-3">
                           {u.mock_attempts > 0 ? (
                             <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium">Completed ({u.mock_attempts} attempts)</span>
                           ) : (
-                            <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full">Not Started</span>
+                            <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full dark:bg-slate-800 dark:text-slate-400">Not Started</span>
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -1172,15 +1172,15 @@ function QuestionModal({ question, skills, onClose, onSave }: {
 
   return (
     <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-8">
-        <div className="flex items-center justify-between p-5 border-b border-slate-100">
-          <h3 className="font-bold text-slate-800">{question ? 'Edit Question' : 'Add New Question'}</h3>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-8 dark:bg-slate-900">
+        <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
+          <h3 className="font-bold text-slate-800 dark:text-slate-100">{question ? 'Edit Question' : 'Add New Question'}</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-slate-600 mb-1 block">Skill</label>
+              <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Skill</label>
               <select value={form.skill_id} onChange={e => {
                 const nextSkill = e.target.value;
                 update('skill_id', nextSkill);
@@ -1189,67 +1189,67 @@ function QuestionModal({ question, skills, onClose, onSave }: {
                 }
               }}
                 aria-label="Skill"
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100">
                 {skills.map(s => <option key={s.id} value={s.id}>{s.icon} {s.name_ar}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-600 mb-1 block">Question Type</label>
+              <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Question Type</label>
               <select value={form.question_type} onChange={e => update('question_type', e.target.value)}
                 aria-label="Question Type"
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100">
                 {qTypes.map(t => <option key={t.v} value={t.v}>{t.l}</option>)}
               </select>
             </div>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
-              <label className="text-xs font-medium text-slate-600 mb-1 block">Content Format</label>
+              <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Content Format</label>
               <select value={form.content_format || 'plain'} onChange={e => update('content_format', e.target.value)}
                 aria-label="Content Format"
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100">
                 <option value="plain">Plain Text</option>
                 <option value="markdown_math">Markdown + TeX</option>
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-600 mb-1 block">Stage</label>
+              <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Stage</label>
               <select value={form.stage || 'general'} onChange={e => update('stage', e.target.value)}
                 aria-label="Stage"
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100">
                 {['diagnostic', 'foundation', 'building', 'peak', 'mock', 'general'].map(stage => (
                   <option key={stage} value={stage}>{stage}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-600 mb-1 block">Status</label>
+              <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Status</label>
               <select value={form.status || 'active'} onChange={e => update('status', e.target.value)}
                 aria-label="Status"
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100">
                 {['active', 'review', 'disabled'].map(status => (
                   <option key={status} value={status}>{status}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-600 mb-1 block">Tags</label>
+              <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Tags</label>
               <input value={form.tags || ''} onChange={e => update('tags', e.target.value)}
                 aria-label="Tags"
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100"
                 placeholder="fractions, percentages" />
             </div>
           </div>
           <div>
-            <label className="text-xs font-medium text-slate-600 mb-1 block">Difficulty: {form.difficulty}</label>
+            <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Difficulty: {form.difficulty}</label>
             <input type="range" min="0" max="1" step="0.1" value={form.difficulty}
               aria-label="Difficulty"
               onChange={e => update('difficulty', parseFloat(e.target.value))} className="w-full accent-amber-500" />
             <div className="flex justify-between text-xs text-slate-400"><span>Easy</span><span>Medium</span><span>Hard</span></div>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3 dark:bg-slate-950 dark:border-slate-700">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-bold text-slate-700">Editorial Review</p>
+              <p className="text-sm font-bold text-slate-700 dark:text-slate-200">Editorial Review</p>
               <span className="text-xs text-slate-500">
                 Overall: {computedOverallRating != null ? computedOverallRating.toFixed(2) : 'Pending'}
               </span>
@@ -1257,11 +1257,11 @@ function QuestionModal({ question, skills, onClose, onSave }: {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {questionRatingMetrics.map((metric) => (
                 <div key={metric.field}>
-                  <label className="text-xs font-medium text-slate-600 mb-1 block">{metric.subject}</label>
+                  <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">{metric.subject}</label>
                   <select
                     value={form[metric.field] ?? ''}
                     onChange={(e) => update(metric.field, e.target.value ? Number(e.target.value) : null)}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100"
                   >
                     <option value="">Not rated</option>
                     {[1, 2, 3, 4, 5].map((score) => (
@@ -1273,7 +1273,7 @@ function QuestionModal({ question, skills, onClose, onSave }: {
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
               <div>
-                <label className="text-xs font-medium text-slate-600 mb-1 block">Review Passes</label>
+                <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Review Passes</label>
                 <input
                   type="number"
                   min="0"
@@ -1281,16 +1281,16 @@ function QuestionModal({ question, skills, onClose, onSave }: {
                   value={form.rating_passes_done ?? 0}
                   onChange={(e) => update('rating_passes_done', Number(e.target.value))}
                   aria-label="Review Passes"
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100"
                 />
               </div>
               <div className="lg:col-span-2">
-                <label className="text-xs font-medium text-slate-600 mb-1 block">Review Notes</label>
+                <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Review Notes</label>
                 <input
                   value={form.rating_notes || ''}
                   onChange={(e) => update('rating_notes', e.target.value || null)}
                   aria-label="Review Notes"
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100"
                   placeholder="Key clarity fixes, answer-key checks, or editorial notes"
                 />
               </div>
@@ -1305,70 +1305,70 @@ function QuestionModal({ question, skills, onClose, onSave }: {
             </div>
           )}
           <div>
-            <label className="text-xs font-medium text-slate-600 mb-1 block">Passage Text (optional)</label>
+            <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Passage Text (optional)</label>
             <textarea value={form.passage_ar || ''} onChange={e => update('passage_ar', e.target.value || null)}
               aria-label="Passage Text (optional)"
-              rows={2} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none" />
+              rows={2} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100" />
           </div>
           <div>
-            <label className="text-xs font-medium text-slate-600 mb-1 block">Question Text *</label>
+            <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Question Text *</label>
             <textarea value={form.text_ar} onChange={e => update('text_ar', e.target.value)}
               aria-label="Question Text *"
-              rows={3} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none" required />
+              rows={3} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100" required />
           </div>
           {form.question_type === 'comparison' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-slate-600 mb-1 block">Column A *</label>
+                <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Column A *</label>
                 <textarea
                   value={comparisonColumns.a}
                   onChange={e => update('comparison_columns', { ...comparisonColumns, a: e.target.value })}
                   rows={3}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-slate-600 mb-1 block">Column B *</label>
+                <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Column B *</label>
                 <textarea
                   value={comparisonColumns.b}
                   onChange={e => update('comparison_columns', { ...comparisonColumns, b: e.target.value })}
                   rows={3}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none"
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100"
                 />
               </div>
             </div>
           )}
           <div>
-            <label className="text-xs font-medium text-slate-600 mb-1 block">Figure SVG (optional)</label>
+            <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Figure SVG (optional)</label>
             <textarea value={form.figure_svg || ''} onChange={e => update('figure_svg', e.target.value || null)}
               aria-label="Figure SVG (optional)"
-              rows={6} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono resize-y" placeholder="<svg ...>...</svg>" />
+              rows={6} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono resize-y dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100" placeholder="<svg ...>...</svg>" />
             {form.figure_svg && !safePreviewSvg && (
               <p className="mt-1 text-xs text-amber-600">Preview is hidden because the SVG markup is invalid or unsafe.</p>
             )}
           </div>
           <div>
-            <label className="text-xs font-medium text-slate-600 mb-1 block">Figure Alt Text</label>
+            <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Figure Alt Text</label>
             <input value={form.figure_alt || ''} onChange={e => update('figure_alt', e.target.value || null)}
               aria-label="Figure Alt Text"
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100"
               placeholder="Describe the figure for learners using assistive tech" />
           </div>
           <div>
-            <label className="text-xs font-medium text-slate-600 mb-1 block">Table JSON (optional)</label>
+            <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Table JSON (optional)</label>
             <textarea value={tableEditorValue} onChange={e => setTableEditorValue(e.target.value)}
               aria-label="Table JSON (optional)"
-              rows={6} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono resize-y" placeholder={'{"headers":["Column","Value"],"rows":[["A","10"],["B","12"]]}'}
+              rows={6} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono resize-y dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100" placeholder={'{"headers":["Column","Value"],"rows":[["A","10"],["B","12"]]}'}
             />
             {tableEditorValue.trim() && parsedTable.error && (
               <p className="mt-1 text-xs text-amber-600">{parsedTable.error}</p>
             )}
           </div>
           <div>
-            <label className="text-xs font-medium text-slate-600 mb-1 block">Table Caption (optional)</label>
+            <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Table Caption (optional)</label>
             <input value={form.table_caption || ''} onChange={e => update('table_caption', e.target.value || null)}
               aria-label="Table Caption (optional)"
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100"
               placeholder="Short summary of what the table shows" />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -1383,25 +1383,25 @@ function QuestionModal({ question, skills, onClose, onSave }: {
                 <input value={(form as unknown as Record<string, string>)[opt.k] || ''}
                   aria-label={`Option ${opt.l}`}
                   onChange={e => update(opt.k, e.target.value)}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm" required />
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100" required />
               </div>
             ))}
           </div>
           <div>
-            <label className="text-xs font-medium text-slate-600 mb-1 block">Explanation (optional)</label>
+            <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Explanation (optional)</label>
             <textarea value={form.explanation_ar || ''} onChange={e => update('explanation_ar', e.target.value || null)}
               aria-label="Explanation (optional)"
-              rows={2} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none" />
+              rows={2} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm resize-none dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100" />
           </div>
           <div>
-            <label className="text-xs font-medium text-slate-600 mb-1 block">Solution Steps JSON (optional)</label>
+            <label className="text-xs font-medium text-slate-600 mb-1 block dark:text-slate-400">Solution Steps JSON (optional)</label>
             <textarea value={form.solution_steps_ar || ''} onChange={e => update('solution_steps_ar', e.target.value || null)}
               aria-label="Solution Steps JSON (optional)"
-              rows={3} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono resize-y"
+              rows={3} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono resize-y dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100"
               placeholder='["First simplify the fraction.", "Then compare the two values."]' />
           </div>
           {(form.passage_ar || form.text_ar || form.figure_svg || parsedTable.value) && (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4" data-testid="admin-question-preview">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:bg-slate-950 dark:border-slate-700" data-testid="admin-question-preview">
               <p className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">Live Preview</p>
               <QuestionPrompt
                 passage_ar={form.passage_ar}
@@ -1414,9 +1414,9 @@ function QuestionModal({ question, skills, onClose, onSave }: {
                 comparison_columns={form.comparison_columns}
                 testIdPrefix="admin-question-preview"
                 compact
-                passageClassName="bg-white border border-slate-200 rounded-lg p-3 mb-3 text-sm text-slate-600"
+                passageClassName="bg-white border border-slate-200 rounded-lg p-3 mb-3 text-sm text-slate-600 dark:text-slate-400"
                 questionClassName="text-sm text-slate-800 font-medium whitespace-pre-line"
-                figureFrameClassName="mb-3 rounded-lg border border-slate-200 bg-white p-3"
+                figureFrameClassName="mb-3 rounded-lg border border-slate-200 bg-white p-3 dark:bg-slate-900 dark:border-slate-700"
                 appearance={defaultQuestionAppearance}
               />
               <div className="mt-4">
