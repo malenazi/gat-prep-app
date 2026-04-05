@@ -42,10 +42,10 @@ export function QuestionOptions({
   const optionTextClass = appearance.textSize === 'large'
     ? 'text-lg leading-8 text-slate-800 lg:text-[1.45rem] dark:text-slate-100'
     : 'text-base leading-7 text-slate-800 lg:text-[1.18rem] dark:text-slate-100';
-  const optionPaddingClass = appearance.density === 'compact' ? 'p-4 lg:p-5' : 'p-5 lg:p-6';
+  const optionPaddingClass = appearance.density === 'compact' ? 'p-3.5 lg:p-4' : 'p-4 lg:p-5';
   const optionBadgeClass = appearance.textSize === 'large'
-    ? 'h-12 w-12 rounded-2xl text-xl'
-    : 'h-11 w-11 rounded-2xl text-lg';
+    ? 'h-12 w-12 rounded-2xl text-xl font-black'
+    : 'h-11 w-11 rounded-xl text-base font-black';
 
   const classes = useMemo(
     () => ({
@@ -62,7 +62,7 @@ export function QuestionOptions({
   };
 
   return (
-    <div className={`space-y-4 lg:space-y-5 ${classes.scale} ${classes.density} ${classes.contrast}`} role="radiogroup" aria-label="Answer choices">
+    <div className={`space-y-3 lg:space-y-3.5 ${classes.scale} ${classes.density} ${classes.contrast}`} role="radiogroup" aria-label="Answer choices">
       {options.map((option, index) => {
         const isSelected = selectedKey === option.key;
         const isCorrect = feedbackVisible && correctOption === option.key;

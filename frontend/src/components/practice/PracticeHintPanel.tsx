@@ -24,43 +24,44 @@ export function PracticeHintPanel({
 
   return (
     <section
-      className="mb-5 rounded-3xl border border-indigo-100 bg-indigo-50/60 p-5 shadow-card dark:border-indigo-900/60 dark:bg-indigo-500/10"
+      className="mb-4 rounded-2xl border border-indigo-100/80 bg-indigo-50/40 px-4 py-2.5 dark:border-indigo-900/40 dark:bg-indigo-500/8"
       data-testid="practice-hint-panel"
     >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="text-base font-black text-slate-900 dark:text-slate-50">Need a hint?</h3>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-            Reveal guided support one step at a time before you answer.
-          </p>
+      {/* Compact single-row layout */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-indigo-500 text-sm">💡</span>
+          <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
+            {revealedCount > 0 ? `${revealedCount} hint${revealedCount > 1 ? 's' : ''} revealed` : 'Hints available'}
+          </span>
         </div>
         {nextHint && !disabled && (
           <button
             type="button"
-            className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="shrink-0 rounded-full bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-indigo-700"
             data-testid="practice-hint-reveal"
             onClick={onReveal}
           >
-            Reveal {nextHint.title}
+            Reveal: {nextHint.title}
           </button>
         )}
       </div>
 
       {revealedCount > 0 && (
-        <div className="mt-4 space-y-3">
+        <div className="mt-2 space-y-2">
           {assistment.hints.slice(0, revealedCount).map((hint) => (
             <div
               key={hint.index}
-              className="rounded-2xl border border-white/70 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-950/70"
+              className="rounded-xl border border-white/70 bg-white/80 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-950/70"
               data-testid={`practice-hint-${hint.index}`}
             >
-              <p className="text-xs font-black uppercase tracking-[0.16em] text-indigo-600 dark:text-indigo-300">
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-indigo-600 dark:text-indigo-300 mb-1">
                 {hint.title}
               </p>
               <RichTextContent
                 content={hint.text_ar}
                 contentFormat={contentFormat}
-                className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-200"
+                className="text-sm leading-relaxed text-slate-700 dark:text-slate-200"
               />
             </div>
           ))}

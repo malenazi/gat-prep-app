@@ -352,27 +352,27 @@ export default function Practice() {
       )}
 
       {/* ═══ Daily Progress Bar (top) ═══ */}
-      <div className="mb-2 rounded-2xl bg-white p-3 shadow-card stagger-1 lg:mb-6 lg:p-4 dark:bg-slate-900" data-testid="practice-daily-progress">
-        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-slate-600 text-sm font-bold dark:text-slate-400">Question {sessionStats.total + 1} {todayTarget > 0 && <span className="text-slate-400 dark:text-slate-500 font-medium">of {todayTarget}</span>} • Daily Goal</span>
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {/* Estimated time to finish today */}
+      <div className="mb-3 rounded-2xl bg-white p-3 shadow-card stagger-1 lg:mb-5 lg:px-5 lg:py-3 dark:bg-slate-900" data-testid="practice-daily-progress">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3">
+            <span className="text-slate-800 dark:text-slate-100 text-sm font-black">Q{sessionStats.total + 1}<span className="text-slate-400 dark:text-slate-500 font-medium">/{todayTarget}</span></span>
             {todayCompleted < todayTarget && (
-              <span className="text-sm text-slate-500 flex items-center gap-1">
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                ~{Math.ceil((todayTarget - todayCompleted) * QUESTION_TIME / 60)} minutes remaining
+              <span className="text-xs text-slate-400 dark:text-slate-500 hidden sm:inline">
+                ~{Math.ceil((todayTarget - todayCompleted) * QUESTION_TIME / 60)} min left
               </span>
             )}
-            <span className="text-sm font-bold text-teal-600">{todayCompleted}/{todayTarget}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {dailyPct >= 100 && <span className="text-emerald-500 text-xs font-bold">🎉 Goal done!</span>}
+            <span className="text-xs font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10 px-2 py-0.5 rounded-full">{dailyPct}%</span>
           </div>
         </div>
-        <div className="h-2 lg:h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
-          <div className="h-full bg-gradient-to-l from-teal-400 to-teal-600 rounded-full transition-all duration-500 progress-bar-animated" style={{ width: `${dailyPct}%` }} />
+        <div className="h-1.5 lg:h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
+          <div className="h-full bg-gradient-to-l from-teal-400 to-teal-600 rounded-full transition-all duration-500" style={{ width: `${dailyPct}%` }} />
           <div className="progress-milestone-marker" style={{ left: '25%' }} />
           <div className="progress-milestone-marker" style={{ left: '50%' }} />
           <div className="progress-milestone-marker" style={{ left: '75%' }} />
         </div>
-        {dailyPct >= 100 && <p className="text-emerald-500 text-sm font-bold mt-1.5">🎉 Goal completed! Keep going for excellence</p>}
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_19rem] 2xl:gap-8">
@@ -410,35 +410,6 @@ export default function Practice() {
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-center">
               <p className="text-red-500 text-sm">{error}</p>
-            </div>
-          )}
-
-          {question && (
-            <div className="hidden">
-              <span className="bg-slate-100 text-slate-500 text-sm px-4 py-1.5 rounded-full font-medium">
-                {question.skill_id.startsWith('verbal') ? '📖 Verbal' : '🔢 Quant'} • {question.question_type}
-              </span>
-              {/* Countdown Timer */}
-              {!selected && (
-                <div className={`flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-full transition-all
-                  ${countdown > 30 ? 'bg-slate-100 text-slate-500' :
-                    countdown > 10 ? 'bg-amber-50 text-amber-600' :
-                    countdown > 0 ? 'bg-red-50 text-red-500 animate-pulse' :
-                    'bg-red-100 text-red-600'}`} data-testid="practice-legacy-timer">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  {countdown > 0 ? (
-                    <span>{Math.floor(countdown / 60)}:{String(countdown % 60).padStart(2, '0')}</span>
-                  ) : (
-                    <span>⏰ Time exceeded</span>
-                  )}
-                </div>
-              )}
-              {/* Late badge after answering */}
-              {selected && feedback?.wasLate && (
-                <span className="bg-red-50 text-red-500 text-sm font-bold px-3 py-1.5 rounded-full flex items-center gap-1">
-                  ⏰ Late answer
-                </span>
-              )}
             </div>
           )}
 
@@ -517,58 +488,70 @@ export default function Practice() {
 
         {/* ═══ Desktop Stats Sidebar ═══ */}
         <div className="hidden xl:block">
-          <div className="sticky top-24 space-y-4">
-            <div className="bg-white shadow-card rounded-2xl p-5 dark:bg-slate-900" data-testid="practice-session-stats">
-              <h3 className="text-slate-800 font-bold text-sm mb-4 dark:text-slate-100">Session Statistics</h3>
-              <div className="space-y-4">
-                <SideStatRow label="Questions" value={sessionStats.total} />
-                <SideStatRow label="Correct" value={sessionStats.correct} color="text-emerald-500" />
-                <SideStatRow label="Accuracy" value={`${accuracy}%`} color="text-teal-600" />
-                <SideStatRow label="XP Earned" value={`+${sessionStats.xp}`} color="text-amber-500" />
-              </div>
-              <div className="mt-5 flex justify-center">
-                <div className="relative w-20 h-20">
+          <div className="sticky top-24 space-y-3">
+            {/* Accuracy ring + key stats */}
+            <div className="bg-white shadow-card rounded-2xl p-4 dark:bg-slate-900" data-testid="practice-session-stats">
+              <div className="flex items-center gap-4">
+                <div className="relative w-16 h-16 shrink-0">
                   <svg viewBox="0 0 100 100" className="w-full h-full">
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" strokeWidth="8" />
-                    <circle cx="50" cy="50" r="40" fill="none" stroke="#0d9488" strokeWidth="8"
-                      strokeDasharray="251" strokeDashoffset={251 - (251 * accuracy / 100)} strokeLinecap="round"
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="7" />
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#0d9488" strokeWidth="7"
+                      strokeDasharray="264" strokeDashoffset={264 - (264 * accuracy / 100)} strokeLinecap="round"
                       transform="rotate(-90 50 50)" style={{ transition: 'stroke-dashoffset 0.5s ease' }} />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-lg font-black text-slate-700">{accuracy}%</span>
+                    <span className="text-base font-black text-slate-800 dark:text-slate-100">{accuracy}%</span>
+                  </div>
+                </div>
+                <div className="flex-1 space-y-1.5">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500 dark:text-slate-400">Correct</span>
+                    <span className="font-bold text-emerald-500">{sessionStats.correct}/{sessionStats.total}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500 dark:text-slate-400">XP</span>
+                    <span className="font-bold text-amber-500">+{sessionStats.xp}</span>
                   </div>
                 </div>
               </div>
             </div>
 
+            {/* Adaptive info */}
             {adaptive && (
-              <div className="bg-white shadow-card rounded-2xl p-5 dark:bg-slate-900" data-testid="practice-session-trajectory">
-                <h3 className="text-slate-800 font-bold text-sm mb-4 dark:text-slate-100">Adaptive Trajectory</h3>
-                <div className="space-y-4">
-                  <SideStatRow label="Current Skill" value={adaptive.skill_name} />
-                  <SideStatRow label="Question Level" value={`${adaptive.difficulty_label} ${adaptive.difficulty_score}/100`} color="text-indigo-600" />
-                  <SideStatRow
-                    label="Skill Mastery"
-                    value={adaptive.challenge_band === 'Calibrating' ? 'Starting level' : `${adaptive.skill_mastery}%`}
-                    color="text-teal-600"
-                  />
+              <div className="bg-white shadow-card rounded-2xl p-4 dark:bg-slate-900" data-testid="practice-session-trajectory">
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Skill</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100 text-right">{adaptive.skill_name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Level</span>
+                    <span className="font-bold text-indigo-600 dark:text-indigo-400">{adaptive.difficulty_label} {adaptive.difficulty_score}/100</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Mastery</span>
+                    <span className="font-bold text-teal-600 dark:text-teal-400">
+                      {adaptive.challenge_band === 'Calibrating' ? 'Calibrating' : `${adaptive.skill_mastery}%`}
+                    </span>
+                  </div>
                 </div>
-                <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/70">
-                  <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">Why now</p>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                    {adaptive.challenge_band === 'Calibrating'
-                      ? 'We are using this question to estimate your starting level in this skill.'
-                      : adaptive.selection_reason}
-                  </p>
-                </div>
+                <p className="mt-3 text-xs leading-relaxed text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800 pt-2">
+                  {adaptive.challenge_band === 'Calibrating'
+                    ? 'Estimating your starting level.'
+                    : adaptive.challenge_band === 'Reinforcement' ? 'Below your level — reinforcement.'
+                    : adaptive.challenge_band === 'At your level' ? 'Matches your current ability.'
+                    : adaptive.challenge_band === 'Stretch' ? 'Slightly above — a good stretch.'
+                    : adaptive.challenge_band === 'Challenge+' ? 'Well above — a real challenge.'
+                    : adaptive.selection_reason}
+                </p>
               </div>
             )}
 
+            {/* Streak */}
             {streak >= 3 && (
-              <div className="bg-gradient-to-l from-amber-500 to-orange-500 rounded-2xl p-4 text-center text-white shadow-card-lg animate-badge-bounce">
-                <div className="text-3xl animate-fire mb-1">🔥</div>
-                <p className="font-bold text-sm">{streak} Streak!</p>
-                <p className="text-white/90 text-sm">×2 XP Multiplier</p>
+              <div className="bg-gradient-to-l from-amber-500 to-orange-500 rounded-2xl p-3 text-center text-white shadow-card-lg">
+                <span className="animate-fire text-xl">🔥</span>
+                <span className="font-bold text-sm ml-1">{streak} Streak • ×2 XP</span>
               </div>
             )}
           </div>
@@ -603,21 +586,6 @@ export default function Practice() {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-interface SideStatRowProps {
-  label: string;
-  value: string | number;
-  color?: string;
-}
-
-function SideStatRow({ label, value, color = 'text-slate-800' }: SideStatRowProps) {
-  return (
-    <div className="flex justify-between items-center">
-      <span className="text-slate-500 text-sm">{label}</span>
-      <span className={`font-bold text-lg ${color}`}>{value}</span>
     </div>
   );
 }
