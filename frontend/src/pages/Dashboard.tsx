@@ -255,36 +255,62 @@ export default function Dashboard() {
           </div>
 
           {/* Compact 30-Day Calendar Strip */}
-          <div className="grid grid-cols-6 md:grid-cols-10 lg:grid-cols-15 gap-1">
+          <div className="grid grid-cols-10 lg:grid-cols-15 gap-1.5">
             {plan.map(day => {
               const isCurrent = day.is_today;
-              let bg = 'bg-slate-100 dark:bg-slate-800';
+              // Phase-aware coloring
+              const phaseColor = day.phase === 'foundation' ? 'border-blue-300 dark:border-blue-700' : day.phase === 'building' ? 'border-teal-300 dark:border-teal-700' : 'border-amber-300 dark:border-amber-700';
+              let bg = 'bg-slate-50 dark:bg-slate-800/60';
+              let textColor = 'text-slate-400 dark:text-slate-500';
               let ring = '';
-              if (day.completed) bg = 'bg-emerald-400';
-              else if (isCurrent) { bg = 'bg-teal-500'; ring = 'ring-2 ring-teal-300 ring-offset-1 animate-glow-ring'; }
-              else if (day.is_rest_day) bg = 'bg-slate-200 dark:bg-slate-700';
-              else if (day.is_mock_day) bg = 'bg-amber-300';
+              let border = `border ${phaseColor}`;
+
+              if (day.completed) {
+                bg = 'bg-emerald-100 dark:bg-emerald-900/40';
+                textColor = 'text-emerald-600 dark:text-emerald-400';
+                border = 'border border-emerald-300 dark:border-emerald-700';
+              } else if (isCurrent) {
+                bg = 'bg-teal-500 dark:bg-teal-600';
+                textColor = 'text-white';
+                ring = 'ring-2 ring-teal-300 ring-offset-1 dark:ring-offset-slate-900 animate-glow-ring';
+                border = 'border-0';
+              } else if (day.is_rest_day) {
+                bg = 'bg-slate-100 dark:bg-slate-800';
+                textColor = 'text-slate-300 dark:text-slate-600';
+              } else if (day.is_mock_day) {
+                bg = 'bg-amber-50 dark:bg-amber-900/30';
+                textColor = 'text-amber-600 dark:text-amber-400';
+                border = 'border border-amber-300 dark:border-amber-700';
+              }
 
               return (
-                <div key={day.day} title={`Day ${day.day}${day.completed ? ' ✓' : ''}${day.is_mock_day ? ' Mock' : ''}${day.is_rest_day ? ' Rest' : ''}`}
-                  className={`aspect-square rounded-md ${bg} ${ring} flex items-center justify-center transition-all hover:scale-125 cursor-default`}>
-                  {day.completed ? (
-                    <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
-                  ) : isCurrent ? (
-                    <span className="text-white text-sm font-black">{day.day}</span>
-                  ) : null}
-                </div>
+                <Link key={day.day} to="/plan" title={`Day ${day.day}${day.completed ? ' ✓' : ''}${day.is_mock_day ? ' — Mock Exam' : ''}${day.is_rest_day ? ' — Rest' : ''}`}
+                  className={`aspect-square rounded-lg ${bg} ${ring} ${border} flex flex-col items-center justify-center transition-all hover:scale-110 hover:shadow-md`}>
+                  <span className={`text-xs font-black ${textColor}`}>{day.day}</span>
+                  {day.completed && (
+                    <svg className="w-2.5 h-2.5 text-emerald-500 dark:text-emerald-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                  )}
+                  {day.is_mock_day && !day.completed && !isCurrent && (
+                    <span className="text-[8px] font-bold text-amber-500 dark:text-amber-400 mt-0.5">M</span>
+                  )}
+                  {day.is_rest_day && !day.completed && (
+                    <span className="text-[8px] text-slate-300 dark:text-slate-600 mt-0.5">R</span>
+                  )}
+                </Link>
               );
             })}
           </div>
 
           {/* Legend */}
-          <div className="flex items-center gap-4 mt-3 text-sm text-slate-500">
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-emerald-400 inline-block" /> Completed</span>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-teal-500 inline-block" /> Today</span>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-amber-300 inline-block" /> Mock</span>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-slate-200 inline-block" /> Rest</span>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-slate-100 dark:bg-slate-800 inline-block" /> Upcoming</span>
+          <div className="flex flex-wrap items-center gap-3 mt-3 text-xs text-slate-500 dark:text-slate-400">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-400 inline-block" /> Done</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-teal-500 inline-block" /> Today</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-amber-400 inline-block" /> Mock</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-slate-200 dark:bg-slate-700 inline-block" /> Rest</span>
+            <span className="text-slate-300 dark:text-slate-600">|</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm border border-blue-300 dark:border-blue-700 inline-block" /> Foundation</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm border border-teal-300 dark:border-teal-700 inline-block" /> Building</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm border border-amber-300 dark:border-amber-700 inline-block" /> Mastery</span>
           </div>
         </div>
       )}
