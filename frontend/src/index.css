@@ -514,10 +514,29 @@
 }
 
 /* ═══ SVG Figure Dark Mode Adaptation ═══ */
-/* Invert geometry/diagram SVGs in dark mode for proper contrast */
-.dark [data-testid*="-figure"] svg {
-  filter: invert(0.88) hue-rotate(180deg);
+/* Override SVG inline styles for dark mode via CSS specificity */
+.dark [data-testid*="-figure"] svg .shape,
+.dark [data-testid*="-figure"] svg .shape-alt,
+.dark [data-testid*="-figure"] svg .shape-warm,
+.dark [data-testid*="-figure"] svg .shape-green,
+.dark [data-testid*="-figure"] svg .shape-red,
+.dark [data-testid*="-figure"] svg .shape-purple,
+.dark [data-testid*="-figure"] svg .shape-cyan,
+.dark [data-testid*="-figure"] svg .shape-pink {
+  fill: #334155;
+  stroke: #e2e8f0;
 }
+
+.dark [data-testid*="-figure"] svg .shape-white { fill: #1e293b; stroke: #e2e8f0; }
+.dark [data-testid*="-figure"] svg .shape-highlight { fill: #475569; stroke: #e2e8f0; }
+.dark [data-testid*="-figure"] svg .shape-highlight-pink { fill: #475569; stroke: #e2e8f0; }
+
+.dark [data-testid*="-figure"] svg .line,
+.dark [data-testid*="-figure"] svg .line-thin,
+.dark [data-testid*="-figure"] svg .line-dash,
+.dark [data-testid*="-figure"] svg .right-angle { stroke: #e2e8f0; }
+
+.dark [data-testid*="-figure"] svg .label { fill: #e2e8f0; }
 
 /* ═══ Confetti ═══ */
 @keyframes confetti-1 { 0%{opacity:1;transform:translate(0,0) rotate(0) scale(1)} 100%{opacity:0;transform:translate(-80px,100px) rotate(720deg) scale(0.5)} }

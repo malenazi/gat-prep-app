@@ -12,6 +12,7 @@ const ALLOWED_SVG_TAGS = new Set([
   'path',
   'text',
   'tspan',
+  'style',
 ]);
 
 const ALLOWED_SVG_ATTRS = new Set([
@@ -48,6 +49,7 @@ const ALLOWED_SVG_ATTRS = new Set([
   'text-anchor',
   'dominant-baseline',
   'preserveAspectRatio',
+  'class',
 ]);
 
 const BLOCKED_SVG_VALUE_SNIPPETS = ['javascript:', 'data:', 'url('];

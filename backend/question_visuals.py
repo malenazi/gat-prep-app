@@ -17,6 +17,7 @@ ALLOWED_SVG_TAGS = {
     "path",
     "text",
     "tspan",
+    "style",
 }
 
 ALLOWED_SVG_ATTRS = {
@@ -53,6 +54,7 @@ ALLOWED_SVG_ATTRS = {
     "text-anchor",
     "dominant-baseline",
     "preserveAspectRatio",
+    "class",
 }
 
 DISALLOWED_SVG_VALUE_SNIPPETS = ("javascript:", "data:", "url(")

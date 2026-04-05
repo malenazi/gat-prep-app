@@ -26,11 +26,33 @@ def _apply_updates(question: Question, **updates) -> None:
         setattr(question, field, value)
 
 
+_SVG_STYLE = (
+    '<style>'
+    '.shape{fill:#dbeafe;stroke:#1e293b;stroke-width:3}'
+    '.shape-alt{fill:#e0e7ff;stroke:#1e293b;stroke-width:3}'
+    '.shape-warm{fill:#fef3c7;stroke:#1e293b;stroke-width:3}'
+    '.shape-green{fill:#dcfce7;stroke:#1e293b;stroke-width:3}'
+    '.shape-red{fill:#fee2e2;stroke:#1e293b;stroke-width:3}'
+    '.shape-purple{fill:#ede9fe;stroke:#1e293b;stroke-width:3}'
+    '.shape-cyan{fill:#cffafe;stroke:#1e293b;stroke-width:3}'
+    '.shape-pink{fill:#fce7f3;stroke:#1e293b;stroke-width:3}'
+    '.shape-white{fill:#ffffff;stroke:#1e293b;stroke-width:3}'
+    '.shape-highlight{fill:#bfdbfe;stroke:#1e293b;stroke-width:2}'
+    '.shape-highlight-pink{fill:#fecdd3;stroke:#1e293b;stroke-width:2}'
+    '.line{stroke:#1e293b;stroke-width:3}'
+    '.line-thin{stroke:#1e293b;stroke-width:2}'
+    '.line-dash{stroke:#1e293b;stroke-width:2;stroke-dasharray:6 4}'
+    '.label{font-size:14px;font-family:Arial,sans-serif;fill:#1e293b}'
+    '.right-angle{fill:none;stroke:#1e293b;stroke-width:2}'
+    '</style>'
+)
+
+
 def _svg(content: str, view_box: str = "0 0 220 140") -> str:
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{view_box}" '
         'width="220" height="140" preserveAspectRatio="xMidYMid meet">'
-        f"{content}</svg>"
+        f"{_SVG_STYLE}{content}</svg>"
     )
 
 
@@ -42,9 +64,9 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
         q,
         text_ar="The diagram shows a rectangle. What is its area?",
         figure_svg=_svg(
-            '<rect x="35" y="30" width="150" height="80" fill="#dbeafe" stroke="#0f172a" stroke-width="3"/>'
-            '<text x="110" y="20" text-anchor="middle" font-size="14" font-family="Arial">8 cm</text>'
-            '<text x="196" y="75" font-size="14" font-family="Arial">5 cm</text>'
+            '<rect x="35" y="30" width="150" height="80" class="shape"/>'
+            '<text x="110" y="20" text-anchor="middle" class="label">8 cm</text>'
+            '<text x="196" y="75" class="label">5 cm</text>'
         ),
         explanation_ar="From the diagram, the rectangle has length 8 cm and width 5 cm. Area = length x width = 8 x 5 = 40 square cm.",
         solution_steps_ar=_steps("Read the two side lengths from the diagram: 8 cm and 5 cm.", "Use rectangle area = length x width.", "8 x 5 = 40."),
@@ -57,11 +79,11 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
         q,
         text_ar="The diagram shows a right triangle with side lengths 3 cm and 4 cm. What is the hypotenuse?",
         figure_svg=_svg(
-            '<path d="M40 105 L40 35 L150 105 Z" fill="#dcfce7" stroke="#0f172a" stroke-width="3"/>'
-            '<path d="M40 90 L55 90 L55 105" fill="none" stroke="#0f172a" stroke-width="2"/>'
-            '<text x="25" y="72" font-size="14" font-family="Arial">3 cm</text>'
-            '<text x="88" y="123" font-size="14" font-family="Arial">4 cm</text>'
-            '<text x="104" y="62" font-size="14" font-family="Arial">?</text>'
+            '<path d="M40 105 L40 35 L150 105 Z" class="shape-green"/>'
+            '<path d="M40 90 L55 90 L55 105" fill="none" class="line-thin"/>'
+            '<text x="25" y="72" class="label">3 cm</text>'
+            '<text x="88" y="123" class="label">4 cm</text>'
+            '<text x="104" y="62" class="label">?</text>'
         ),
         explanation_ar="The diagram gives the two legs of a right triangle: 3 cm and 4 cm. By the Pythagorean theorem, c^2 = 3^2 + 4^2 = 9 + 16 = 25, so c = 5.",
         solution_steps_ar=_steps("Use c^2 = a^2 + b^2.", "c^2 = 3^2 + 4^2 = 25.", "c = 5."),
@@ -74,9 +96,9 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
         q,
         text_ar="The diagram shows a circle with radius 7 cm. What is its circumference? (Use pi = 22/7.)",
         figure_svg=_svg(
-            '<circle cx="95" cy="70" r="44" fill="#fef3c7" stroke="#0f172a" stroke-width="3"/>'
-            '<line x1="95" y1="70" x2="139" y2="70" stroke="#0f172a" stroke-width="3"/>'
-            '<text x="107" y="62" font-size="14" font-family="Arial">7 cm</text>'
+            '<circle cx="95" cy="70" r="44" class="shape-warm"/>'
+            '<line x1="95" y1="70" x2="139" y2="70" class="line"/>'
+            '<text x="107" y="62" class="label">7 cm</text>'
         ),
         explanation_ar="The radius shown is 7 cm. Circumference = 2 x pi x r = 2 x (22/7) x 7 = 44 cm.",
         solution_steps_ar=_steps("Use circumference = 2 x pi x r.", "Substitute r = 7 and pi = 22/7.", "2 x 22 = 44."),
@@ -89,9 +111,9 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
         q,
         text_ar="A square is shown with total perimeter 24 cm. What is its area?",
         figure_svg=_svg(
-            '<rect x="55" y="25" width="90" height="90" fill="#ede9fe" stroke="#0f172a" stroke-width="3"/>'
-            '<text x="100" y="18" text-anchor="middle" font-size="14" font-family="Arial">Perimeter = 24 cm</text>'
-            '<text x="154" y="74" font-size="14" font-family="Arial">side = ?</text>'
+            '<rect x="55" y="25" width="90" height="90" class="shape-purple"/>'
+            '<text x="100" y="18" text-anchor="middle" class="label">Perimeter = 24 cm</text>'
+            '<text x="154" y="74" class="label">side = ?</text>'
         ),
         explanation_ar="A square has 4 equal sides, so each side is 24 / 4 = 6 cm. Area = side^2 = 6 x 6 = 36 square cm.",
         solution_steps_ar=_steps("Find one side: 24 / 4 = 6.", "Use square area = side x side.", "6 x 6 = 36."),
@@ -104,10 +126,10 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
         q,
         text_ar="The diagram shows a triangle with base 10 cm and height 6 cm. What is its area?",
         figure_svg=_svg(
-            '<path d="M35 110 L180 110 L80 35 Z" fill="#fee2e2" stroke="#0f172a" stroke-width="3"/>'
-            '<line x1="80" y1="35" x2="80" y2="110" stroke="#0f172a" stroke-width="2" stroke-dasharray="6 4"/>'
-            '<text x="102" y="126" font-size="14" font-family="Arial">10 cm</text>'
-            '<text x="88" y="76" font-size="14" font-family="Arial">6 cm</text>'
+            '<path d="M35 110 L180 110 L80 35 Z" class="shape-red"/>'
+            '<line x1="80" y1="35" x2="80" y2="110" class="line-dash"/>'
+            '<text x="102" y="126" class="label">10 cm</text>'
+            '<text x="88" y="76" class="label">6 cm</text>'
         ),
         explanation_ar="Use triangle area = (1/2) x base x height. From the diagram, area = (1/2) x 10 x 6 = 30 square cm.",
         solution_steps_ar=_steps("Read base = 10 cm and height = 6 cm.", "Apply triangle area = (1/2) x base x height.", "Area = 30."),
@@ -120,9 +142,9 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
         q,
         text_ar="The rectangle in the diagram has side lengths 12 cm and 4 cm. What is its perimeter?",
         figure_svg=_svg(
-            '<rect x="30" y="38" width="160" height="64" fill="#cffafe" stroke="#0f172a" stroke-width="3"/>'
-            '<text x="110" y="28" text-anchor="middle" font-size="14" font-family="Arial">12 cm</text>'
-            '<text x="198" y="74" font-size="14" font-family="Arial">4 cm</text>'
+            '<rect x="30" y="38" width="160" height="64" class="shape-cyan"/>'
+            '<text x="110" y="28" text-anchor="middle" class="label">12 cm</text>'
+            '<text x="198" y="74" class="label">4 cm</text>'
         ),
         explanation_ar="Perimeter of a rectangle is 2 x (length + width). With 12 cm and 4 cm, perimeter = 2 x (12 + 4) = 32 cm.",
         solution_steps_ar=_steps("Add the two side lengths: 12 + 4 = 16.", "Double the sum for perimeter.", "2 x 16 = 32."),
@@ -135,9 +157,9 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
         q,
         text_ar="The diagram shows a circle with radius 14 cm. What is its area? (Use pi = 22/7.)",
         figure_svg=_svg(
-            '<circle cx="95" cy="72" r="46" fill="#fde68a" stroke="#0f172a" stroke-width="3"/>'
-            '<line x1="95" y1="72" x2="141" y2="72" stroke="#0f172a" stroke-width="3"/>'
-            '<text x="108" y="64" font-size="14" font-family="Arial">14 cm</text>'
+            '<circle cx="95" cy="72" r="46" class="shape-warm"/>'
+            '<line x1="95" y1="72" x2="141" y2="72" class="line"/>'
+            '<text x="108" y="64" class="label">14 cm</text>'
         ),
         explanation_ar="Area = pi x r^2 = (22/7) x 14^2 = (22/7) x 196 = 616 square cm.",
         solution_steps_ar=_steps("Use area = pi x r^2.", "Square the radius: 14^2 = 196.", "Multiply by 22/7 to get 616."),
@@ -150,11 +172,11 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
         q,
         text_ar="The right triangle shows hypotenuse 13 cm and one leg 5 cm. Find the missing leg.",
         figure_svg=_svg(
-            '<path d="M40 105 L40 45 L150 105 Z" fill="#e0e7ff" stroke="#0f172a" stroke-width="3"/>'
-            '<path d="M40 90 L55 90 L55 105" fill="none" stroke="#0f172a" stroke-width="2"/>'
-            '<text x="20" y="78" font-size="14" font-family="Arial">5 cm</text>'
-            '<text x="98" y="56" font-size="14" font-family="Arial">13 cm</text>'
-            '<text x="90" y="123" font-size="14" font-family="Arial">?</text>'
+            '<path d="M40 105 L40 45 L150 105 Z" class="shape-alt"/>'
+            '<path d="M40 90 L55 90 L55 105" fill="none" class="line-thin"/>'
+            '<text x="20" y="78" class="label">5 cm</text>'
+            '<text x="98" y="56" class="label">13 cm</text>'
+            '<text x="90" y="123" class="label">?</text>'
         ),
         explanation_ar="Use the Pythagorean theorem. The missing leg satisfies x^2 = 13^2 - 5^2 = 169 - 25 = 144, so x = 12 cm.",
         solution_steps_ar=_steps("Use x^2 = 13^2 - 5^2.", "x^2 = 169 - 25 = 144.", "x = 12."),
@@ -338,10 +360,10 @@ def _new_geometry_questions() -> list[Question]:
             difficulty=0.45,
             text_ar="The diagram shows a parallelogram. What is its area?",
             figure_svg=_svg(
-                '<polygon points="50,110 155,110 185,45 80,45" fill="#dbeafe" stroke="#0f172a" stroke-width="3"/>'
-                '<line x1="80" y1="45" x2="80" y2="110" stroke="#0f172a" stroke-width="2" stroke-dasharray="6 4"/>'
-                '<text x="103" y="128" font-size="14" font-family="Arial">12 cm</text>'
-                '<text x="88" y="82" font-size="14" font-family="Arial">5 cm</text>'
+                '<polygon points="50,110 155,110 185,45 80,45" class="shape"/>'
+                '<line x1="80" y1="45" x2="80" y2="110" class="line-dash"/>'
+                '<text x="103" y="128" class="label">12 cm</text>'
+                '<text x="88" y="82" class="label">5 cm</text>'
             ),
             option_a="17 square cm",
             option_b="30 square cm",
@@ -359,11 +381,11 @@ def _new_geometry_questions() -> list[Question]:
             difficulty=0.55,
             text_ar="The diagram shows a trapezoid. What is its area?",
             figure_svg=_svg(
-                '<polygon points="45,110 185,110 155,50 80,50" fill="#fce7f3" stroke="#0f172a" stroke-width="3"/>'
-                '<line x1="80" y1="50" x2="80" y2="110" stroke="#0f172a" stroke-width="2" stroke-dasharray="6 4"/>'
-                '<text x="110" y="42" text-anchor="middle" font-size="14" font-family="Arial">6 cm</text>'
-                '<text x="115" y="128" font-size="14" font-family="Arial">10 cm</text>'
-                '<text x="88" y="84" font-size="14" font-family="Arial">4 cm</text>'
+                '<polygon points="45,110 185,110 155,50 80,50" class="shape-pink"/>'
+                '<line x1="80" y1="50" x2="80" y2="110" class="line-dash"/>'
+                '<text x="110" y="42" text-anchor="middle" class="label">6 cm</text>'
+                '<text x="115" y="128" class="label">10 cm</text>'
+                '<text x="88" y="84" class="label">4 cm</text>'
             ),
             option_a="28 square cm",
             option_b="30 square cm",
@@ -381,11 +403,11 @@ def _new_geometry_questions() -> list[Question]:
             difficulty=0.4,
             text_ar="The diagram shows a right triangle with legs 6 cm and 8 cm. What is the hypotenuse?",
             figure_svg=_svg(
-                '<path d="M40 105 L40 45 L160 105 Z" fill="#dcfce7" stroke="#0f172a" stroke-width="3"/>'
-                '<path d="M40 90 L55 90 L55 105" fill="none" stroke="#0f172a" stroke-width="2"/>'
-                '<text x="20" y="78" font-size="14" font-family="Arial">6 cm</text>'
-                '<text x="92" y="124" font-size="14" font-family="Arial">8 cm</text>'
-                '<text x="110" y="64" font-size="14" font-family="Arial">?</text>'
+                '<path d="M40 105 L40 45 L160 105 Z" class="shape-green"/>'
+                '<path d="M40 90 L55 90 L55 105" fill="none" class="line-thin"/>'
+                '<text x="20" y="78" class="label">6 cm</text>'
+                '<text x="92" y="124" class="label">8 cm</text>'
+                '<text x="110" y="64" class="label">?</text>'
             ),
             option_a="9 cm",
             option_b="10 cm",
@@ -403,10 +425,10 @@ def _new_geometry_questions() -> list[Question]:
             difficulty=0.35,
             text_ar="The diagram shows two angles of a triangle. What is the third angle?",
             figure_svg=_svg(
-                '<path d="M40 110 L180 110 L105 35 Z" fill="#fde68a" stroke="#0f172a" stroke-width="3"/>'
-                '<text x="62" y="102" font-size="14" font-family="Arial">35 deg</text>'
-                '<text x="140" y="102" font-size="14" font-family="Arial">65 deg</text>'
-                '<text x="100" y="58" font-size="14" font-family="Arial">?</text>'
+                '<path d="M40 110 L180 110 L105 35 Z" class="shape-warm"/>'
+                '<text x="62" y="102" class="label">35 deg</text>'
+                '<text x="140" y="102" class="label">65 deg</text>'
+                '<text x="100" y="58" class="label">?</text>'
             ),
             option_a="70 deg",
             option_b="75 deg",
@@ -424,11 +446,11 @@ def _new_geometry_questions() -> list[Question]:
             difficulty=0.5,
             text_ar="The diagram shows a rectangle with side lengths 6 cm and 8 cm. What is the diagonal?",
             figure_svg=_svg(
-                '<rect x="40" y="30" width="140" height="80" fill="#cffafe" stroke="#0f172a" stroke-width="3"/>'
-                '<line x1="40" y1="110" x2="180" y2="30" stroke="#0f172a" stroke-width="2"/>'
-                '<text x="110" y="22" text-anchor="middle" font-size="14" font-family="Arial">8 cm</text>'
-                '<text x="188" y="74" font-size="14" font-family="Arial">6 cm</text>'
-                '<text x="110" y="78" font-size="14" font-family="Arial">?</text>'
+                '<rect x="40" y="30" width="140" height="80" class="shape-cyan"/>'
+                '<line x1="40" y1="110" x2="180" y2="30" class="line-thin"/>'
+                '<text x="110" y="22" text-anchor="middle" class="label">8 cm</text>'
+                '<text x="188" y="74" class="label">6 cm</text>'
+                '<text x="110" y="78" class="label">?</text>'
             ),
             option_a="9 cm",
             option_b="10 cm",
@@ -446,9 +468,9 @@ def _new_geometry_questions() -> list[Question]:
             difficulty=0.6,
             text_ar="The diagram shows a semicircle of radius 7 cm. What is its perimeter? (Use pi = 22/7.)",
             figure_svg=_svg(
-                '<path d="M40 100 A60 60 0 0 1 160 100 L40 100 Z" fill="#ede9fe" stroke="#0f172a" stroke-width="3"/>'
-                '<line x1="100" y1="100" x2="160" y2="100" stroke="#0f172a" stroke-width="3"/>'
-                '<text x="116" y="92" font-size="14" font-family="Arial">7 cm</text>'
+                '<path d="M40 100 A60 60 0 0 1 160 100 L40 100 Z" class="shape-purple"/>'
+                '<line x1="100" y1="100" x2="160" y2="100" class="line"/>'
+                '<text x="116" y="92" class="label">7 cm</text>'
             ),
             option_a="22 cm",
             option_b="29 cm",
@@ -466,10 +488,10 @@ def _new_geometry_questions() -> list[Question]:
             difficulty=0.45,
             text_ar="A rectangle is cut by a diagonal as shown. What is the area of the shaded triangle?",
             figure_svg=_svg(
-                '<rect x="40" y="30" width="150" height="90" fill="#ffffff" stroke="#0f172a" stroke-width="3"/>'
-                '<path d="M40 120 L40 30 L190 120 Z" fill="#bfdbfe" stroke="#0f172a" stroke-width="2"/>'
-                '<text x="115" y="22" text-anchor="middle" font-size="14" font-family="Arial">8 cm</text>'
-                '<text x="198" y="80" font-size="14" font-family="Arial">6 cm</text>'
+                '<rect x="40" y="30" width="150" height="90" class="shape-white"/>'
+                '<path d="M40 120 L40 30 L190 120 Z" class="shape-highlight"/>'
+                '<text x="115" y="22" text-anchor="middle" class="label">8 cm</text>'
+                '<text x="198" y="80" class="label">6 cm</text>'
             ),
             option_a="20 square cm",
             option_b="24 square cm",
@@ -487,9 +509,9 @@ def _new_geometry_questions() -> list[Question]:
             difficulty=0.4,
             text_ar="The diagonal of the square is shown. What is the area of one triangular half?",
             figure_svg=_svg(
-                '<rect x="55" y="25" width="110" height="110" fill="#ffffff" stroke="#0f172a" stroke-width="3"/>'
-                '<path d="M55 135 L55 25 L165 135 Z" fill="#fecdd3" stroke="#0f172a" stroke-width="2"/>'
-                '<text x="172" y="84" font-size="14" font-family="Arial">10 cm</text>'
+                '<rect x="55" y="25" width="110" height="110" class="shape-white"/>'
+                '<path d="M55 135 L55 25 L165 135 Z" class="shape-highlight-pink"/>'
+                '<text x="172" y="84" class="label">10 cm</text>'
             ),
             option_a="25 square cm",
             option_b="40 square cm",
