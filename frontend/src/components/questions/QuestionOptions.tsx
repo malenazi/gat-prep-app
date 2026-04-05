@@ -19,9 +19,9 @@ interface QuestionOptionsProps {
 }
 
 const accentClasses: Record<NonNullable<QuestionOptionsProps['accent']>, { selected: string; selectedBadge: string }> = {
-  teal: { selected: 'border-teal-400 bg-teal-50 shadow-sm', selectedBadge: 'bg-teal-500 text-white' },
-  blue: { selected: 'border-blue-400 bg-blue-50 shadow-sm', selectedBadge: 'bg-blue-500 text-white' },
-  violet: { selected: 'border-violet-400 bg-violet-50 shadow-sm', selectedBadge: 'bg-violet-500 text-white' },
+  teal: { selected: 'border-teal-400 bg-teal-50 shadow-sm dark:border-teal-500 dark:bg-teal-500/20', selectedBadge: 'bg-teal-500 text-white' },
+  blue: { selected: 'border-blue-400 bg-blue-50 shadow-sm dark:border-blue-500 dark:bg-blue-500/20', selectedBadge: 'bg-blue-500 text-white' },
+  violet: { selected: 'border-violet-400 bg-violet-50 shadow-sm dark:border-violet-500 dark:bg-violet-500/20', selectedBadge: 'bg-violet-500 text-white' },
 };
 
 export function QuestionOptions({
