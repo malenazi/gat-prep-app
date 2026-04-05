@@ -13,6 +13,10 @@ PRODUCTION_ENV_NAMES = ("APP_ENV", "ENVIRONMENT", "RAILWAY_ENVIRONMENT", "RAILWA
 PRODUCTION_ENV_VALUES = {"prod", "production"}
 USER_PASSWORD_MIN_LENGTH = 8
 ADMIN_PASSWORD_MIN_LENGTH = 20
+
+# E2E test mode raises rate limits so auth tests don't exhaust the quota
+_E2E_MODE = bool(os.getenv("E2E_DATABASE_URL"))
+_MAX_REGISTRATIONS_PER_HOUR = 20 if _E2E_MODE else 3
 BCRYPT_PASSWORD_MAX_BYTES = 72
 
 _pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -133,7 +137,7 @@ class InMemoryAuthRateLimiter:
         now = time.time()
         with self._lock:
             attempts = self._prune(self._registration_attempts, client_ip, 3600, now)
-            if len(attempts) >= 3:
+            if len(attempts) >= _MAX_REGISTRATIONS_PER_HOUR:
                 oldest = min(attempts)
                 return max(1, int(3600 - (now - oldest)))
             attempts.append(now)

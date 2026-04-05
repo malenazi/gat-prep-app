@@ -334,7 +334,7 @@ export default function Admin() {
                   <PieChart>
                     <Pie data={[
                       { name: 'Active Today', value: users?.active_today || 0, fill: '#10b981' },
-                      { name: 'Inactive', value: (users?.total_users || 0) - (users?.active_today || 0), fill: '#e2e8f0' },
+                      { name: 'Inactive', value: (users?.total_users || 0) - (users?.active_today || 0), fill: '#94a3b8' },
                     ]} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({name, value}) => `${name}: ${value}`} />
                   </PieChart>
                 </ResponsiveContainer>

@@ -62,7 +62,7 @@ export const HeroIllustration: React.FC = () => (
       {/* Person silhouette */}
       <g transform="translate(160, 80)">
         {/* Head */}
-        <circle cx="40" cy="30" r="25" fill="#f8fafc" stroke="#0d9488" strokeWidth="2" />
+        <circle cx="40" cy="30" r="25" className="fill-slate-50 dark:fill-slate-800" stroke="#0d9488" strokeWidth="2" />
         {/* Body */}
         <path d="M40 55 L40 100" stroke="#0d9488" strokeWidth="3" strokeLinecap="round" />
         {/* Arms */}
@@ -134,7 +134,8 @@ export const ProgressRing: React.FC<{ progress: number; size?: number; strokeWid
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#e2e8f0"
+          stroke="currentColor"
+          className="text-slate-200 dark:text-slate-700"
           strokeWidth={strokeWidth}
         />
         <circle

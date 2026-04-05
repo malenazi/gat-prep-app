@@ -32,6 +32,11 @@
 - Explanations must reference actual option values, not generic placeholders
 - Correct option must be in {a, b, c, d}
 
+## Legacy Field Names
+- `name_ar` fields (skills, badges, questions) contain **English text** despite the `_ar` suffix
+- This is a legacy naming convention from the Arabic version — do NOT rename (requires DB migration)
+- When displaying `name_ar`, it will show English text like "Reading Comprehension", "Algebra", etc.
+
 ## Code Style
 - Use straight quotes only (never smart/curly quotes)
 - No unused variables or imports
