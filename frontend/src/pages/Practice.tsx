@@ -232,7 +232,9 @@ export default function Practice() {
   });
 
   const accuracy = sessionStats.total > 0 ? Math.round(sessionStats.correct / sessionStats.total * 100) : 0;
-  const dailyPct = Math.min(100, Math.round((todayCompleted / Math.max(1, todayTarget)) * 100));
+  // dailyPct: use the higher of todayCompleted (API + increments) or session total (in case API didn't load yet)
+  const effectiveCompleted = Math.max(todayCompleted, sessionStats.total);
+  const dailyPct = Math.min(100, Math.round((effectiveCompleted / Math.max(1, todayTarget)) * 100));
 
   if (error && !question) return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center page-enter text-slate-800 dark:text-slate-100">
@@ -367,7 +369,7 @@ export default function Practice() {
             <span className="text-xs font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10 px-2 py-0.5 rounded-full">{dailyPct}%</span>
           </div>
         </div>
-        <div className="h-1.5 lg:h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative">
+        <div className="h-2 lg:h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden relative">
           <div className="h-full bg-gradient-to-l from-teal-400 to-teal-600 rounded-full transition-all duration-500" style={{ width: `${dailyPct}%` }} />
           <div className="progress-milestone-marker" style={{ left: '25%' }} />
           <div className="progress-milestone-marker" style={{ left: '50%' }} />
@@ -385,7 +387,7 @@ export default function Practice() {
                 End
               </button>
               {!selected && question && (
-                <button onClick={skipQuestion} className="text-slate-400 hover:text-amber-500 text-sm transition flex items-center gap-1 dark:text-slate-500 dark:hover:text-amber-400">
+                <button onClick={skipQuestion} className="text-slate-500 hover:text-amber-600 text-sm font-medium transition flex items-center gap-1 dark:text-slate-400 dark:hover:text-amber-400">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
                   Skip
                 </button>
@@ -447,7 +449,7 @@ export default function Practice() {
                 appearance={appearance}
               />
 
-              <div className={submitting && selected ? 'option-submitting rounded-[2rem]' : ''}>
+              <div className={submitting && selected ? 'option-submitting rounded-2xl' : ''}>
                 <QuestionOptions
                   options={question.options}
                   contentFormat={question.content_format}
@@ -459,6 +461,14 @@ export default function Practice() {
                   appearance={appearance}
                 />
               </div>
+
+              {/* Keyboard shortcuts hint (desktop, before answer) */}
+              {!feedback && !selected && (
+                <p className="hidden lg:flex items-center justify-center gap-3 mt-4 text-xs text-slate-400 dark:text-slate-500">
+                  <span className="flex items-center gap-1"><span className="key-badge">A</span><span className="key-badge">B</span><span className="key-badge">C</span><span className="key-badge">D</span> select</span>
+                  <span className="flex items-center gap-1"><span className="key-badge">H</span> hint</span>
+                </p>
+              )}
 
               {feedback && (
                 <div ref={feedbackRef} className={`mt-3 lg:mt-6 ${feedbackCollapsing ? 'feedback-collapsing' : 'animate-slide-up'}`} data-testid="practice-feedback">
@@ -489,28 +499,25 @@ export default function Practice() {
         {/* ═══ Desktop Stats Sidebar ═══ */}
         <div className="hidden xl:block">
           <div className="sticky top-24 space-y-3">
-            {/* Accuracy ring + key stats */}
-            <div className="bg-white shadow-card rounded-2xl p-4 dark:bg-slate-900" data-testid="practice-session-stats">
-              <div className="flex items-center gap-4">
-                <div className="relative w-16 h-16 shrink-0">
+            {/* Accuracy + key stats */}
+            <div className="bg-white shadow-card rounded-2xl p-3.5 dark:bg-slate-900" data-testid="practice-session-stats">
+              <div className="flex items-center gap-3">
+                <div className="relative w-11 h-11 shrink-0">
                   <svg viewBox="0 0 100 100" className="w-full h-full">
-                    <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" className="text-slate-100 dark:text-slate-800" strokeWidth="7" />
-                    <circle cx="50" cy="50" r="42" fill="none" stroke="#0d9488" strokeWidth="7"
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="currentColor" className="text-slate-200 dark:text-slate-700" strokeWidth="9" />
+                    <circle cx="50" cy="50" r="42" fill="none" stroke="#0d9488" strokeWidth="9"
                       strokeDasharray="264" strokeDashoffset={264 - (264 * accuracy / 100)} strokeLinecap="round"
                       transform="rotate(-90 50 50)" style={{ transition: 'stroke-dashoffset 0.5s ease' }} />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-base font-black text-slate-800 dark:text-slate-100">{accuracy}%</span>
+                    <span className="text-xs font-black text-slate-800 dark:text-slate-100">{accuracy}%</span>
                   </div>
                 </div>
-                <div className="flex-1 space-y-1.5">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500 dark:text-slate-400">Correct</span>
-                    <span className="font-bold text-emerald-500">{sessionStats.correct}/{sessionStats.total}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500 dark:text-slate-400">XP</span>
-                    <span className="font-bold text-amber-500">+{sessionStats.xp}</span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 text-sm">
+                    <span className="font-bold text-emerald-500">{sessionStats.correct}<span className="text-slate-400 font-medium">/{sessionStats.total}</span></span>
+                    <span className="text-slate-300 dark:text-slate-600">|</span>
+                    <span className="font-bold text-amber-500">+{sessionStats.xp} XP</span>
                   </div>
                 </div>
               </div>
@@ -535,15 +542,23 @@ export default function Practice() {
                     </span>
                   </div>
                 </div>
-                <p className="mt-3 text-xs leading-relaxed text-slate-400 dark:text-slate-500 border-t border-slate-100 dark:border-slate-800 pt-2">
-                  {adaptive.challenge_band === 'Calibrating'
-                    ? 'Estimating your starting level.'
-                    : adaptive.challenge_band === 'Reinforcement' ? 'Below your level — reinforcement.'
-                    : adaptive.challenge_band === 'At your level' ? 'Matches your current ability.'
-                    : adaptive.challenge_band === 'Stretch' ? 'Slightly above — a good stretch.'
-                    : adaptive.challenge_band === 'Challenge+' ? 'Well above — a real challenge.'
-                    : adaptive.selection_reason}
-                </p>
+                <div className="mt-2.5 flex items-start gap-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 px-2.5 py-2">
+                  <span className="text-xs mt-px">
+                    {adaptive.challenge_band === 'Calibrating' ? '🔍' :
+                     adaptive.challenge_band === 'Reinforcement' ? '🛡️' :
+                     adaptive.challenge_band === 'At your level' ? '🎯' :
+                     adaptive.challenge_band === 'Stretch' ? '📈' : '🚀'}
+                  </span>
+                  <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                    {adaptive.challenge_band === 'Calibrating'
+                      ? 'Estimating your starting level.'
+                      : adaptive.challenge_band === 'Reinforcement' ? 'Below your level — reinforcement.'
+                      : adaptive.challenge_band === 'At your level' ? 'Matches your current ability.'
+                      : adaptive.challenge_band === 'Stretch' ? 'Slightly above — a good stretch.'
+                      : adaptive.challenge_band === 'Challenge+' ? 'Well above — a real challenge.'
+                      : adaptive.selection_reason}
+                  </p>
+                </div>
               </div>
             )}
 

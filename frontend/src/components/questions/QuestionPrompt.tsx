@@ -61,7 +61,7 @@ export function QuestionPrompt({
   content_format = 'plain',
   comparison_columns,
   testIdPrefix,
-  passageClassName = 'rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300',
+  passageClassName = 'rounded-2xl border border-blue-100 bg-blue-50/40 p-4 text-sm text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300',
   questionClassName = 'text-base font-bold leading-relaxed text-slate-800 lg:text-2xl dark:text-slate-100',
   figureFrameClassName = 'rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950',
   compact = false,
@@ -201,7 +201,9 @@ export function QuestionPrompt({
         hasLongPassage ? (
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
             <div className={`relative ${passageClassName}`} data-testid={`${testIdPrefix}-passage`}>
-              <button type="button" onClick={() => setPassageExpanded(v => !v)} className="absolute top-3 right-3 z-10 text-xs text-slate-500 hover:text-teal-600 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">{passageExpanded ? 'Collapse' : 'Expand'}</button>
+              <button type="button" onClick={() => setPassageExpanded(v => !v)} className="absolute top-3 right-3 z-10 text-xs font-bold text-teal-600 hover:text-teal-700 bg-white dark:bg-slate-800 dark:text-teal-400 shadow-sm px-2.5 py-1 rounded-lg border border-teal-200 dark:border-teal-800 transition-all hover:shadow-md">
+                {passageExpanded ? '↗ Collapse' : '↙ Expand'}
+              </button>
               <p className="mb-3 text-xs font-black uppercase tracking-[0.16em] text-slate-400">Passage</p>
               <RichTextContent content={passage_ar} contentFormat={content_format} className={`${passageExpanded ? 'max-h-none' : 'max-h-[28rem]'} overflow-y-auto leading-[1.9] text-[0.94rem]`} />
             </div>

@@ -117,7 +117,7 @@ export function QuestionOptions({
             }}
             disabled={disabled}
             data-testid={`${testIdPrefix}-option-${option.key}`}
-            className={`w-full rounded-[2rem] border-2 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-200 interactive-press ${cardClass}`}
+            className={`w-full rounded-2xl border-2 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-200 interactive-press ${cardClass}`}
           >
             <div className={`flex items-start gap-4 ${optionPaddingClass}`}>
               <span className={`flex shrink-0 items-center justify-center font-black ${optionBadgeClass} ${badgeClass}`}>
