@@ -331,12 +331,12 @@ export function LandingPage({ onStart }: LandingPageProps) {
 
             {/* CTA */}
             <div className="flex items-center gap-3">
-              <button onClick={onStart} className="text-sm font-medium text-slate-600 hover:text-teal-600 transition hidden xl:block" data-testid="landing-login">
+              <button onClick={onStart} className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-teal-600 transition hidden xl:block" data-testid="landing-login">
                 Login
               </button>
               <Button onClick={onStart} className="btn-primary h-10 px-5 text-sm" data-testid="landing-start">Get Started Free</Button>
               {/* Hamburger (mobile only) */}
-              <button onClick={() => setMobileMenu(!mobileMenu)} className="lg:hidden p-2 text-slate-600 hover:text-teal-600" data-testid="landing-mobile-menu">
+              <button onClick={() => setMobileMenu(!mobileMenu)} className="lg:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-teal-600" data-testid="landing-mobile-menu">
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   {mobileMenu
                     ? <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -349,11 +349,11 @@ export function LandingPage({ onStart }: LandingPageProps) {
           {/* Mobile Menu Dropdown */}
           {mobileMenu && (
             <div className="lg:hidden border-t border-slate-100 bg-white/95 backdrop-blur-sm px-6 py-4 space-y-3 animate-slide-up dark:border-slate-800 dark:bg-slate-950/95">
-              <button onClick={() => { scrollTo('course'); setMobileMenu(false); }} className="block w-full text-left text-sm font-medium text-slate-600 hover:text-teal-600 py-2" data-testid="landing-mobile-course">Course</button>
-              <button onClick={() => { scrollTo('curriculum'); setMobileMenu(false); }} className="block w-full text-left text-sm font-medium text-slate-600 hover:text-teal-600 py-2" data-testid="landing-mobile-curriculum">Curriculum</button>
-              <button onClick={() => { scrollTo('features'); setMobileMenu(false); }} className="block w-full text-left text-sm font-medium text-slate-600 hover:text-teal-600 py-2" data-testid="landing-mobile-features">Features</button>
-              <button onClick={() => { scrollTo('reviews'); setMobileMenu(false); }} className="block w-full text-left text-sm font-medium text-slate-600 hover:text-teal-600 py-2" data-testid="landing-mobile-reviews">Preview</button>
-              <button onClick={() => { onStart(); setMobileMenu(false); }} className="block w-full text-left text-sm font-medium text-teal-600 hover:text-teal-700 py-2" data-testid="landing-mobile-start">Get Started</button>
+              <button onClick={() => { scrollTo('course'); setMobileMenu(false); }} className="block w-full text-left text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-teal-600 py-2" data-testid="landing-mobile-course">Course</button>
+              <button onClick={() => { scrollTo('curriculum'); setMobileMenu(false); }} className="block w-full text-left text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-teal-600 py-2" data-testid="landing-mobile-curriculum">Curriculum</button>
+              <button onClick={() => { scrollTo('features'); setMobileMenu(false); }} className="block w-full text-left text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-teal-600 py-2" data-testid="landing-mobile-features">Features</button>
+              <button onClick={() => { scrollTo('reviews'); setMobileMenu(false); }} className="block w-full text-left text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-teal-600 py-2" data-testid="landing-mobile-reviews">Preview</button>
+              <button onClick={() => { onStart(); setMobileMenu(false); }} className="block w-full text-left text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-300 py-2" data-testid="landing-mobile-start">Get Started</button>
             </div>
           )}
         </div>
@@ -377,7 +377,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
             {/* Left: Text Content */}
             <div className="flex-1 text-center lg:text-left">
               {/* Trust Badge */}
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 text-amber-700 text-xs lg:text-sm font-bold px-4 py-2 rounded-full mb-6 shadow-sm">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 text-xs lg:text-sm font-bold px-4 py-2 rounded-full mb-6 shadow-sm">
                 <Sparkles className="w-4 h-4 text-amber-500" />
                 <span>Soft Launch Beta: Free Access</span>
               </div>
@@ -395,19 +395,19 @@ export function LandingPage({ onStart }: LandingPageProps) {
 
               {/* Trust Indicators */}
               <div className="flex flex-wrap gap-4 justify-center lg:justify-start mb-8">
-                <div className="flex items-center gap-1.5 text-sm text-slate-600">
+                <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
                   <BookOpen className="w-4 h-4 text-teal-500" />
                   <span className="font-semibold">1,318+</span>
                   <span className="text-slate-400">practice questions</span>
                 </div>
                 <span className="text-slate-300 hidden sm:inline">|</span>
-                <div className="flex items-center gap-1.5 text-sm text-slate-600">
+                <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
                   <Award className="w-4 h-4 text-teal-500" />
                   <span className="font-semibold">9</span>
                   <span className="text-slate-400">core skills</span>
                 </div>
                 <span className="text-slate-300 hidden sm:inline">|</span>
-                <div className="flex items-center gap-1.5 text-sm text-slate-600">
+                <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
                   <Clock className="w-4 h-4 text-teal-500" />
                   <span className="font-semibold">30-day</span>
                   <span className="text-slate-400">guided path</span>
@@ -535,7 +535,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
       <section id="course" className="py-20 lg:py-28 bg-white dark:bg-slate-950">
         <div className="max-w-5xl mx-auto px-4 lg:px-6">
           <div className="text-center mb-14">
-            <span className="inline-block text-sm font-bold text-teal-600 bg-teal-50 px-4 py-1.5 rounded-full mb-4">
+            <span className="inline-block text-sm font-bold text-teal-600 bg-teal-50 dark:bg-teal-950/30 px-4 py-1.5 rounded-full mb-4">
               LEARNING OUTCOMES
             </span>
             <h2 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-white mb-4">
@@ -602,7 +602,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
       <section id="curriculum" className="py-20 lg:py-28 bg-white dark:bg-slate-950">
         <div className="max-w-5xl mx-auto px-4 lg:px-6">
           <div className="text-center mb-14">
-            <span className="inline-block text-sm font-bold text-teal-600 bg-teal-50 px-4 py-1.5 rounded-full mb-4">
+            <span className="inline-block text-sm font-bold text-teal-600 bg-teal-50 dark:bg-teal-950/30 px-4 py-1.5 rounded-full mb-4">
               30-DAY CURRICULUM
             </span>
             <h2 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-white mb-4">
@@ -635,7 +635,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-sm font-bold text-teal-600 bg-teal-50 px-3 py-1 rounded-full hidden sm:block">
+                    <span className="text-sm font-bold text-teal-600 bg-teal-50 dark:bg-teal-950/30 px-3 py-1 rounded-full hidden sm:block">
                       {phase.questions} Questions
                     </span>
                     {openPhase === i ? <ChevronUp className="w-5 h-5 text-slate-400" /> : <ChevronDown className="w-5 h-5 text-slate-400" />}
@@ -684,7 +684,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
                 
                 {/* Content */}
                 <div className="flex-1 text-center lg:text-left">
-                  <div className="inline-block mb-4 text-sm font-bold text-teal-600 bg-teal-50 px-3 py-1 rounded-full">
+                  <div className="inline-block mb-4 text-sm font-bold text-teal-600 bg-teal-50 dark:bg-teal-950/30 px-3 py-1 rounded-full">
                     {journeyHighlights[activeHighlight].badge}
                   </div>
                   <p className="text-lg lg:text-xl text-slate-700 dark:text-slate-300 mb-6 leading-relaxed">
@@ -751,7 +751,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
       <section className="py-20 lg:py-28 bg-white dark:bg-slate-950" data-testid="landing-faq">
         <div className="max-w-3xl mx-auto px-4 lg:px-6">
           <div className="text-center mb-14">
-            <span className="inline-block text-sm font-bold text-teal-600 bg-teal-50 px-4 py-1.5 rounded-full mb-4">
+            <span className="inline-block text-sm font-bold text-teal-600 bg-teal-50 dark:bg-teal-950/30 px-4 py-1.5 rounded-full mb-4">
               FAQ
             </span>
             <h2 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-white mb-4">

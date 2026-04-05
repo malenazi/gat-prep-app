@@ -120,10 +120,7 @@ if (violations.length > 0) {
   }
 
   console.error(`\nTotal: ${violations.length} violations across ${Object.keys(byFile).length} files`);
-  // Track baseline: exit 0 for now while we fix existing violations
-  // Change to process.exit(1) once baseline is clean
-  console.error('⚠️  Audit is in tracking mode — fix violations before adding new components.\n');
-  process.exit(0);
+  process.exit(1);
 } else {
   console.log('✅ Dark mode audit passed — 0 violations (checked 15 rules)');
   process.exit(0);

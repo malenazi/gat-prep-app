@@ -111,7 +111,7 @@ export default function Admin() {
 
   if (error) return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+      <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
         <p className="text-red-500">{error}</p>
       </div>
     </div>
@@ -237,7 +237,7 @@ export default function Admin() {
                 <Icon className="w-4 h-4" />
                 <span>{t.label}</span>
                 {t.count !== undefined && (
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${tab === t.key ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${tab === t.key ? 'bg-amber-100 text-amber-700 dark:text-amber-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
                     {t.count}
                   </span>
                 )}
@@ -411,7 +411,7 @@ export default function Admin() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-slate-700 dark:text-slate-300">{f.comment || <span className="text-slate-400 italic">No comment</span>}</p>
                       <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full font-medium">{triggerLabels[f.trigger] || f.trigger}</span>
+                        <span className="text-xs bg-amber-50 dark:bg-amber-950/30 text-amber-600 px-2 py-0.5 rounded-full font-medium">{triggerLabels[f.trigger] || f.trigger}</span>
                         {f.page && <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full dark:bg-slate-800 dark:text-slate-400">{f.page}</span>}
                       </div>
                     </div>
@@ -470,7 +470,7 @@ export default function Admin() {
                             <div className="h-1.5 w-12 bg-slate-100 rounded-full overflow-hidden dark:bg-slate-800">
                               <div className="h-full bg-teal-500 rounded-full" style={{ width: `${(u.current_day / 30) * 100}%` }} />
                             </div>
-                            <span className="text-xs text-slate-600 font-medium">{u.current_day}/30</span>
+                            <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">{u.current_day}/30</span>
                           </div>
                         </td>
                         <td className="px-3 lg:px-4 py-3 text-sm font-bold text-amber-600">{u.xp.toLocaleString()}</td>
@@ -493,12 +493,12 @@ export default function Admin() {
         {tab === 'questions' && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
-                <p className="text-xl font-black text-emerald-700">{questionAnalysis?.by_classification?.ready || 0}</p>
+              <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 text-center">
+                <p className="text-xl font-black text-emerald-700 dark:text-emerald-300">{questionAnalysis?.by_classification?.ready || 0}</p>
                 <p className="text-xs text-emerald-600">Ready</p>
               </div>
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
-                <p className="text-xl font-black text-amber-700">{questionAnalysis?.flagged_count || 0}</p>
+              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 text-center">
+                <p className="text-xl font-black text-amber-700 dark:text-amber-300">{questionAnalysis?.flagged_count || 0}</p>
                 <p className="text-xs text-amber-600">Flagged</p>
               </div>
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
@@ -509,12 +509,12 @@ export default function Admin() {
                 <p className="text-xl font-black text-slate-800 dark:text-slate-100">{questions.length}</p>
                 <p className="text-xs text-slate-500">Total Questions</p>
               </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
-                <p className="text-xl font-black text-blue-700">{verbalCount}</p>
+              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-center">
+                <p className="text-xl font-black text-blue-700 dark:text-blue-300">{verbalCount}</p>
                 <p className="text-xs text-blue-500">📖 Verbal</p>
               </div>
-              <div className="bg-violet-50 border border-violet-200 rounded-xl p-4 text-center">
-                <p className="text-xl font-black text-violet-700">{quantCount}</p>
+              <div className="bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800 rounded-xl p-4 text-center">
+                <p className="text-xl font-black text-violet-700 dark:text-violet-300">{quantCount}</p>
                 <p className="text-xs text-violet-500">🔢 Quant</p>
               </div>
             </div>
@@ -594,7 +594,7 @@ export default function Admin() {
                     ))}
                     {!!questionAnalysis.by_batch?.length && (
                       <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1 text-xs text-slate-500">
-                        <p className="font-semibold text-slate-700">Recent batches</p>
+                        <p className="font-semibold text-slate-700 dark:text-slate-200">Recent batches</p>
                         {questionAnalysis.by_batch.slice(0, 4).map((batch) => (
                           <p key={batch.batch_id || 'unbatched'}>
                             {batch.batch_id || 'Unbatched'}: {batch.auto_published} active, {batch.held_in_review} review
@@ -609,10 +609,10 @@ export default function Admin() {
 
             {/* Flagged Questions Alert */}
             {questionAnalysis && questionAnalysis.flagged_count > 0 && (
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <AlertTriangle className="w-5 h-5 text-amber-600" />
-                  <h3 className="text-sm font-bold text-amber-700">{questionAnalysis.flagged_count} question(s) need review</h3>
+                  <h3 className="text-sm font-bold text-amber-700 dark:text-amber-300">{questionAnalysis.flagged_count} question(s) need review</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {questionAnalysis.flagged.slice(0, 10).map(f => (
@@ -737,12 +737,12 @@ export default function Admin() {
                       'bg-slate-100 text-slate-500'
                     }`}>{q.stage}</span>
                     {q.content_classification && (
-                      <span className="text-xs px-1.5 py-0.5 rounded shrink-0 bg-slate-100 text-slate-600">
+                      <span className="text-xs px-1.5 py-0.5 rounded shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                         {contentClassificationLabels[q.content_classification] || q.content_classification}
                       </span>
                     )}
                     {q.authoring_source && (
-                      <span className={`text-xs px-1.5 py-0.5 rounded shrink-0 ${q.authoring_source === 'ai_generated' ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-600'}`}>
+                      <span className={`text-xs px-1.5 py-0.5 rounded shrink-0 ${q.authoring_source === 'ai_generated' ? 'bg-teal-100 text-teal-700 dark:text-teal-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}>
                         {q.authoring_source}
                       </span>
                     )}
@@ -794,7 +794,7 @@ export default function Admin() {
                         appearance={defaultQuestionAppearance}
                       />
                       {q.explanation_ar && (
-                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-700">
+                        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 text-sm text-amber-700 dark:text-amber-300">
                           <p className="font-bold mb-1">Explanation:</p>
                           <p className="whitespace-pre-line">{q.explanation_ar}</p>
                         </div>
@@ -834,7 +834,7 @@ export default function Admin() {
                         </div>
                       </div>
                       {!!q.content_issues?.length && (
-                        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                        <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-3 text-xs text-amber-800 dark:text-amber-200">
                           <p className="font-bold mb-1">Content checks</p>
                           <div className="space-y-1">
                             {q.content_issues.map((issue) => (
@@ -859,7 +859,7 @@ export default function Admin() {
                         )}
                         <span className="flex-1" />
                         <button onClick={() => { setEditQ(q); setShowAddQ(true); }}
-                          className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium">
+                          className="flex items-center gap-1 text-blue-600 hover:text-blue-700 dark:text-blue-300 font-medium">
                           <Pencil className="w-3.5 h-3.5" /> Edit
                         </button>
                         <button onClick={async () => {
@@ -914,7 +914,7 @@ export default function Admin() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <div className="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-800">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-amber-50 text-amber-600">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-amber-50 dark:bg-amber-950/30 text-amber-600">
                     <Trophy className="w-5 h-5" />
                   </div>
                   <div>
@@ -925,7 +925,7 @@ export default function Admin() {
               </div>
               <div className="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-800">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-50 dark:bg-blue-950/30 text-blue-600">
                     <Star className="w-5 h-5" />
                   </div>
                   <div>
@@ -936,7 +936,7 @@ export default function Admin() {
               </div>
               <div className="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-800">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-emerald-50 text-emerald-600">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600">
                     <Users className="w-5 h-5" />
                   </div>
                   <div>
@@ -947,7 +947,7 @@ export default function Admin() {
               </div>
               <div className="bg-white border border-slate-200 rounded-xl p-4 dark:bg-slate-900 dark:border-slate-800">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-violet-50 text-violet-600">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-violet-50 dark:bg-violet-950/30 text-violet-600">
                     <Users className="w-5 h-5" />
                   </div>
                   <div>
@@ -1008,7 +1008,7 @@ export default function Admin() {
                         <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{u.current_day}/30</td>
                         <td className="px-4 py-3">
                           {u.mock_attempts > 0 ? (
-                            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium">Completed ({u.mock_attempts} attempts)</span>
+                            <span className="text-xs bg-emerald-100 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded-full font-medium">Completed ({u.mock_attempts} attempts)</span>
                           ) : (
                             <span className="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded-full dark:bg-slate-800 dark:text-slate-400">Not Started</span>
                           )}
@@ -1175,7 +1175,7 @@ function QuestionModal({ question, skills, onClose, onSave }: {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl my-8 dark:bg-slate-900">
         <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
           <h3 className="font-bold text-slate-800 dark:text-slate-100">{question ? 'Edit Question' : 'Add New Question'}</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:text-slate-300"><X className="w-5 h-5" /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div className="grid grid-cols-2 gap-3">
@@ -1300,7 +1300,7 @@ function QuestionModal({ question, skills, onClose, onSave }: {
             </p>
           </div>
           {form.content_format === 'markdown_math' && (
-            <div className="rounded-xl border border-teal-200 bg-teal-50 p-3 text-xs text-teal-700">
+            <div className="rounded-xl border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-950/30 p-3 text-xs text-teal-700 dark:text-teal-300">
               Use Markdown plus TeX like <code>$\\frac{'{1}'}{'{2}'}$</code>, <code>$\\sqrt{'{50}'}$</code>, and display blocks with <code>$$...$$</code>.
             </div>
           )}
@@ -1374,7 +1374,7 @@ function QuestionModal({ question, skills, onClose, onSave }: {
           <div className="grid grid-cols-2 gap-3">
             {[{ k: 'option_a', l: 'A' }, { k: 'option_b', l: 'B' }, { k: 'option_c', l: 'C' }, { k: 'option_d', l: 'D' }].map(opt => (
               <div key={opt.k}>
-                <label className="text-xs font-medium text-slate-600 mb-1 flex items-center gap-1">
+                <label className="text-xs font-medium text-slate-600 dark:text-slate-300 mb-1 flex items-center gap-1">
                   <input type="radio" name="correct" value={opt.k.slice(-1)}
                     checked={form.correct_option === opt.k.slice(-1)}
                     onChange={() => update('correct_option', opt.k.slice(-1))} className="accent-emerald-500" />
@@ -1438,9 +1438,9 @@ function QuestionModal({ question, skills, onClose, onSave }: {
               </div>
             </div>
           )}
-          {error && <p className="text-sm text-red-500 bg-red-50 rounded-lg p-2 text-center">{error}</p>}
+          {error && <p className="text-sm text-red-500 bg-red-50 dark:bg-red-950/30 rounded-lg p-2 text-center">{error}</p>}
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 text-slate-500 text-sm font-medium py-2.5 hover:text-slate-700">Cancel</button>
+            <button type="button" onClick={onClose} className="flex-1 text-slate-500 text-sm font-medium py-2.5 hover:text-slate-700 dark:text-slate-200">Cancel</button>
             <button type="submit" disabled={saving}
               className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-xl transition disabled:opacity-50">
               {saving ? '...' : question ? 'Save Changes' : 'Add Question'}

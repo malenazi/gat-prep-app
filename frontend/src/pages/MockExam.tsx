@@ -351,7 +351,7 @@ export default function MockExam() {
             </div>
 
             {isPreview && (
-              <div className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1.5 rounded-full mt-3 mr-2">
+              <div className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-700 dark:text-amber-300 text-xs font-bold px-3 py-1.5 rounded-full mt-3 mr-2">
                 <Shield className="w-3.5 h-3.5" /> Preview Mode — Score will not be saved
               </div>
             )}
@@ -362,34 +362,34 @@ export default function MockExam() {
             <h2 className="font-bold text-slate-800 text-lg mb-3 dark:text-slate-100">Exam Instructions</h2>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4 text-center">
                 <BookOpen className="w-6 h-6 text-blue-600 mx-auto mb-2" />
-                <p className="font-bold text-blue-800">Verbal Section</p>
+                <p className="font-bold text-blue-800 dark:text-blue-200">Verbal Section</p>
                 <p className="text-sm text-blue-600">34 questions • 35 minutes</p>
               </div>
-              <div className="bg-violet-50 border border-violet-200 rounded-xl p-4 text-center">
+              <div className="bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800 rounded-xl p-4 text-center">
                 <Calculator className="w-6 h-6 text-violet-600 mx-auto mb-2" />
-                <p className="font-bold text-violet-800">Quantitative Section</p>
+                <p className="font-bold text-violet-800 dark:text-violet-200">Quantitative Section</p>
                 <p className="text-sm text-violet-600">31 questions • 35 minutes</p>
               </div>
             </div>
 
             {/* Last attempt warning */}
             {isLastAttempt && !isPreview && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+              <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-4">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
-                  <div className="text-sm text-red-800 font-bold">
+                  <div className="text-sm text-red-800 dark:text-red-200 font-bold">
                     This is your last attempt — the exam cannot be retaken after this
                   </div>
                 </div>
               </div>
             )}
 
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
               <div className="flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
-                <div className="text-sm text-amber-800 space-y-1.5">
+                <div className="text-sm text-amber-800 dark:text-amber-200 space-y-1.5">
                   <p className="font-bold">Important Warnings:</p>
                   <p>• Total: <strong>65 questions</strong> in <strong>70 minutes</strong></p>
                   <p>• Questions <strong>are different from daily training</strong></p>
@@ -401,25 +401,25 @@ export default function MockExam() {
             </div>
 
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 dark:border-slate-800 dark:bg-slate-950">
-              <p className="text-sm text-slate-600"><strong>Tip:</strong> Read each question carefully. If you don't know the answer, choose your best guess and move to the next question. Don't spend too much time on one question.</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300"><strong>Tip:</strong> Read each question carefully. If you don't know the answer, choose your best guess and move to the next question. Don't spend too much time on one question.</p>
             </div>
           </div>
 
           {loadMockSession() && !isPreview && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
-              <p className="font-bold text-amber-800 mb-2">You have an exam in progress</p>
+            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-4">
+              <p className="font-bold text-amber-800 dark:text-amber-200 mb-2">You have an exam in progress</p>
               <p className="text-sm text-amber-600 mb-3">You can resume the exam from where you left off</p>
               {/* The useEffect above will handle auto-resume */}
             </div>
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-center text-sm text-red-600">{error}</div>
+            <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-4 text-center text-sm text-red-600">{error}</div>
           )}
 
           <div className="flex gap-3">
             <button onClick={() => nav(isPreview ? '/admin' : '/')}
-              className="flex-1 text-slate-500 font-medium py-4 hover:text-slate-700 transition">
+              className="flex-1 text-slate-500 font-medium py-4 hover:text-slate-700 dark:text-slate-200 transition">
               Back
             </button>
             <button onClick={startExam} disabled={loading} data-testid="mock-start"
@@ -431,7 +431,7 @@ export default function MockExam() {
           {/* Link to previous attempts */}
           {attemptsUsed > 0 && !isPreview && (
             <button onClick={loadHistory}
-              className="w-full mt-4 flex items-center justify-center gap-2 text-teal-600 font-medium text-sm py-3 hover:text-teal-700 transition">
+              className="w-full mt-4 flex items-center justify-center gap-2 text-teal-600 font-medium text-sm py-3 hover:text-teal-700 dark:text-teal-300 transition">
               <History className="w-4 h-4" />
               View Previous Attempts ({attemptsUsed})
             </button>
@@ -532,16 +532,16 @@ export default function MockExam() {
 
           {/* Section Breakdown */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5">
+            <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-2xl p-5">
               <BookOpen className="w-6 h-6 text-blue-600 mx-auto mb-2" />
               <p className="text-blue-400 text-sm mb-1">Verbal Section</p>
-              <p className="text-blue-700 font-black text-2xl">{Math.round(results.verbal_pct * 100)}%</p>
+              <p className="text-blue-700 dark:text-blue-300 font-black text-2xl">{Math.round(results.verbal_pct * 100)}%</p>
               <p className="text-xs text-blue-500">{results.verbal_correct} / {results.verbal_total}</p>
             </div>
-            <div className="bg-violet-50 border border-violet-200 rounded-2xl p-5">
+            <div className="bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800 rounded-2xl p-5">
               <Calculator className="w-6 h-6 text-violet-600 mx-auto mb-2" />
               <p className="text-violet-400 text-sm mb-1">Quantitative Section</p>
-              <p className="text-violet-700 font-black text-2xl">{Math.round(results.quant_pct * 100)}%</p>
+              <p className="text-violet-700 dark:text-violet-300 font-black text-2xl">{Math.round(results.quant_pct * 100)}%</p>
               <p className="text-xs text-violet-500">{results.quant_correct} / {results.quant_total}</p>
             </div>
           </div>
@@ -564,9 +564,9 @@ export default function MockExam() {
             </div>
           </div>
 
-          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-left">
-            <p className="text-sm font-bold text-amber-800">Review comes after the exam</p>
-            <p className="mt-1 text-sm text-amber-700">
+          <div className="mb-6 rounded-2xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 px-5 py-4 text-left">
+            <p className="text-sm font-bold text-amber-800 dark:text-amber-200">Review comes after the exam</p>
+            <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
               Practice questions show feedback right away. Mock exams keep answers hidden until the full attempt is complete, then you can open the full review.
             </p>
           </div>
@@ -596,7 +596,7 @@ export default function MockExam() {
             </button>
 
             <button onClick={loadHistory}
-              className="w-full flex items-center justify-center gap-2 text-teal-600 font-medium text-sm py-3 hover:text-teal-700 transition">
+              className="w-full flex items-center justify-center gap-2 text-teal-600 font-medium text-sm py-3 hover:text-teal-700 dark:text-teal-300 transition">
               <History className="w-4 h-4" />
               View All Attempts
             </button>
@@ -638,7 +638,7 @@ export default function MockExam() {
                 <div className="flex items-center justify-between mb-3">
                   <ChevronRight className="w-5 h-5 text-slate-400" />
                   <div className="flex items-center gap-2">
-                    <span className="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-lg">
+                    <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold px-2.5 py-1 rounded-lg">
                       Attempt {a.attempt_number}
                     </span>
                     <span className={`font-black text-2xl ${scoreColor(a.score)}`}>{a.score}</span>
@@ -646,17 +646,17 @@ export default function MockExam() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-blue-50 rounded-lg p-2 text-center">
+                  <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-2 text-center">
                     <p className="text-xs text-blue-500 mb-0.5">Verbal</p>
-                    <p className="text-sm font-bold text-blue-700">{Math.round(a.verbal_pct * 100)}%</p>
+                    <p className="text-sm font-bold text-blue-700 dark:text-blue-300">{Math.round(a.verbal_pct * 100)}%</p>
                   </div>
-                  <div className="bg-violet-50 rounded-lg p-2 text-center">
+                  <div className="bg-violet-50 dark:bg-violet-950/30 rounded-lg p-2 text-center">
                     <p className="text-xs text-violet-500 mb-0.5">Quant</p>
-                    <p className="text-sm font-bold text-violet-700">{Math.round(a.quant_pct * 100)}%</p>
+                    <p className="text-sm font-bold text-violet-700 dark:text-violet-300">{Math.round(a.quant_pct * 100)}%</p>
                   </div>
                   <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-2 text-center">
                     <p className="text-xs text-slate-500 mb-0.5">Date</p>
-                    <p className="text-sm font-bold text-slate-700">
+                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
                       {new Date(a.completed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </p>
                   </div>
@@ -675,7 +675,7 @@ export default function MockExam() {
               </button>
             )}
             <button onClick={() => nav('/')}
-              className="w-full text-slate-500 font-medium py-3 hover:text-slate-700 transition">
+              className="w-full text-slate-500 font-medium py-3 hover:text-slate-700 dark:text-slate-200 transition">
               Back to Dashboard
             </button>
           </div>
@@ -694,7 +694,7 @@ export default function MockExam() {
         <div className="max-w-3xl mx-auto">
           {/* Back button */}
           <button onClick={() => { setPhase('history'); setDetail(null); }}
-            className="flex items-center gap-1.5 text-teal-600 font-medium text-sm mb-6 hover:text-teal-700 transition">
+            className="flex items-center gap-1.5 text-teal-600 font-medium text-sm mb-6 hover:text-teal-700 dark:text-teal-300 transition">
             <ArrowRight className="w-4 h-4 rotate-180" />
             Back to Attempt History
           </button>
@@ -710,16 +710,16 @@ export default function MockExam() {
 
           {/* Section Breakdown */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 text-center">
+            <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-2xl p-5 text-center">
               <BookOpen className="w-6 h-6 text-blue-600 mx-auto mb-2" />
               <p className="text-blue-400 text-sm mb-1">Verbal Section</p>
-              <p className="text-blue-700 font-black text-2xl">{verbalPct}%</p>
+              <p className="text-blue-700 dark:text-blue-300 font-black text-2xl">{verbalPct}%</p>
               <p className="text-xs text-blue-500">{detail.verbal_correct} / {detail.verbal_total}</p>
             </div>
-            <div className="bg-violet-50 border border-violet-200 rounded-2xl p-5 text-center">
+            <div className="bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800 rounded-2xl p-5 text-center">
               <Calculator className="w-6 h-6 text-violet-600 mx-auto mb-2" />
               <p className="text-violet-400 text-sm mb-1">Quantitative Section</p>
-              <p className="text-violet-700 font-black text-2xl">{quantPct}%</p>
+              <p className="text-violet-700 dark:text-violet-300 font-black text-2xl">{quantPct}%</p>
               <p className="text-xs text-violet-500">{detail.quant_correct} / {detail.quant_total}</p>
             </div>
           </div>
@@ -735,7 +735,7 @@ export default function MockExam() {
                   return (
                     <div key={sk.skill_id} className="flex items-center gap-3">
                       <span className="text-sm text-slate-700 dark:text-slate-300 font-medium w-32 shrink-0 text-left">{sk.skill_name_ar}</span>
-                      <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="flex-1 h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
                       </div>
                       <span className="text-xs text-slate-500 font-mono w-20 shrink-0">{sk.correct}/{sk.total} ({Math.round(pct)}%)</span>
@@ -753,7 +753,7 @@ export default function MockExam() {
               {detail.questions.map((q, i) => {
                 const isCorrect = q.is_correct;
                 return (
-                  <div key={q.question_id} className={`border rounded-xl p-4 ${isCorrect ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-200 bg-red-50/30'}`}>
+                  <div key={q.question_id} className={`border rounded-xl p-4 ${isCorrect ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30/30' : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30/30'}`}>
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <div className="flex items-center gap-2 shrink-0">
                         {isCorrect

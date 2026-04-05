@@ -284,7 +284,7 @@ export default function Dashboard() {
             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-teal-500 inline-block" /> Today</span>
             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-amber-300 inline-block" /> Mock</span>
             <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-slate-200 inline-block" /> Rest</span>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-slate-100 inline-block" /> Upcoming</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-slate-100 dark:bg-slate-800 inline-block" /> Upcoming</span>
           </div>
         </div>
       )}
@@ -335,7 +335,7 @@ export default function Dashboard() {
                   <p className="text-sm text-emerald-600 dark:text-emerald-400">Best Score: {user.mock_score} of 100 ({user.mock_attempts} of {user.mock_max_attempts} attempts)</p>
                 </div>
               </div>
-              <a href="/mock" className="text-sm font-bold text-emerald-600 hover:text-emerald-700">View Results ←</a>
+              <a href="/mock" className="text-sm font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-300">View Results ←</a>
             </div>
           ) : user.mock_attempts === 0 ? (
             <div className="flex items-center justify-between">
@@ -417,7 +417,7 @@ export default function Dashboard() {
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{a.name_ar}</span>
                     <span className={`text-sm font-black ${textColor}`}>{a.questions_seen > 0 ? `${pct}%` : '—'}</span>
                   </div>
-                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                     <div className={`h-full ${barColor} rounded-full animate-bar-fill`} style={{ width: `${pct}%` }} />
                   </div>
                   <div className="flex items-center justify-between mt-1">

@@ -280,7 +280,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6">
           <section className="bg-white/75 backdrop-blur-xl rounded-3xl border border-white/60 shadow-card-lg p-6 lg:p-8 dark:border-slate-800/80 dark:bg-slate-950/80">
-            <div className="inline-flex items-center gap-2 rounded-full bg-teal-50 text-teal-700 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em]">
+            <div className="inline-flex items-center gap-2 rounded-full bg-teal-50 dark:bg-teal-950/30 text-teal-700 dark:text-teal-300 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em]">
               <Sparkles className="w-3.5 h-3.5" />
               Soft Launch Access
             </div>
@@ -367,7 +367,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
               >
                 {!isLogin && (
                   <div className="space-y-1.5">
-                    <Label htmlFor="name" className="text-slate-700 font-medium text-sm">Full Name</Label>
+                    <Label htmlFor="name" className="text-slate-700 dark:text-slate-200 font-medium text-sm">Full Name</Label>
                     <div className="relative">
                       <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <Input
@@ -387,7 +387,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                 )}
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="email" className="text-slate-700 font-medium text-sm">Email Address</Label>
+                  <Label htmlFor="email" className="text-slate-700 dark:text-slate-200 font-medium text-sm">Email Address</Label>
                   <div className="relative">
                     <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
@@ -407,7 +407,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="password" className="text-slate-700 font-medium text-sm">Password</Label>
+                  <Label htmlFor="password" className="text-slate-700 dark:text-slate-200 font-medium text-sm">Password</Label>
                   <div className="relative">
                     <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
@@ -426,7 +426,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-300"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -439,7 +439,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                       type="button"
                       onClick={() => switchMode('forgot')}
                       data-testid="auth-forgot-password"
-                      className="text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors"
+                      className="text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-300 transition-colors"
                     >
                       Forgot your password?
                     </button>
@@ -459,7 +459,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                     className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-teal-600"
                   />
                   <div>
-                    <p className="text-sm font-semibold text-slate-700">
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                       {saveInBrowserLabel}
                     </p>
                     <p className="text-xs text-slate-500">
@@ -469,13 +469,13 @@ export function AuthForm({ onBack }: AuthFormProps) {
                 </label>
 
                 {error && (
-                  <div className="animate-slide-down rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm text-center p-3" data-testid="auth-error">
+                  <div className="animate-slide-down rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-600 text-sm text-center p-3" data-testid="auth-error">
                     {error}
                   </div>
                 )}
 
                 {successMessage && (
-                  <div className="animate-slide-down rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm text-center p-3" data-testid="auth-success">
+                  <div className="animate-slide-down rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm text-center p-3" data-testid="auth-success">
                     {successMessage}
                   </div>
                 )}
@@ -492,7 +492,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
               <div className="space-y-4" data-testid="forgot-password-form">
                 <form onSubmit={handleForgotPasswordRequest} className="space-y-4" autoComplete="on">
                   <div className="space-y-1.5">
-                    <Label htmlFor="forgot-email" className="text-slate-700 font-medium text-sm">Account Email</Label>
+                    <Label htmlFor="forgot-email" className="text-slate-700 dark:text-slate-200 font-medium text-sm">Account Email</Label>
                     <div className="relative">
                       <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <Input
@@ -526,23 +526,23 @@ export function AuthForm({ onBack }: AuthFormProps) {
                 </form>
 
                 {error && (
-                  <div className="animate-slide-down rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm text-center p-3" data-testid="auth-error">
+                  <div className="animate-slide-down rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-600 text-sm text-center p-3" data-testid="auth-error">
                     {error}
                   </div>
                 )}
 
                 {resetRequestMessage && (
-                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800" data-testid="forgot-request-message">
+                  <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 p-4 text-sm text-emerald-800 dark:text-emerald-200" data-testid="forgot-request-message">
                     <p className="font-semibold">Reset request received</p>
                     <p className="mt-1">{resetRequestMessage}</p>
                     {resetSupportEmail && (
-                      <p className="mt-2 text-emerald-700">
+                      <p className="mt-2 text-emerald-700 dark:text-emerald-300">
                         Support contact: <span className="font-semibold">{resetSupportEmail}</span>
                       </p>
                     )}
                     {resetPreviewToken && (
                       <div className="mt-3 rounded-xl border border-emerald-200 bg-white/80 p-3">
-                        <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">One-time reset code</p>
+                        <p className="text-xs font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">One-time reset code</p>
                         <p className="mt-2 font-mono text-sm text-slate-800 dark:text-slate-100 break-all" data-testid="forgot-preview-token">
                           {resetPreviewToken}
                         </p>
@@ -568,7 +568,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                       type="button"
                       onClick={() => setShowResetCodeForm(prev => !prev)}
                       data-testid="forgot-have-code"
-                      className="text-sm font-medium text-teal-600 hover:text-teal-700 transition-colors"
+                      className="text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-300 transition-colors"
                     >
                       {showResetCodeForm ? 'Hide reset form' : 'I already have a reset code'}
                     </button>
@@ -577,7 +577,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                   {showResetCodeForm && (
                     <form onSubmit={handleResetPasswordSubmit} className="mt-4 space-y-4" autoComplete="on">
                       <div className="space-y-1.5">
-                        <Label htmlFor="reset-token" className="text-slate-700 font-medium text-sm">Reset Code</Label>
+                        <Label htmlFor="reset-token" className="text-slate-700 dark:text-slate-200 font-medium text-sm">Reset Code</Label>
                         <Input
                           id="reset-token"
                           name="reset_token"
@@ -594,7 +594,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label htmlFor="new-password" className="text-slate-700 font-medium text-sm">New Password</Label>
+                        <Label htmlFor="new-password" className="text-slate-700 dark:text-slate-200 font-medium text-sm">New Password</Label>
                         <div className="relative">
                           <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                           <Input
@@ -613,7 +613,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                           <button
                             type="button"
                             onClick={() => setShowResetPassword(!showResetPassword)}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-300"
                           >
                             {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
@@ -621,7 +621,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                       </div>
 
                       <div className="space-y-1.5">
-                        <Label htmlFor="confirm-password" className="text-slate-700 font-medium text-sm">Confirm New Password</Label>
+                        <Label htmlFor="confirm-password" className="text-slate-700 dark:text-slate-200 font-medium text-sm">Confirm New Password</Label>
                         <Input
                           id="confirm-password"
                           name="confirm_new_password"
@@ -650,7 +650,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                           className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-teal-600"
                         />
                         <div>
-                          <p className="text-sm font-semibold text-slate-700">
+                          <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                             {saveInBrowserLabel}
                           </p>
                           <p className="text-xs text-slate-500">
@@ -683,7 +683,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                   type="button"
                   onClick={() => switchMode(isLogin ? 'register' : 'login')}
                   data-testid="auth-mode-toggle"
-                  className="text-teal-600 hover:text-teal-700 font-medium text-sm transition-colors"
+                  className="text-teal-600 hover:text-teal-700 dark:text-teal-300 font-medium text-sm transition-colors"
                 >
                   {isLogin ? "Don't have an account? Register now" : 'Already have an account? Sign in'}
                 </button>
@@ -696,7 +696,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                   type="button"
                   onClick={() => switchMode('login')}
                   data-testid="forgot-back-to-sign-in"
-                  className="text-teal-600 hover:text-teal-700 font-medium text-sm transition-colors"
+                  className="text-teal-600 hover:text-teal-700 dark:text-teal-300 font-medium text-sm transition-colors"
                 >
                   Back to sign in
                 </button>

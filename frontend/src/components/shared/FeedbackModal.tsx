@@ -84,13 +84,13 @@ export function FeedbackModal({ trigger, onClose }: FeedbackModalProps) {
         )}
 
         {error && (
-          <div className="mb-3 p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm text-center">
+          <div className="mb-3 p-2.5 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-600 text-sm text-center">
             {error}
           </div>
         )}
 
         <div className="flex gap-3">
-          <button onClick={dismiss} className="flex-1 text-slate-500 text-sm font-medium py-2.5 hover:text-slate-700 transition">Later</button>
+          <button onClick={dismiss} className="flex-1 text-slate-500 text-sm font-medium py-2.5 hover:text-slate-700 dark:text-slate-200 transition">Later</button>
           {rating > 0 && (
             <button onClick={submit} disabled={sending}
               className="flex-1 bg-gradient-to-l from-teal-600 to-teal-500 text-white font-bold py-2.5 rounded-xl shadow-brand transition-all disabled:opacity-50">

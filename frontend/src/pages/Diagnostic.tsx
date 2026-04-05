@@ -150,7 +150,7 @@ export default function Diagnostic() {
             ))}
           </div>
 
-          {error && <p className="text-red-500 text-sm mb-4 bg-red-50 rounded-xl p-3">{error}</p>}
+          {error && <p className="text-red-500 text-sm mb-4 bg-red-50 dark:bg-red-950/30 rounded-xl p-3">{error}</p>}
 
           <button
             onClick={startDiag}
@@ -204,7 +204,7 @@ export default function Diagnostic() {
             </div>
           </div>
 
-          {error && <p className="text-red-500 text-sm mb-4 bg-red-50 rounded-xl p-3">{error}</p>}
+          {error && <p className="text-red-500 text-sm mb-4 bg-red-50 dark:bg-red-950/30 rounded-xl p-3">{error}</p>}
 
           <button
             onClick={finishSetup}
@@ -256,7 +256,7 @@ export default function Diagnostic() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-center">
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-4 text-center">
           <p className="text-red-500 text-sm mb-2">{error}</p>
           <button onClick={() => { void loadNext(); }} className="text-teal-600 font-bold text-sm">Retry</button>
         </div>

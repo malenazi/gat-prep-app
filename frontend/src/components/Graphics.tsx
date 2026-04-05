@@ -4,15 +4,15 @@ import React from 'react';
 export const FloatingShapes: React.FC = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     {/* Circle 1 */}
-    <div className="absolute top-[10%] left-[5%] w-32 h-32 rounded-full border-2 border-teal-200/40 animate-float" />
+    <div className="absolute top-[10%] left-[5%] w-32 h-32 rounded-full border-2 border-teal-200 dark:border-teal-800/40 animate-float" />
     <div className="absolute top-[12%] left-[7%] w-20 h-20 rounded-full bg-gradient-to-br from-teal-300/20 to-cyan-300/20 animate-float" style={{ animationDelay: '0.5s' }} />
     
     {/* Circle 2 */}
-    <div className="absolute top-[30%] right-[8%] w-40 h-40 rounded-full border-2 border-amber-200/40 animate-float" style={{ animationDelay: '1s' }} />
+    <div className="absolute top-[30%] right-[8%] w-40 h-40 rounded-full border-2 border-amber-200 dark:border-amber-800/40 animate-float" style={{ animationDelay: '1s' }} />
     <div className="absolute top-[32%] right-[10%] w-24 h-24 rounded-full bg-gradient-to-br from-amber-300/20 to-orange-300/20 animate-float" style={{ animationDelay: '1.5s' }} />
     
     {/* Square */}
-    <div className="absolute bottom-[20%] left-[10%] w-24 h-24 rounded-xl border-2 border-violet-200/40 rotate-12 animate-float" style={{ animationDelay: '2s' }} />
+    <div className="absolute bottom-[20%] left-[10%] w-24 h-24 rounded-xl border-2 border-violet-200 dark:border-violet-800/40 rotate-12 animate-float" style={{ animationDelay: '2s' }} />
     <div className="absolute bottom-[22%] left-[12%] w-14 h-14 rounded-lg bg-gradient-to-br from-violet-300/20 to-purple-300/20 rotate-12 animate-float" style={{ animationDelay: '2.5s' }} />
     
     {/* Triangle-like shape */}
@@ -32,7 +32,7 @@ export const FloatingShapes: React.FC = () => (
     </div>
     
     {/* Ring */}
-    <div className="absolute bottom-[10%] right-[20%] w-28 h-28 rounded-full border-4 border-dashed border-emerald-200/40 animate-spin" style={{ animationDuration: '20s' }} />
+    <div className="absolute bottom-[10%] right-[20%] w-28 h-28 rounded-full border-4 border-dashed border-emerald-200 dark:border-emerald-800/40 animate-spin" style={{ animationDuration: '20s' }} />
     
     {/* Plus signs */}
     <div className="absolute top-[25%] left-[20%] text-teal-300/40 text-2xl animate-pulse">+</div>

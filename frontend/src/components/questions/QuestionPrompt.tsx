@@ -94,7 +94,7 @@ export function QuestionPrompt({
               data-testid={`${testIdPrefix}-table`}
             >
               <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-blue-50/50 px-4 py-3.5 lg:px-5 dark:border-slate-800 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900">
-                <span className="rounded-full bg-blue-100 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-blue-700">
+                <span className="rounded-full bg-blue-100 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-blue-700 dark:text-blue-300">
                   Data Table
                 </span>
                 {table_caption && (
@@ -188,7 +188,7 @@ export function QuestionPrompt({
               <RichTextContent
                 content={value}
                 contentFormat={content_format}
-                className="mt-3 text-sm font-semibold leading-relaxed text-slate-700 lg:text-base"
+                className="mt-3 text-sm font-semibold leading-relaxed text-slate-700 dark:text-slate-200 lg:text-base"
               />
             </div>
           ))}

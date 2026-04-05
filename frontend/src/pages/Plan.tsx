@@ -618,7 +618,7 @@ export default function Plan() {
                     {!selectedDay.is_rest_day && (
                       <div className="mt-5 rounded-2xl border border-slate-200 bg-white dark:bg-slate-900 p-4">
                         <div className="mb-3 flex items-center justify-between text-sm">
-                          <p className="font-bold text-slate-700">Completion</p>
+                          <p className="font-bold text-slate-700 dark:text-slate-200">Completion</p>
                           <p className="font-semibold text-slate-500">
                             {selectedDay.is_mock_day
                               ? selectedDay.completed
@@ -627,7 +627,7 @@ export default function Plan() {
                               : `${selectedDay.completed_questions} of ${selectedDay.target_questions} completed`}
                           </p>
                         </div>
-                        <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
+                        <div className="h-2.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                           <div
                             className={`h-full rounded-full bg-gradient-to-r ${phaseInfo.progress}`}
                             style={{ width: `${completionPercent}%` }}
@@ -667,7 +667,7 @@ export default function Plan() {
                           <Trophy className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
                           <div>
                             <p className="text-sm font-bold text-amber-800 dark:text-amber-200">What to expect</p>
-                            <p className="mt-1 text-sm leading-relaxed text-amber-700">
+                            <p className="mt-1 text-sm leading-relaxed text-amber-700 dark:text-amber-300">
                               A full timed simulation with verbal and quantitative sections, no live feedback during the exam, and review after the attempt finishes.
                             </p>
                           </div>
