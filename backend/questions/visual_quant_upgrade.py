@@ -66,7 +66,7 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
         figure_svg=_svg(
             '<rect x="35" y="30" width="150" height="80" class="shape"/>'
             '<text x="110" y="20" text-anchor="middle" class="label">8 cm</text>'
-            '<text x="196" y="75" class="label">5 cm</text>'
+            '<text x="192" y="75" class="label">5 cm</text>'
         ),
         explanation_ar="From the diagram, the rectangle has length 8 cm and width 5 cm. Area = length x width = 8 x 5 = 40 square cm.",
         solution_steps_ar=_steps("Read the two side lengths from the diagram: 8 cm and 5 cm.", "Use rectangle area = length x width.", "8 x 5 = 40."),
@@ -81,9 +81,9 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
         figure_svg=_svg(
             '<path d="M40 105 L40 35 L150 105 Z" class="shape-green"/>'
             '<path d="M40 90 L55 90 L55 105" fill="none" class="line-thin"/>'
-            '<text x="25" y="72" class="label">3 cm</text>'
-            '<text x="88" y="123" class="label">4 cm</text>'
-            '<text x="104" y="62" class="label">?</text>'
+            '<text x="18" y="72" class="label">3 cm</text>'
+            '<text x="88" y="126" class="label">4 cm</text>'
+            '<text x="100" y="58" class="label">?</text>'
         ),
         explanation_ar="The diagram gives the two legs of a right triangle: 3 cm and 4 cm. By the Pythagorean theorem, c^2 = 3^2 + 4^2 = 9 + 16 = 25, so c = 5.",
         solution_steps_ar=_steps("Use c^2 = a^2 + b^2.", "c^2 = 3^2 + 4^2 = 25.", "c = 5."),
@@ -98,7 +98,7 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
         figure_svg=_svg(
             '<circle cx="95" cy="70" r="44" class="shape-warm"/>'
             '<line x1="95" y1="70" x2="139" y2="70" class="line"/>'
-            '<text x="107" y="62" class="label">7 cm</text>'
+            '<text x="110" y="62" text-anchor="middle" class="label">7 cm</text>'
         ),
         explanation_ar="The radius shown is 7 cm. Circumference = 2 x pi x r = 2 x (22/7) x 7 = 44 cm.",
         solution_steps_ar=_steps("Use circumference = 2 x pi x r.", "Substitute r = 7 and pi = 22/7.", "2 x 22 = 44."),
@@ -129,7 +129,7 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
             '<path d="M35 110 L180 110 L80 35 Z" class="shape-red"/>'
             '<line x1="80" y1="35" x2="80" y2="110" class="line-dash"/>'
             '<text x="102" y="126" class="label">10 cm</text>'
-            '<text x="88" y="76" class="label">6 cm</text>'
+            '<text x="84" y="74" class="label">6 cm</text>'
         ),
         explanation_ar="Use triangle area = (1/2) x base x height. From the diagram, area = (1/2) x 10 x 6 = 30 square cm.",
         solution_steps_ar=_steps("Read base = 10 cm and height = 6 cm.", "Apply triangle area = (1/2) x base x height.", "Area = 30."),
@@ -144,7 +144,7 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
         figure_svg=_svg(
             '<rect x="30" y="38" width="160" height="64" class="shape-cyan"/>'
             '<text x="110" y="28" text-anchor="middle" class="label">12 cm</text>'
-            '<text x="198" y="74" class="label">4 cm</text>'
+            '<text x="194" y="74" class="label">4 cm</text>'
         ),
         explanation_ar="Perimeter of a rectangle is 2 x (length + width). With 12 cm and 4 cm, perimeter = 2 x (12 + 4) = 32 cm.",
         solution_steps_ar=_steps("Add the two side lengths: 12 + 4 = 16.", "Double the sum for perimeter.", "2 x 16 = 32."),
@@ -159,7 +159,7 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
         figure_svg=_svg(
             '<circle cx="95" cy="72" r="46" class="shape-warm"/>'
             '<line x1="95" y1="72" x2="141" y2="72" class="line"/>'
-            '<text x="108" y="64" class="label">14 cm</text>'
+            '<text x="112" y="64" text-anchor="middle" class="label">14 cm</text>'
         ),
         explanation_ar="Area = pi x r^2 = (22/7) x 14^2 = (22/7) x 196 = 616 square cm.",
         solution_steps_ar=_steps("Use area = pi x r^2.", "Square the radius: 14^2 = 196.", "Multiply by 22/7 to get 616."),
@@ -174,9 +174,9 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
         figure_svg=_svg(
             '<path d="M40 105 L40 45 L150 105 Z" class="shape-alt"/>'
             '<path d="M40 90 L55 90 L55 105" fill="none" class="line-thin"/>'
-            '<text x="20" y="78" class="label">5 cm</text>'
-            '<text x="98" y="56" class="label">13 cm</text>'
-            '<text x="90" y="123" class="label">?</text>'
+            '<text x="14" y="78" class="label">5 cm</text>'
+            '<text x="94" y="52" class="label">13 cm</text>'
+            '<text x="88" y="126" class="label">?</text>'
         ),
         explanation_ar="Use the Pythagorean theorem. The missing leg satisfies x^2 = 13^2 - 5^2 = 169 - 25 = 144, so x = 12 cm.",
         solution_steps_ar=_steps("Use x^2 = 13^2 - 5^2.", "x^2 = 169 - 25 = 144.", "x = 12."),
