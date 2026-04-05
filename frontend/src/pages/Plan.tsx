@@ -266,7 +266,7 @@ function getDayState(day: StudyPlanDay): {
   return {
     label: 'Upcoming',
     chipClass: 'bg-slate-100 text-slate-600',
-    cardClass: 'bg-white hover:bg-slate-50',
+    cardClass: 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800',
     borderClass: 'border-slate-200',
   };
 }
@@ -339,8 +339,8 @@ export default function Plan() {
     return (
       <div className={`${pageShell.wide} ${pageStack}`}>
         <SkeletonCard className="bg-white dark:bg-slate-900 shadow-card h-48" />
-        <SkeletonCard className="bg-white shadow-card h-52" />
-        <SkeletonCard className="bg-white shadow-card h-80" />
+        <SkeletonCard className="bg-white dark:bg-slate-900 shadow-card h-52" />
+        <SkeletonCard className="bg-white dark:bg-slate-900 shadow-card h-80" />
       </div>
     );
   }
@@ -540,7 +540,7 @@ export default function Plan() {
 
         <aside className="plan-roadmap-detail">
           {selectedDay ? (
-            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-card-lg animate-fade-in" data-testid="plan-detail">
+            <div className="rounded-[2rem] border border-slate-200 bg-white dark:bg-slate-900 p-6 shadow-card-lg animate-fade-in" data-testid="plan-detail">
               {(() => {
                 const phaseInfo = phaseMeta[selectedDay.phase];
                 const dayState = getDayState(selectedDay);
@@ -616,7 +616,7 @@ export default function Plan() {
                     </div>
 
                     {!selectedDay.is_rest_day && (
-                      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+                      <div className="mt-5 rounded-2xl border border-slate-200 bg-white dark:bg-slate-900 p-4">
                         <div className="mb-3 flex items-center justify-between text-sm">
                           <p className="font-bold text-slate-700">Completion</p>
                           <p className="font-semibold text-slate-500">

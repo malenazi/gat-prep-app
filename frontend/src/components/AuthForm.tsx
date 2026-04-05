@@ -639,7 +639,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
 
                       <label
                         htmlFor="save-in-browser"
-                        className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 cursor-pointer"
+                        className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white dark:bg-slate-900 px-4 py-3 cursor-pointer"
                       >
                         <input
                           id="save-in-browser"

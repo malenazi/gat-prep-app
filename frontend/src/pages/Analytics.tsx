@@ -104,7 +104,7 @@ export default function Analytics() {
       {weakest && data.total_questions > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="bg-gradient-to-l from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl p-5 flex items-start gap-4 stagger-1 card-hover">
-            <div className="w-11 h-11 bg-white rounded-xl shadow-sm flex items-center justify-center text-xl shrink-0">{weakest.icon}</div>
+            <div className="w-11 h-11 bg-white dark:bg-slate-900 rounded-xl shadow-sm flex items-center justify-center text-xl shrink-0">{weakest.icon}</div>
             <div>
               <p className="text-amber-800 dark:text-amber-200 font-bold text-sm">⚡ Improvement Point</p>
               <p className="text-amber-700/70 dark:text-amber-300/70 text-sm mt-0.5">
@@ -115,7 +115,7 @@ export default function Analytics() {
           </div>
           {strongest && strongest.skill_id !== weakest.skill_id && (
             <div className="bg-gradient-to-l from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-5 flex items-start gap-4 stagger-2 card-hover">
-              <div className="w-11 h-11 bg-white rounded-xl shadow-sm flex items-center justify-center text-xl shrink-0">{strongest.icon}</div>
+              <div className="w-11 h-11 bg-white dark:bg-slate-900 rounded-xl shadow-sm flex items-center justify-center text-xl shrink-0">{strongest.icon}</div>
               <div>
                 <p className="text-emerald-800 dark:text-emerald-200 font-bold text-sm">🌟 Strong Point</p>
                 <p className="text-emerald-700/70 dark:text-emerald-300/70 text-sm mt-0.5">

@@ -745,7 +745,7 @@ export function TrialSession({ onRegister, onBack }: TrialSessionProps) {
           <h1 className="text-3xl font-black text-slate-800 mb-3">Try the Course for Free</h1>
           <p className="text-slate-500 mb-6">A complete two-phase experience — diagnostic test then training day — no registration required</p>
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-6 text-left space-y-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 rounded-2xl p-5 mb-6 text-left space-y-4">
             {/* Phase 1 */}
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -826,7 +826,7 @@ export function TrialSession({ onRegister, onBack }: TrialSessionProps) {
           ) : (
             <>
               {diagQ.passage_ar && (
-                <div className="bg-white border border-slate-200 rounded-xl p-3 lg:p-5 mb-3 text-xs lg:text-sm text-slate-600 leading-relaxed">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 rounded-xl p-3 lg:p-5 mb-3 text-xs lg:text-sm text-slate-600 leading-relaxed">
                   {diagQ.passage_ar}
                 </div>
               )}
@@ -834,7 +834,7 @@ export function TrialSession({ onRegister, onBack }: TrialSessionProps) {
               <div className="space-y-2 lg:space-y-3">
                 {diagQ.options.map(opt => (
                   <button key={opt.key} onClick={() => handleDiagAnswer(opt.key)} disabled={!!selected}
-                    className="w-full text-left border-2 rounded-xl p-3 lg:p-4 transition-all bg-white border-slate-200 hover:border-teal-300 disabled:opacity-60">
+                    className="w-full text-left border-2 rounded-xl p-3 lg:p-4 transition-all bg-white dark:bg-slate-900 border-slate-200 hover:border-teal-300 disabled:opacity-60">
                     <div className="flex items-start gap-3">
                       <span className="w-8 h-8 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center text-xs lg:text-sm font-bold shrink-0 bg-slate-100 text-slate-600">{opt.label}</span>
                       <span className="text-sm lg:text-base text-slate-700 leading-relaxed">{opt.text_ar}</span>
@@ -863,12 +863,12 @@ export function TrialSession({ onRegister, onBack }: TrialSessionProps) {
           <h1 className="text-2xl lg:text-3xl font-black text-slate-800 mb-2">Diagnostic Test Completed</h1>
           <p className="text-slate-500 mb-6">{diagCorrect} correct answers out of {DIAGNOSTIC_QUESTIONS.length}</p>
 
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 p-6 mb-6">
             <ScoreRing score={predicted} size={140} label="Predicted Score" />
           </div>
 
           {/* Breakdown */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 mb-6 text-left space-y-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 p-5 mb-6 text-left space-y-4">
             <div>
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm font-bold text-slate-700 flex items-center gap-1"><BookOpen className="w-4 h-4 text-blue-500" /> Verbal</span>
@@ -919,7 +919,7 @@ export function TrialSession({ onRegister, onBack }: TrialSessionProps) {
           </div>
         </div>
         {/* Live stats bar */}
-        <div className="px-4 py-2 bg-white border-b border-slate-200 flex items-center justify-between text-xs font-medium text-slate-600">
+        <div className="px-4 py-2 bg-white dark:bg-slate-900 border-b border-slate-200 flex items-center justify-between text-xs font-medium text-slate-600">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> {pracCorrect}/{pracAnswers.length}</span>
             <span className="flex items-center gap-1"><Sparkles className="w-3.5 h-3.5 text-amber-500" /> {totalXP} XP</span>
@@ -939,7 +939,7 @@ export function TrialSession({ onRegister, onBack }: TrialSessionProps) {
         {/* Question */}
         <div className="flex-1 p-3 lg:p-8 max-w-3xl mx-auto w-full">
           {pracQ.passage_ar && (
-            <div className="bg-white border border-slate-200 rounded-xl p-3 lg:p-5 mb-3 text-xs lg:text-sm text-slate-600 leading-relaxed">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 rounded-xl p-3 lg:p-5 mb-3 text-xs lg:text-sm text-slate-600 leading-relaxed">
               {pracQ.passage_ar}
             </div>
           )}
@@ -947,7 +947,7 @@ export function TrialSession({ onRegister, onBack }: TrialSessionProps) {
           <div className="space-y-2 lg:space-y-3">
             {pracQ.options.map(opt => (
               <button key={opt.key} onClick={() => handlePracAnswer(opt.key)} disabled={!!selected}
-                className="w-full text-left border-2 rounded-xl p-3 lg:p-4 transition-all bg-white border-slate-200 hover:border-teal-300 disabled:opacity-60">
+                className="w-full text-left border-2 rounded-xl p-3 lg:p-4 transition-all bg-white dark:bg-slate-900 border-slate-200 hover:border-teal-300 disabled:opacity-60">
                 <div className="flex items-start gap-3">
                   <span className="w-8 h-8 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center text-xs lg:text-sm font-bold shrink-0 bg-slate-100 text-slate-600">{opt.label}</span>
                   <span className="text-sm lg:text-base text-slate-700 leading-relaxed">{opt.text_ar}</span>
@@ -972,7 +972,7 @@ export function TrialSession({ onRegister, onBack }: TrialSessionProps) {
           {pracQ.skill_name} — Question {pracIndex + 1} of {PRACTICE_QUESTIONS.length}
         </div>
         {/* Live stats bar */}
-        <div className="px-4 py-2 bg-white border-b border-slate-200 flex items-center justify-between text-xs font-medium text-slate-600">
+        <div className="px-4 py-2 bg-white dark:bg-slate-900 border-b border-slate-200 flex items-center justify-between text-xs font-medium text-slate-600">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5 text-emerald-500" /> {pracCorrect}/{pracAnswers.length}</span>
             <span className="flex items-center gap-1"><Sparkles className="w-3.5 h-3.5 text-amber-500" /> {totalXP} XP</span>
@@ -1024,13 +1024,13 @@ export function TrialSession({ onRegister, onBack }: TrialSessionProps) {
           </div>
 
           {/* Score Ring */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-4 text-center">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 p-6 mb-4 text-center">
             <ScoreRing score={overallPct} size={150} label={`${allCorrect} of ${allAnswers.length}`} />
             <p className="text-sm text-slate-500 mt-3">Predicted GAT Score: <span className="font-black text-teal-600 text-lg">{predicted}</span></p>
           </div>
 
           {/* Section Breakdown */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 mb-4 space-y-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 p-5 mb-4 space-y-4">
             <h3 className="font-bold text-slate-800 flex items-center gap-2"><BarChart3 className="w-5 h-5 text-teal-600" /> Section Analysis</h3>
             <div>
               <div className="flex justify-between items-center mb-1">
@@ -1053,7 +1053,7 @@ export function TrialSession({ onRegister, onBack }: TrialSessionProps) {
           </div>
 
           {/* Per-Skill Table */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 mb-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 p-5 mb-4">
             <h3 className="font-bold text-slate-800 mb-3">Skill Details</h3>
             <div className="space-y-2">
               {skills.map(s => (
@@ -1073,7 +1073,7 @@ export function TrialSession({ onRegister, onBack }: TrialSessionProps) {
           </div>
 
           {/* XP */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 mb-4 flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 p-5 mb-4 flex items-center justify-between">
             <span className="font-bold text-slate-700 flex items-center gap-2"><Sparkles className="w-5 h-5 text-amber-500" /> Experience Points Earned</span>
             <span className="text-2xl font-black text-amber-600">{totalXP} XP</span>
           </div>
@@ -1107,7 +1107,7 @@ export function TrialSession({ onRegister, onBack }: TrialSessionProps) {
             </div>
 
             <button onClick={resetAndRegister}
-              className="w-full bg-white text-teal-700 font-bold py-3 rounded-xl hover:bg-teal-50 transition text-lg">
+              className="w-full bg-white dark:bg-slate-900 text-teal-700 font-bold py-3 rounded-xl hover:bg-teal-50 transition text-lg">
               Register Now — 199 <img src="/sar-symbol.svg" alt="SAR" className="inline-block h-[0.75em] w-auto ml-0.5" />
             </button>
           </div>

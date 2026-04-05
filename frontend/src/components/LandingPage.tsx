@@ -578,7 +578,7 @@ export function LandingPage({ onStart, onTrial }: LandingPageProps) {
       <section id="features" className="py-20 lg:py-28 bg-slate-50 dark:bg-slate-900/70">
         <div className="max-w-6xl mx-auto px-4 lg:px-6">
           <div className="text-center mb-14">
-            <span className="inline-block text-sm font-bold text-teal-600 bg-white px-4 py-1.5 rounded-full mb-4 shadow-sm">
+            <span className="inline-block text-sm font-bold text-teal-600 bg-white dark:bg-slate-900 px-4 py-1.5 rounded-full mb-4 shadow-sm">
               WHY CHOOSE US
             </span>
             <h2 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-white mb-4">
@@ -676,7 +676,7 @@ export function LandingPage({ onStart, onTrial }: LandingPageProps) {
       <section id="reviews" className="py-20 lg:py-28 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
         <div className="max-w-5xl mx-auto px-4 lg:px-6">
           <div className="text-center mb-14">
-            <span className="inline-block text-sm font-bold text-teal-600 bg-white px-4 py-1.5 rounded-full mb-4 shadow-sm">
+            <span className="inline-block text-sm font-bold text-teal-600 bg-white dark:bg-slate-900 px-4 py-1.5 rounded-full mb-4 shadow-sm">
               PLATFORM PREVIEW
             </span>
             <h2 className="text-3xl lg:text-4xl font-black text-slate-900 dark:text-white mb-4">

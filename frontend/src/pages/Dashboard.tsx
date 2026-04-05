@@ -102,11 +102,11 @@ export default function Dashboard() {
           <h1 className="text-xl font-black text-slate-800 dark:text-slate-100">{user.name} 👋</h1>
         </div>
         <div className="flex items-center gap-2">
-          <div className="bg-white shadow-card rounded-xl px-3 py-2 flex items-center gap-1.5">
+          <div className="bg-white dark:bg-slate-900 shadow-card rounded-xl px-3 py-2 flex items-center gap-1.5">
             <span className={`text-base ${user.streak > 0 ? 'animate-fire' : ''}`}>🔥</span>
             <span className="font-bold text-slate-800 dark:text-slate-100 text-sm">{user.streak}</span>
           </div>
-          <div className="bg-white shadow-card rounded-xl px-3 py-2 flex items-center gap-1.5">
+          <div className="bg-white dark:bg-slate-900 shadow-card rounded-xl px-3 py-2 flex items-center gap-1.5">
             <span className="text-base">⚡</span>
             <span className="font-bold text-teal-600 dark:text-teal-400 text-sm">{user.xp}</span>
           </div>
@@ -138,7 +138,7 @@ export default function Dashboard() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="h-2 w-40 lg:w-56 bg-white/20 rounded-full overflow-hidden">
-                        <div className="h-full bg-white rounded-full transition-all"
+                        <div className="h-full bg-white dark:bg-slate-900 rounded-full transition-all"
                           style={{ width: `${Math.min(100, (today.completed_questions / Math.max(1, today.target_questions)) * 100)}%` }} />
                       </div>
                       <span className="text-teal-100 text-sm">{today.completed_questions}/{today.target_questions}</span>
@@ -163,7 +163,7 @@ export default function Dashboard() {
                   {user.current_day < 30 && (
                     <button onClick={advanceDay} disabled={advancing}
                       data-testid="dashboard-advance-day"
-                      className="bg-white text-emerald-700 font-bold py-2.5 px-6 rounded-xl text-sm hover:bg-emerald-50 transition disabled:opacity-50">
+                      className="bg-white dark:bg-slate-900 text-emerald-700 font-bold py-2.5 px-6 rounded-xl text-sm hover:bg-emerald-50 transition disabled:opacity-50">
                       {advancing ? '...' : 'Go to Next Day ←'}
                     </button>
                   )}
@@ -205,7 +205,7 @@ export default function Dashboard() {
       {/* ═══ Guidance Card — "What next?" ═══ */}
       {weakest && weakest.questions_seen > 0 && (
         <div className="bg-gradient-to-l from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/30 border border-indigo-100 dark:border-indigo-800 rounded-2xl p-3 lg:p-5 flex items-center gap-4 stagger-2">
-          <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-2xl shrink-0">
+          <div className="w-12 h-12 bg-white dark:bg-slate-900 rounded-xl shadow-sm flex items-center justify-center text-2xl shrink-0">
             {weakest.icon}
           </div>
           <div className="flex-1 min-w-0">
@@ -344,7 +344,7 @@ export default function Dashboard() {
                 <p className="text-amber-100 text-sm">65 questions • 70 minutes • {user.mock_max_attempts} attempts available</p>
               </div>
               <a href="/mock"
-                className="bg-white text-amber-600 font-bold px-5 py-2.5 rounded-xl hover:bg-amber-50 transition text-sm">
+                className="bg-white dark:bg-slate-900 text-amber-600 font-bold px-5 py-2.5 rounded-xl hover:bg-amber-50 transition text-sm">
                 Start Mock Exam
               </a>
             </div>
@@ -355,7 +355,7 @@ export default function Dashboard() {
                 <p className="text-amber-100 text-sm">Best Score: {user.mock_score} of 100</p>
               </div>
               <a href="/mock"
-                className="bg-white text-amber-600 font-bold px-5 py-2.5 rounded-xl hover:bg-amber-50 transition text-sm">
+                className="bg-white dark:bg-slate-900 text-amber-600 font-bold px-5 py-2.5 rounded-xl hover:bg-amber-50 transition text-sm">
                 Start Next Attempt (Attempt {user.mock_attempts + 1} of {user.mock_max_attempts})
               </a>
             </div>

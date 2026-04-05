@@ -616,7 +616,7 @@ export default function Admin() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {questionAnalysis.flagged.slice(0, 10).map(f => (
-                    <span key={f.id} className="bg-white border border-amber-300 rounded-lg px-3 py-1 text-xs text-amber-700">
+                    <span key={f.id} className="bg-white dark:bg-slate-900 border border-amber-300 rounded-lg px-3 py-1 text-xs text-amber-700">
                       #{f.id} — {f.issues.join(', ')}
                     </span>
                   ))}

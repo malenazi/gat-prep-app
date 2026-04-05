@@ -50,7 +50,7 @@ export function FeedbackModal({ trigger, onClose }: FeedbackModalProps) {
 
   if (submitted) return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-8 w-full max-w-sm text-center shadow-card-lg animate-slide-up">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 w-full max-w-sm text-center shadow-card-lg animate-slide-up">
         <div className="text-5xl mb-3">💚</div>
         <p className="text-slate-800 font-bold">Thank you for your feedback!</p>
       </div>
@@ -59,7 +59,7 @@ export function FeedbackModal({ trigger, onClose }: FeedbackModalProps) {
 
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-card-lg animate-slide-up">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-sm shadow-card-lg animate-slide-up">
         <p className="text-slate-800 font-bold text-lg mb-1">{triggerLabels[trigger] || 'Your opinion matters'}</p>
         <p className="text-slate-500 text-sm mb-5">Help us improve the experience</p>
 
