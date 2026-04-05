@@ -41,8 +41,8 @@ const phaseMeta: Record<
     label: 'Foundation',
     range: 'Days 1-7',
     description: 'Build consistency around your weakest skills first.',
-    surface: 'bg-sky-50 border-sky-200',
-    text: 'text-sky-700',
+    surface: 'bg-sky-50 border-sky-200 dark:bg-sky-950/30 dark:border-sky-800',
+    text: 'text-sky-700 dark:text-sky-300',
     progress: 'from-sky-400 to-blue-500',
     accent: 'bg-sky-500',
   },
@@ -50,8 +50,8 @@ const phaseMeta: Record<
     label: 'Building',
     range: 'Days 8-22',
     description: 'Expand across all sections with steady daily practice.',
-    surface: 'bg-teal-50 border-teal-200',
-    text: 'text-teal-700',
+    surface: 'bg-teal-50 border-teal-200 dark:bg-teal-950/30 dark:border-teal-800',
+    text: 'text-teal-700 dark:text-teal-300',
     progress: 'from-teal-400 to-emerald-500',
     accent: 'bg-teal-500',
   },
@@ -59,8 +59,8 @@ const phaseMeta: Record<
     label: 'Peak + Review',
     range: 'Days 23-30',
     description: 'Mix final sharpening, mock checkpoints, and recovery days.',
-    surface: 'bg-amber-50 border-amber-200',
-    text: 'text-amber-700',
+    surface: 'bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800',
+    text: 'text-amber-700 dark:text-amber-300',
     progress: 'from-amber-400 to-orange-500',
     accent: 'bg-amber-500',
   },
@@ -248,26 +248,26 @@ function getDayState(day: StudyPlanDay): {
   if (day.completed) {
     return {
       label: 'Completed',
-      chipClass: 'bg-emerald-100 text-emerald-700',
-      cardClass: 'bg-emerald-50/70',
-      borderClass: 'border-emerald-300',
+      chipClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+      cardClass: 'bg-emerald-50/70 dark:bg-emerald-950/30',
+      borderClass: 'border-emerald-300 dark:border-emerald-800',
     };
   }
 
   if (day.is_today) {
     return {
       label: 'Today',
-      chipClass: 'bg-teal-100 text-teal-700',
-      cardClass: 'bg-teal-50/80',
-      borderClass: 'border-teal-400',
+      chipClass: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
+      cardClass: 'bg-teal-50/80 dark:bg-teal-950/30',
+      borderClass: 'border-teal-400 dark:border-teal-600',
     };
   }
 
   return {
     label: 'Upcoming',
-    chipClass: 'bg-slate-100 text-slate-600',
+    chipClass: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
     cardClass: 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800',
-    borderClass: 'border-slate-200',
+    borderClass: 'border-slate-200 dark:border-slate-800',
   };
 }
 
@@ -291,7 +291,7 @@ function SkillDetailCard({ skill }: { skill: FocusSkill }) {
         </div>
         <div>
           <p className="text-sm font-bold">{skill.name_ar}</p>
-          <p className="mt-1 text-sm leading-relaxed text-slate-600">{info.topics}</p>
+          <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{info.topics}</p>
         </div>
       </div>
     </div>
@@ -364,7 +364,7 @@ export default function Plan() {
 
   return (
     <div className={`${pageShell.wide} ${pageStack} page-enter text-slate-800 dark:text-slate-100`} data-testid="plan-page">
-      <section className="overflow-hidden rounded-[2rem] border border-teal-100 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.16),_transparent_48%),linear-gradient(135deg,_#f8fffe,_#eefaf8_45%,_#ffffff)] p-6 shadow-card-lg lg:p-8">
+      <section className="overflow-hidden rounded-[2rem] border border-teal-100 dark:border-teal-900 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.16),_transparent_48%),linear-gradient(135deg,_#f8fffe,_#eefaf8_45%,_#ffffff)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.08),_transparent_48%),linear-gradient(135deg,_#0f172a,_#0f1e2a_45%,_#0f172a)] p-6 shadow-card-lg lg:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/80 dark:bg-slate-950/80 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-teal-700 dark:text-teal-300 shadow-sm">
@@ -372,7 +372,7 @@ export default function Plan() {
               30-day roadmap
             </div>
             <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900 lg:text-5xl dark:text-slate-100">Study Plan</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 lg:text-base">
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300 lg:text-base">
               Follow a clearer daily roadmap with practice blocks, mock checkpoints, and recovery days. Select any day to see the workload, timing, and skills behind it.
             </p>
             <p className="mt-3 text-sm font-medium text-slate-500">
@@ -383,13 +383,13 @@ export default function Plan() {
           <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[460px] xl:grid-cols-3">
             <div className="rounded-3xl border border-white/80 bg-white/80 dark:bg-slate-950/80 dark:border-slate-800 p-4 shadow-sm stat-card-shine">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Progress</p>
-              <p className="mt-2 text-2xl font-black text-slate-900">{completedDays}<span className="text-base text-slate-400"> / {plan.length}</span></p>
+              <p className="mt-2 text-2xl font-black text-slate-900 dark:text-slate-100">{completedDays}<span className="text-base text-slate-400"> / {plan.length}</span></p>
               <p className="mt-1 text-sm text-slate-500">Days completed</p>
             </div>
 
             <div className="rounded-3xl border border-white/80 bg-white/80 dark:bg-slate-950/80 dark:border-slate-800 p-4 shadow-sm stat-card-shine">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Today</p>
-              <p className="mt-2 text-base font-black text-slate-900">{todayTask?.title ?? 'Roadmap ready'}</p>
+              <p className="mt-2 text-base font-black text-slate-900 dark:text-slate-100">{todayTask?.title ?? 'Roadmap ready'}</p>
               <p className="mt-1 text-sm text-slate-500">{todayTask?.estimate ?? 'Select a day to inspect the plan.'}</p>
             </div>
 
@@ -420,23 +420,23 @@ export default function Plan() {
                   <p className="mt-1 text-sm text-slate-500">{info.range}</p>
                 </div>
                 {isCurrent && (
-                  <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-700">
+                  <span className="rounded-full bg-white/90 dark:bg-slate-800 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-700 dark:text-slate-300">
                     Current
                   </span>
                 )}
               </div>
 
-              <p className="mt-4 text-sm leading-relaxed text-slate-600">{info.description}</p>
+              <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{info.description}</p>
 
               <div className="mt-5 flex items-end justify-between gap-4">
                 <div>
-                  <p className="text-2xl font-black text-slate-900">{phaseCompleted}<span className="text-base text-slate-400"> / {phaseDays.length}</span></p>
-                  <p className="text-sm text-slate-500">days finished in this phase</p>
+                  <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{phaseCompleted}<span className="text-base text-slate-400"> / {phaseDays.length}</span></p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">days finished in this phase</p>
                 </div>
                 <p className={`text-sm font-bold ${info.text}`}>{Math.round(phasePercent)}%</p>
               </div>
 
-              <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white/80">
+              <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-white/80 dark:bg-slate-800">
                 <div
                   className={`h-full rounded-full bg-gradient-to-r ${info.progress} transition-all duration-700 animate-bar-fill`}
                   style={{ width: `${phasePercent}%` }}
@@ -495,8 +495,8 @@ export default function Plan() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Day</p>
-                      <p className="mt-1 text-2xl font-black text-slate-900">{day.day}</p>
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">Day</p>
+                      <p className="mt-1 text-2xl font-black text-slate-900 dark:text-slate-100">{day.day}</p>
                     </div>
                     <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${dayState.chipClass}`}>
                       {dayState.label}
@@ -507,8 +507,8 @@ export default function Plan() {
                     {cardLabel} • {phaseInfo.label}
                   </p>
 
-                  <p className="mt-3 text-[1.75rem] font-black leading-tight text-slate-900">{primaryValue}</p>
-                  <p className="mt-2 min-h-[2.8rem] text-sm leading-relaxed text-slate-500">
+                  <p className="mt-3 text-[1.75rem] font-black leading-tight text-slate-900 dark:text-slate-100">{primaryValue}</p>
+                  <p className="mt-2 min-h-[2.8rem] text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                     {secondaryValue}
                   </p>
 
@@ -518,7 +518,7 @@ export default function Plan() {
                         <span>{footerValue}</span>
                         <span>{day.completed ? '100%' : `${Math.round(completionPercent)}%`}</span>
                       </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                      <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
                         <div
                           className={`h-full rounded-full bg-gradient-to-r ${phaseInfo.progress}`}
                           style={{ width: `${completionPercent}%` }}
@@ -527,7 +527,7 @@ export default function Plan() {
                     </div>
                   ) : (
                     <div className="mt-auto pt-5">
-                      <div className="rounded-2xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-500">
+                      <div className="rounded-2xl bg-slate-100 dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
                         {footerValue}
                       </div>
                     </div>
@@ -560,7 +560,7 @@ export default function Plan() {
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="text-sm font-medium text-slate-400">Selected day</p>
-                        <h3 className="mt-1 text-2xl font-black text-slate-900">Day {selectedDay.day}</h3>
+                        <h3 className="mt-1 text-2xl font-black text-slate-900 dark:text-slate-100">Day {selectedDay.day}</h3>
                         <p className="mt-1 text-sm text-slate-500">{phaseInfo.label}</p>
                       </div>
                       <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] ${dayState.chipClass}`}>
@@ -570,13 +570,13 @@ export default function Plan() {
 
                     <div className={`mt-5 rounded-3xl border p-5 ${phaseInfo.surface}`}>
                       <div className="flex items-start gap-4">
-                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/90 shadow-sm">
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/90 dark:bg-slate-800 shadow-sm">
                           <TaskIcon className={`h-6 w-6 ${phaseInfo.text}`} />
                         </div>
                         <div>
                           <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">{task.eyebrow}</p>
-                          <p className="mt-1 text-xl font-black text-slate-900">{task.title}</p>
-                          <p className="mt-2 text-sm leading-relaxed text-slate-600">{task.detail}</p>
+                          <p className="mt-1 text-xl font-black text-slate-900 dark:text-slate-100">{task.title}</p>
+                          <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{task.detail}</p>
                         </div>
                       </div>
                     </div>
@@ -587,7 +587,7 @@ export default function Plan() {
                           <CalendarDays className="h-4 w-4" />
                           <p className="text-xs font-bold uppercase tracking-[0.14em]">Assigned work</p>
                         </div>
-                        <p className="mt-3 text-lg font-black text-slate-900">
+                        <p className="mt-3 text-lg font-black text-slate-900 dark:text-slate-100">
                           {selectedDay.is_mock_day ? 'Full mock exam' : selectedDay.is_rest_day ? 'Recovery day' : `${selectedDay.target_questions} questions`}
                         </p>
                         <p className="mt-1 text-sm text-slate-500">
@@ -600,7 +600,7 @@ export default function Plan() {
                           <Clock3 className="h-4 w-4" />
                           <p className="text-xs font-bold uppercase tracking-[0.14em]">Current status</p>
                         </div>
-                        <p className="mt-3 text-lg font-black text-slate-900">
+                        <p className="mt-3 text-lg font-black text-slate-900 dark:text-slate-100">
                           {selectedDay.is_rest_day
                             ? selectedDay.completed
                               ? 'Recovery complete'
@@ -638,7 +638,7 @@ export default function Plan() {
 
                     <div className="mt-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-4">
                       <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Why this day matters</p>
-                      <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                      <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                         {selectedDay.is_rest_day
                           ? 'Recovery days keep your pace sustainable across the 30-day plan.'
                           : selectedDay.is_mock_day
@@ -649,7 +649,7 @@ export default function Plan() {
 
                     {selectedDay.focus_skills?.length > 0 && !selectedDay.is_mock_day && !selectedDay.is_rest_day && (
                       <div className="mt-5 border-t border-slate-100 dark:border-slate-800 pt-5">
-                        <p className="text-sm font-black text-slate-900">Focus skills</p>
+                        <p className="text-sm font-black text-slate-900 dark:text-slate-100">Focus skills</p>
                         <p className="mt-1 text-sm text-slate-500">
                           This practice block concentrates on {getFocusSummary(selectedDay)}.
                         </p>
