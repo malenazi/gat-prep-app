@@ -280,13 +280,13 @@ function SkillDetailCard({ skill }: { skill: FocusSkill }) {
   const Icon = info.icon;
   const toneClasses =
     info.tone === 'sky'
-      ? 'bg-sky-50 border-sky-200 text-sky-700'
-      : 'bg-violet-50 border-violet-200 text-violet-700';
+      ? 'bg-sky-50 dark:bg-sky-950/30 border-sky-200 dark:border-sky-800 text-sky-700 dark:text-sky-300'
+      : 'bg-violet-50 dark:bg-violet-950/30 border-violet-200 dark:border-violet-800 text-violet-700 dark:text-violet-300';
 
   return (
     <div className={`rounded-2xl border p-4 ${toneClasses}`}>
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/80 shadow-sm">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/80 dark:bg-slate-800 shadow-sm">
           <Icon className="h-5 w-5" />
         </div>
         <div>
@@ -616,7 +616,7 @@ export default function Plan() {
                     </div>
 
                     {!selectedDay.is_rest_day && (
-                      <div className="mt-5 rounded-2xl border border-slate-200 bg-white dark:bg-slate-900 p-4">
+                      <div className="mt-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4">
                         <div className="mb-3 flex items-center justify-between text-sm">
                           <p className="font-bold text-slate-700 dark:text-slate-200">Completion</p>
                           <p className="font-semibold text-slate-500">
