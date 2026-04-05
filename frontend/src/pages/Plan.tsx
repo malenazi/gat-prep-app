@@ -582,7 +582,7 @@ export default function Plan() {
                     </div>
 
                     <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-4">
                         <div className="flex items-center gap-2 text-slate-500">
                           <CalendarDays className="h-4 w-4" />
                           <p className="text-xs font-bold uppercase tracking-[0.14em]">Assigned work</p>
@@ -595,7 +595,7 @@ export default function Plan() {
                         </p>
                       </div>
 
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-4">
                         <div className="flex items-center gap-2 text-slate-500">
                           <Clock3 className="h-4 w-4" />
                           <p className="text-xs font-bold uppercase tracking-[0.14em]">Current status</p>
@@ -636,7 +636,7 @@ export default function Plan() {
                       </div>
                     )}
 
-                    <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="mt-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-4">
                       <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Why this day matters</p>
                       <p className="mt-2 text-sm leading-relaxed text-slate-600">
                         {selectedDay.is_rest_day
@@ -648,7 +648,7 @@ export default function Plan() {
                     </div>
 
                     {selectedDay.focus_skills?.length > 0 && !selectedDay.is_mock_day && !selectedDay.is_rest_day && (
-                      <div className="mt-5 border-t border-slate-100 pt-5">
+                      <div className="mt-5 border-t border-slate-100 dark:border-slate-800 pt-5">
                         <p className="text-sm font-black text-slate-900">Focus skills</p>
                         <p className="mt-1 text-sm text-slate-500">
                           This practice block concentrates on {getFocusSummary(selectedDay)}.

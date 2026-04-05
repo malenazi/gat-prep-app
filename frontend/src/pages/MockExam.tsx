@@ -654,7 +654,7 @@ export default function MockExam() {
                     <p className="text-xs text-violet-500 mb-0.5">Quant</p>
                     <p className="text-sm font-bold text-violet-700">{Math.round(a.quant_pct * 100)}%</p>
                   </div>
-                  <div className="bg-slate-50 rounded-lg p-2 text-center">
+                  <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-2 text-center">
                     <p className="text-xs text-slate-500 mb-0.5">Date</p>
                     <p className="text-sm font-bold text-slate-700">
                       {new Date(a.completed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}

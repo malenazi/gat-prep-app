@@ -593,7 +593,7 @@ export default function Admin() {
                       </div>
                     ))}
                     {!!questionAnalysis.by_batch?.length && (
-                      <div className="pt-2 border-t border-slate-100 space-y-1 text-xs text-slate-500">
+                      <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1 text-xs text-slate-500">
                         <p className="font-semibold text-slate-700">Recent batches</p>
                         {questionAnalysis.by_batch.slice(0, 4).map((batch) => (
                           <p key={batch.batch_id || 'unbatched'}>
@@ -829,7 +829,7 @@ export default function Admin() {
                             <p>Analytics flags: {q.analytics_flags?.length ? q.analytics_flags.join(', ') : 'None'}</p>
                           </div>
                           {q.rating_notes && (
-                            <p className="mt-2 rounded-md bg-slate-50 px-2 py-1 text-slate-600">{q.rating_notes}</p>
+                            <p className="mt-2 rounded-md bg-slate-50 dark:bg-slate-800 px-2 py-1 text-slate-600 dark:text-slate-400">{q.rating_notes}</p>
                           )}
                         </div>
                       </div>

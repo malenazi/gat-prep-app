@@ -46,7 +46,7 @@ export function QuestionAppearanceToolbar({
         </div>
 
         <div className="flex flex-1 flex-wrap gap-3">
-          <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 p-2">
+          <div className="rounded-[1.5rem] border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 p-2">
             <p className="px-2 pb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Text Size</p>
             <div className="flex flex-wrap gap-2">
               <ToggleButton
@@ -62,7 +62,7 @@ export function QuestionAppearanceToolbar({
             </div>
           </div>
 
-          <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 p-2">
+          <div className="rounded-[1.5rem] border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 p-2">
             <p className="px-2 pb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Spacing</p>
             <div className="flex flex-wrap gap-2">
               <ToggleButton
@@ -78,7 +78,7 @@ export function QuestionAppearanceToolbar({
             </div>
           </div>
 
-          <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 p-2">
+          <div className="rounded-[1.5rem] border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 p-2">
             <p className="px-2 pb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Accessibility</p>
             <div className="flex flex-wrap gap-2">
               <ToggleButton

@@ -613,7 +613,7 @@ interface StatBoxProps {
   className?: string;
 }
 
-function StatBox({ label, value, icon, color = 'text-slate-800', className = '' }: StatBoxProps) {
+function StatBox({ label, value, icon, color = 'text-slate-800 dark:text-slate-100', className = '' }: StatBoxProps) {
   return (
     <div className={`bg-white dark:bg-slate-900 shadow-card rounded-xl p-4 text-center card-hover ${className}`}>
       <div className="text-xl mb-1">{icon}</div>

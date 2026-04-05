@@ -157,7 +157,7 @@ export const ProgressRing: React.FC<{ progress: number; size?: number; strokeWid
         </defs>
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-2xl font-black text-slate-800">{progress}%</span>
+        <span className="text-2xl font-black text-slate-800 dark:text-slate-100">{progress}%</span>
       </div>
     </div>
   );

@@ -439,7 +439,7 @@ export default function Dashboard() {
           {{ bronze: '🥉', silver: '🥈', gold: '🥇', platinum: '💎', diamond: '👑', champion: '🏆' }[user.league] || '🥉'}
         </div>
         <div className="flex-1">
-          <p className="text-slate-800 font-bold text-base lg:text-lg">
+          <p className="text-slate-800 dark:text-slate-100 font-bold text-base lg:text-lg">
             {{bronze: 'Bronze', silver: 'Silver', gold: 'Gold', platinum: 'Platinum', diamond: 'Diamond', champion: 'Champion'}[user.league] || 'Bronze'}
           </p>
           <p className="text-slate-500 dark:text-slate-400 text-sm">Weekly League</p>

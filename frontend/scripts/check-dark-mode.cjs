@@ -84,9 +84,7 @@ if (violations.length > 0) {
   if (violations.length > 20) {
     console.error(`  ... and ${violations.length - 20} more`);
   }
-  // Warn but don't block CI (set to process.exit(1) once all violations are fixed)
-  console.error(`\n⚠️  Fix these before adding new components.\n`);
-  process.exit(0);
+  process.exit(1);
 } else {
   console.log('✅ Dark mode audit passed — no violations found');
   process.exit(0);

@@ -52,7 +52,7 @@ export function FeedbackModal({ trigger, onClose }: FeedbackModalProps) {
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 w-full max-w-sm text-center shadow-card-lg animate-slide-up">
         <div className="text-5xl mb-3">💚</div>
-        <p className="text-slate-800 font-bold">Thank you for your feedback!</p>
+        <p className="text-slate-800 dark:text-slate-100 font-bold">Thank you for your feedback!</p>
       </div>
     </div>
   );
@@ -60,7 +60,7 @@ export function FeedbackModal({ trigger, onClose }: FeedbackModalProps) {
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4">
       <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-sm shadow-card-lg animate-slide-up">
-        <p className="text-slate-800 font-bold text-lg mb-1">{triggerLabels[trigger] || 'Your opinion matters'}</p>
+        <p className="text-slate-800 dark:text-slate-100 font-bold text-lg mb-1">{triggerLabels[trigger] || 'Your opinion matters'}</p>
         <p className="text-slate-500 text-sm mb-5">Help us improve the experience</p>
 
         <div className="flex justify-center gap-3 mb-5">
@@ -79,7 +79,7 @@ export function FeedbackModal({ trigger, onClose }: FeedbackModalProps) {
             <textarea value={comment} onChange={e => setComment(e.target.value)}
               placeholder="Any additional comments? (optional)"
               rows={2}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 text-sm placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition resize-none" />
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-700 dark:text-slate-200 text-sm placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition resize-none" />
           </div>
         )}
 

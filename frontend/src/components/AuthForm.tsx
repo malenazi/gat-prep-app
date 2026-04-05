@@ -379,7 +379,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                         data-testid="auth-name"
                         autoComplete="name"
                         onChange={e => updateField('name', e.target.value)}
-                        className="pr-10 h-11 rounded-lg border-slate-200 text-sm"
+                        className="pr-10 h-11 rounded-lg border-slate-200 dark:border-slate-700 text-sm"
                         required
                       />
                     </div>
@@ -400,7 +400,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                       value={formData.email}
                       autoComplete="username"
                       onChange={e => updateField('email', e.target.value)}
-                      className="pr-10 h-11 rounded-lg border-slate-200 text-sm text-left"
+                      className="pr-10 h-11 rounded-lg border-slate-200 dark:border-slate-700 text-sm text-left"
                       required
                     />
                   </div>
@@ -420,7 +420,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                       value={formData.password}
                       autoComplete={isLogin ? 'current-password' : 'new-password'}
                       onChange={e => updateField('password', e.target.value)}
-                      className="pr-10 pl-10 h-11 rounded-lg border-slate-200 text-sm text-left"
+                      className="pr-10 pl-10 h-11 rounded-lg border-slate-200 dark:border-slate-700 text-sm text-left"
                       required
                     />
                     <button
@@ -505,7 +505,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                         value={resetData.email}
                         autoComplete="username"
                         onChange={e => updateResetField('email', e.target.value)}
-                        className="pr-10 h-11 rounded-lg border-slate-200 text-sm text-left"
+                        className="pr-10 h-11 rounded-lg border-slate-200 dark:border-slate-700 text-sm text-left"
                         required
                       />
                     </div>
@@ -543,7 +543,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                     {resetPreviewToken && (
                       <div className="mt-3 rounded-xl border border-emerald-200 bg-white/80 p-3">
                         <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">One-time reset code</p>
-                        <p className="mt-2 font-mono text-sm text-slate-800 break-all" data-testid="forgot-preview-token">
+                        <p className="mt-2 font-mono text-sm text-slate-800 dark:text-slate-100 break-all" data-testid="forgot-preview-token">
                           {resetPreviewToken}
                         </p>
                         {resetExpiryMinutes && (
@@ -556,10 +556,10 @@ export function AuthForm({ onBack }: AuthFormProps) {
                   </div>
                 )}
 
-                <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-900 p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-800">Have a reset code?</p>
+                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Have a reset code?</p>
                       <p className="text-xs text-slate-500 mt-1">
                         Enter your one-time code and choose a new password.
                       </p>
@@ -588,7 +588,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                           value={resetData.token}
                           autoComplete="one-time-code"
                           onChange={e => updateResetField('token', e.target.value)}
-                          className="h-11 rounded-lg border-slate-200 text-sm text-left font-mono"
+                          className="h-11 rounded-lg border-slate-200 dark:border-slate-700 text-sm text-left font-mono"
                           required
                         />
                       </div>
@@ -607,7 +607,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                             value={resetData.newPassword}
                             autoComplete="new-password"
                             onChange={e => updateResetField('newPassword', e.target.value)}
-                            className="pr-10 pl-10 h-11 rounded-lg border-slate-200 text-sm text-left"
+                            className="pr-10 pl-10 h-11 rounded-lg border-slate-200 dark:border-slate-700 text-sm text-left"
                             required
                           />
                           <button
@@ -632,7 +632,7 @@ export function AuthForm({ onBack }: AuthFormProps) {
                           value={resetData.confirmPassword}
                           autoComplete="new-password"
                           onChange={e => updateResetField('confirmPassword', e.target.value)}
-                          className="h-11 rounded-lg border-slate-200 text-sm text-left"
+                          className="h-11 rounded-lg border-slate-200 dark:border-slate-700 text-sm text-left"
                           required
                         />
                       </div>
