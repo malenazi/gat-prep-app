@@ -263,11 +263,36 @@ function getDayState(day: StudyPlanDay): {
     };
   }
 
+  if (day.is_mock_day) {
+    return {
+      label: 'Upcoming',
+      chipClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+      cardClass: 'bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50/70 dark:hover:bg-amber-950/30',
+      borderClass: 'border-amber-300 dark:border-amber-700',
+    };
+  }
+
+  if (day.is_rest_day) {
+    return {
+      label: 'Upcoming',
+      chipClass: 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400',
+      cardClass: 'bg-slate-50/50 dark:bg-slate-900/50 hover:bg-slate-50 dark:hover:bg-slate-800/50',
+      borderClass: 'border-slate-200 dark:border-slate-700 border-dashed',
+    };
+  }
+
+  // Phase-colored border and subtle tint for upcoming practice days
+  const phaseStyles = day.phase === 'foundation'
+    ? { border: 'border-blue-200 dark:border-blue-800', bg: 'bg-blue-50/30 dark:bg-blue-950/10 hover:bg-blue-50/60 dark:hover:bg-blue-950/20' }
+    : day.phase === 'building'
+      ? { border: 'border-teal-200 dark:border-teal-800', bg: 'bg-teal-50/30 dark:bg-teal-950/10 hover:bg-teal-50/60 dark:hover:bg-teal-950/20' }
+      : { border: 'border-amber-200 dark:border-amber-800', bg: 'bg-amber-50/30 dark:bg-amber-950/10 hover:bg-amber-50/60 dark:hover:bg-amber-950/20' };
+
   return {
     label: 'Upcoming',
     chipClass: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-    cardClass: 'bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800',
-    borderClass: 'border-slate-200 dark:border-slate-800',
+    cardClass: phaseStyles.bg,
+    borderClass: phaseStyles.border,
   };
 }
 
