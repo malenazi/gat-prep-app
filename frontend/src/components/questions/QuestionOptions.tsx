@@ -75,11 +75,11 @@ export function QuestionOptions({
         let stateLabel = '';
 
         if (isCorrect) {
-          cardClass = 'border-emerald-400 bg-emerald-50 shadow-[0_22px_45px_-34px_rgba(16,185,129,0.28)] dark:bg-emerald-500/12 animate-correct';
+          cardClass = 'border-emerald-500 bg-emerald-50 shadow-[0_22px_45px_-34px_rgba(16,185,129,0.28)] dark:border-emerald-400 dark:bg-emerald-500/20 animate-correct';
           badgeClass = 'bg-emerald-500 text-white';
           stateLabel = 'Correct answer';
         } else if (isIncorrectSelection) {
-          cardClass = 'border-red-400 bg-red-50 shadow-[0_22px_45px_-34px_rgba(239,68,68,0.22)] dark:bg-red-500/12 animate-wrong';
+          cardClass = 'border-red-300 bg-red-50/70 shadow-[0_22px_45px_-34px_rgba(239,68,68,0.18)] dark:border-red-400/60 dark:bg-red-500/18 animate-wrong';
           badgeClass = 'bg-red-500 text-white';
           stateLabel = 'Selected answer';
         } else if (isSelected) {
@@ -87,7 +87,7 @@ export function QuestionOptions({
           badgeClass = accentSet.selectedBadge;
           stateLabel = 'Selected';
         } else if (isMuted) {
-          cardClass = 'border-slate-100 bg-slate-50 opacity-60 dark:border-slate-800 dark:bg-slate-900';
+          cardClass = 'border-slate-100 bg-slate-50 opacity-75 dark:border-slate-800 dark:bg-slate-900/80 dark:opacity-70';
         } else if (masked) {
           cardClass = 'border-slate-100 bg-slate-50/80 opacity-75 dark:border-slate-800 dark:bg-slate-900/80';
         }

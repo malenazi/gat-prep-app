@@ -542,14 +542,14 @@ export default function Practice() {
                     </span>
                   </div>
                 </div>
-                <div className="mt-2.5 flex items-start gap-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 px-2.5 py-2">
+                <div className="mt-2.5 flex items-start gap-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 px-2.5 py-2">
                   <span className="text-xs mt-px">
                     {adaptive.challenge_band === 'Calibrating' ? '🔍' :
                      adaptive.challenge_band === 'Reinforcement' ? '🛡️' :
                      adaptive.challenge_band === 'At your level' ? '🎯' :
                      adaptive.challenge_band === 'Stretch' ? '📈' : '🚀'}
                   </span>
-                  <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                  <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-300">
                     {adaptive.challenge_band === 'Calibrating'
                       ? 'Estimating your starting level.'
                       : adaptive.challenge_band === 'Reinforcement' ? 'Below your level — reinforcement.'

@@ -21,14 +21,14 @@ export function QuestionFeedbackCard({
 }: QuestionFeedbackCardProps) {
   const stateTone = feedback.is_correct
     ? {
-        panel: 'border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-500/12',
-        heading: 'text-emerald-700 dark:text-emerald-300',
+        panel: 'border-emerald-200 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-500/18',
+        heading: 'text-emerald-700 dark:text-emerald-200',
         label: title || 'Correct answer',
         icon: 'Correct',
       }
     : {
-        panel: 'border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-500/12',
-        heading: 'text-amber-700 dark:text-amber-300',
+        panel: 'border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-500/18',
+        heading: 'text-amber-700 dark:text-amber-200',
         label: title || 'Review this one',
         icon: 'Review',
       };
