@@ -157,12 +157,13 @@ export default function Analytics() {
             <div style={{ direction: 'ltr' }}>
               <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={data.daily_trend}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis dataKey="date" tick={{ fontSize: 13, fill: '#64748b' }} tickFormatter={(d: string) => d.slice(5)} />
-                  <YAxis domain={[0, 1]} tick={{ fontSize: 13, fill: '#64748b' }} tickFormatter={(v: number) => `${Math.round(v * 100)}%`} />
+                  <CartesianGrid strokeDasharray="3 3" className="[&>line]:stroke-slate-200 dark:[&>line]:stroke-slate-800" stroke="currentColor" />
+                  <XAxis dataKey="date" tick={{ fontSize: 13 }} className="[&_text]:fill-slate-500 dark:[&_text]:fill-slate-400" tickFormatter={(d: string) => d.slice(5)} />
+                  <YAxis domain={[0, 1]} tick={{ fontSize: 13 }} className="[&_text]:fill-slate-500 dark:[&_text]:fill-slate-400" tickFormatter={(v: number) => `${Math.round(v * 100)}%`} />
                   <Tooltip formatter={(v: number) => `${Math.round(v * 100)}%`}
-                    contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} />
-                  <Line type="monotone" dataKey="accuracy" stroke={`url(#${gradId})`} strokeWidth={3} dot={{ fill: '#0d9488', r: 4, strokeWidth: 2, stroke: '#fff' }} />
+                    contentStyle={{ borderRadius: 12, fontSize: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                    wrapperClassName="[&_.recharts-tooltip-wrapper]:!bg-white dark:[&_.recharts-tooltip-wrapper]:!bg-slate-900" />
+                  <Line type="monotone" dataKey="accuracy" stroke={`url(#${gradId})`} strokeWidth={3} dot={{ fill: '#0d9488', r: 4, strokeWidth: 2 }} />
                   <defs>
                     <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="0">
                       <stop offset="0%" stopColor="#14b8a6" />
@@ -220,11 +221,11 @@ export default function Analytics() {
           <div style={{ direction: 'ltr' }}>
             <ResponsiveContainer width="100%" height={Math.max(200, data.skill_breakdown.length * 40)}>
               <BarChart data={data.skill_breakdown} layout="vertical" margin={{ left: 10 }}>
-                <XAxis type="number" tick={{ fontSize: 13, fill: '#64748b' }} />
-                <YAxis type="category" dataKey="name_ar" tick={{ fontSize: 13, fill: '#64748b' }} width={90} />
-                <Tooltip contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 12, direction: 'rtl', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }} />
+                <XAxis type="number" tick={{ fontSize: 13 }} className="[&_text]:fill-slate-500 dark:[&_text]:fill-slate-400" />
+                <YAxis type="category" dataKey="name_ar" tick={{ fontSize: 13 }} className="[&_text]:fill-slate-500 dark:[&_text]:fill-slate-400" width={90} />
+                <Tooltip contentStyle={{ borderRadius: 12, fontSize: 12, direction: 'rtl', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                 <Bar dataKey="correct" stackId="a" fill="#22c55e" radius={[0, 0, 0, 0]} name="Correct" />
-                <Bar dataKey="total" stackId="b" fill="#e2e8f0" radius={[0, 4, 4, 0]} name="Total" />
+                <Bar dataKey="total" stackId="b" className="fill-slate-200 dark:fill-slate-700" radius={[0, 4, 4, 0]} name="Total" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -234,7 +235,7 @@ export default function Analytics() {
       {data.total_questions === 0 && (
         <div className="text-center py-16">
           <div className="text-5xl mb-4 animate-float">📊</div>
-          <p className="text-slate-500 text-lg">Start training to see your analytics here</p>
+          <p className="text-slate-500 dark:text-slate-400 text-lg">Start training to see your analytics here</p>
         </div>
       )}
     </div>

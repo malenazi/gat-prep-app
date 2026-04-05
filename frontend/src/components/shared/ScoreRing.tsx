@@ -17,7 +17,7 @@ export function ScoreRing({ score, size = 160, strokeWidth = 10, label }: ScoreR
   return (
     <div className="relative inline-flex items-center justify-center">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={strokeWidth} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="currentColor" className="text-slate-200 dark:text-slate-700" strokeWidth={strokeWidth} />
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={`url(#${gradId})`} strokeWidth={strokeWidth}
           strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
           transform={`rotate(-90 ${size / 2} ${size / 2})`} className="score-ring-animate" />
@@ -29,8 +29,8 @@ export function ScoreRing({ score, size = 160, strokeWidth = 10, label }: ScoreR
         </defs>
       </svg>
       <div className="absolute flex flex-col items-center">
-        <span className="text-4xl lg:text-5xl font-black text-slate-800">{pct}</span>
-        {label && <span className="text-sm text-slate-500 mt-0.5">{label === 'of' ? 'of' : label}</span>}
+        <span className="text-4xl lg:text-5xl font-black text-slate-800 dark:text-slate-100">{pct}</span>
+        {label && <span className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{label === 'of' ? 'of' : label}</span>}
       </div>
     </div>
   );

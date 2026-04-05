@@ -47,7 +47,7 @@ export function PracticeAdaptivePanel({
       {/* Single compact row: chips + timer */}
       <div className="flex flex-wrap items-center gap-2">
         <span
-          className="rounded-full bg-white px-2.5 py-0.5 text-xs font-bold text-slate-700 shadow-sm dark:bg-slate-800 dark:text-slate-300"
+          className="rounded-full bg-white dark:bg-slate-800 px-2.5 py-0.5 text-xs font-bold text-slate-700 dark:text-slate-300 shadow-sm dark:bg-slate-800 dark:text-slate-300"
           data-testid="practice-skill-chip"
         >
           {getSectionLabel(adaptive.skill_section)} &middot; {adaptive.skill_name}

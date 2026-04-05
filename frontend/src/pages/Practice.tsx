@@ -410,7 +410,7 @@ export default function Practice() {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-center">
+            <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-3 mb-4 text-center">
               <p className="text-red-500 text-sm">{error}</p>
             </div>
           )}
@@ -615,7 +615,7 @@ interface StatBoxProps {
 
 function StatBox({ label, value, icon, color = 'text-slate-800', className = '' }: StatBoxProps) {
   return (
-    <div className={`bg-white shadow-card rounded-xl p-4 text-center card-hover ${className}`}>
+    <div className={`bg-white dark:bg-slate-900 shadow-card rounded-xl p-4 text-center card-hover ${className}`}>
       <div className="text-xl mb-1">{icon}</div>
       <div className={`font-black text-2xl ${color}`}>{value}</div>
       <div className="text-slate-500 text-sm">{label}</div>

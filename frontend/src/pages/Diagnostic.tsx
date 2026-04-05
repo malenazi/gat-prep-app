@@ -234,8 +234,8 @@ export default function Diagnostic() {
     <div className={`min-h-screen flex flex-col ${pageShell.reading} page-enter text-slate-800 dark:text-slate-100`} data-testid="diagnostic-page">
       {milestone && !selected && (
         <div className="mb-3 rounded-[1.75rem] border border-teal-200/70 bg-white/85 px-5 py-3 text-center shadow-[0_18px_48px_-34px_rgba(13,148,136,0.4)] backdrop-blur animate-slide-up lg:mb-5 dark:border-teal-900 dark:bg-slate-900/85">
-          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-teal-500">Progress Milestone</p>
-          <p className="mt-1 text-base font-black text-teal-700 lg:text-lg">{milestone}</p>
+          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-teal-500 dark:text-teal-300">Progress Milestone</p>
+          <p className="mt-1 text-base font-black text-teal-700 dark:text-teal-300 lg:text-lg">{milestone}</p>
         </div>
       )}
 
@@ -246,8 +246,8 @@ export default function Diagnostic() {
             <h2 className="mt-1 text-xl font-black text-slate-800 lg:text-[1.75rem] dark:text-slate-100">Question {progress + 1} of {total}</h2>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-black text-teal-600 lg:text-[2rem]">{pct}%</p>
-            <p className="text-xs font-medium text-slate-400">completed</p>
+            <p className="text-2xl font-black text-teal-600 dark:text-teal-400 lg:text-[2rem]">{pct}%</p>
+            <p className="text-xs font-medium text-slate-400 dark:text-slate-500">completed</p>
           </div>
         </div>
         <div className="h-3 rounded-full bg-slate-100/90 dark:bg-slate-800/90 overflow-hidden">
