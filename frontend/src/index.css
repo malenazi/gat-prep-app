@@ -514,18 +514,9 @@
 }
 
 /* ═══ SVG Figure Dark Mode Adaptation ═══ */
-.dark [data-testid*="question-figure"] svg,
-.dark [data-testid*="diagnostic-question"] svg {
-  filter: brightness(0.9) contrast(1.1);
-}
-
-/* Neutralize cream/beige fills in dark mode */
-.dark [data-testid*="question-figure"] svg [fill="#FFF8E1"],
-.dark [data-testid*="question-figure"] svg [fill="#FFFDE7"],
-.dark [data-testid*="question-figure"] svg [fill="#FFF9C4"],
-.dark [data-testid*="question-figure"] svg [fill="#ffffff"],
-.dark [data-testid*="question-figure"] svg [fill="white"] {
-  fill: #334155;
+/* Invert geometry/diagram SVGs in dark mode for proper contrast */
+.dark [data-testid*="-figure"] svg {
+  filter: invert(0.88) hue-rotate(180deg);
 }
 
 /* ═══ Confetti ═══ */
