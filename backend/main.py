@@ -173,7 +173,7 @@ class SettingsReq(BaseModel):
 
 # ── Auth helpers ─────────────────────────────────────────────────────────────
 def create_token(user_id: int):
-    return jwt.encode({"sub": str(user_id), "exp": datetime.datetime.utcnow() + datetime.timedelta(days=30)}, SECRET)
+    return jwt.encode({"sub": str(user_id), "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7)}, SECRET)
 
 def get_current_user(db: Session = Depends(get_db), token: str = None):
     return None  # simplified for MVP; see auth endpoint
@@ -183,12 +183,14 @@ def get_user(authorization: str = Header(None), db: Session = Depends(get_db)):
         raise HTTPException(401, "Login required")
     try:
         token = authorization.replace("Bearer ", "")
-        payload = jwt.decode(token, SECRET, algorithms=["HS256"])
+        payload = jwt.decode(token, SECRET, algorithms=["HS256"], options={"verify_exp": True})
         user = db.query(User).get(int(payload["sub"]))
         if not user:
             raise HTTPException(401, "User not found")
         return user
-    except (Exception,):
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(401, "Token expired")
+    except (jwt.JWTError, ValueError, KeyError):
         raise HTTPException(401, "Invalid token")
 
 # ── Auth endpoints ───────────────────────────────────────────────────────────

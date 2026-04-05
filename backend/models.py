@@ -51,8 +51,8 @@ class Skill(Base):
 class UserAbility(Base):
     __tablename__ = "user_abilities"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    skill_id = Column(String, ForeignKey("skills.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
+    skill_id = Column(String, ForeignKey("skills.id"), index=True, nullable=False)
     theta = Column(Float, default=0.0)
     questions_seen = Column(Integer, default=0)
     correct_count = Column(Integer, default=0)
@@ -68,7 +68,7 @@ class Question(Base):
     generation_prompt_version = Column(String, nullable=True)
     authoring_source = Column(String, nullable=True)
     variant_group = Column(String, index=True, nullable=True)
-    skill_id = Column(String, ForeignKey("skills.id"), nullable=False)
+    skill_id = Column(String, ForeignKey("skills.id"), index=True, nullable=False)
     question_type = Column(String, nullable=False)
     difficulty = Column(Float, default=0.5)
     text_ar = Column(Text, nullable=False)
@@ -114,10 +114,10 @@ class Question(Base):
 class UserResponse(Base):
     __tablename__ = "user_responses"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    question_id = Column(Integer, ForeignKey("questions.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
+    question_id = Column(Integer, ForeignKey("questions.id"), index=True, nullable=False)
     session_type = Column(String, nullable=False)  # diagnostic/drill/mock/review
-    attempt_id = Column(Integer, ForeignKey("mock_attempts.id"), nullable=True)  # links mock answers to attempt
+    attempt_id = Column(Integer, ForeignKey("mock_attempts.id"), index=True, nullable=True)  # links mock answers to attempt
     selected_option = Column(String, nullable=False)
     is_correct = Column(Boolean, nullable=False)
     time_spent_seconds = Column(Integer, default=0)
@@ -127,7 +127,7 @@ class UserResponse(Base):
 class MockAttempt(Base):
     __tablename__ = "mock_attempts"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
     attempt_number = Column(Integer, nullable=False)
     score = Column(Integer, default=0)
     total_questions = Column(Integer, default=0)
@@ -148,7 +148,7 @@ class AppConfig(Base):
 class StudyPlan(Base):
     __tablename__ = "study_plans"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
     day_number = Column(Integer, nullable=False)
     phase = Column(String, nullable=False)
     focus_skills = Column(Text, nullable=False)
@@ -170,14 +170,14 @@ class Badge(Base):
 class UserBadge(Base):
     __tablename__ = "user_badges"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    badge_id = Column(String, ForeignKey("badges.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
+    badge_id = Column(String, ForeignKey("badges.id"), index=True, nullable=False)
     earned_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class Feedback(Base):
     __tablename__ = "feedback"
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
     rating = Column(Integer, nullable=False)
     comment = Column(Text, nullable=True)
     trigger = Column(String, nullable=False)

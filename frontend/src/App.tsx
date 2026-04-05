@@ -1,8 +1,34 @@
-import { Suspense, lazy, useState } from 'react';
+import { Component, Suspense, lazy, useState } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ThemeProvider } from 'next-themes';
 
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error('App error boundary caught:', error, info.componentStack);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-6">
+          <div className="text-center max-w-sm">
+            <div className="text-5xl mb-4">⚠️</div>
+            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Something went wrong</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">An unexpected error occurred. Please refresh the page.</p>
+            <button onClick={() => window.location.reload()} className="bg-teal-600 text-white font-bold py-2.5 px-8 rounded-xl shadow-brand">
+              Refresh Page
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Toaster } from '@/components/ui/sonner';
 
@@ -86,6 +112,7 @@ function AppRoutes() {
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <AuthProvider>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} storageKey="qudra-theme">
         <BrowserRouter>
@@ -105,5 +132,6 @@ export default function App() {
         </BrowserRouter>
       </ThemeProvider>
     </AuthProvider>
+    </ErrorBoundary>
   );
 }

@@ -38,10 +38,10 @@ def get_secret_key() -> str:
 
 
 def resolve_cors_configuration() -> tuple[list[str], bool]:
-    raw_origins = os.getenv("CORS_ORIGINS", "*").strip()
+    raw_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").strip()
     origins = [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
     if not origins:
-        origins = ["*"]
+        origins = ["http://localhost:5173"]
 
     if is_production_env() and "*" in origins:
         raise RuntimeError("CORS_ORIGINS must list explicit origins in production")

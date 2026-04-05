@@ -61,8 +61,8 @@ async function req<T>(path: string, opts: RequestInit = {}): Promise<T> {
     }
   }
   if (!res.ok) {
-    const e = await res.json().catch(() => ({}));
-    throw new Error(e.detail || e.message || res.statusText || 'Server error');
+    const e = await res.json().catch(() => ({ detail: 'Server error' }));
+    throw new Error(e.detail || e.message || res.statusText || 'An unexpected error occurred');
   }
   return res.json();
 }

@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import DOMPurify from 'dompurify';
 import { useState } from 'react';
 
 import { RichTextContent } from '@/components/questions/RichTextContent';
@@ -68,7 +69,8 @@ export function QuestionPrompt({
   appearance = defaultQuestionAppearance,
 }: QuestionPromptProps) {
   const [passageExpanded, setPassageExpanded] = useState(false);
-  const safeSvg = sanitizeInlineSvg(figure_svg);
+  const rawSvg = sanitizeInlineSvg(figure_svg);
+  const safeSvg = rawSvg ? DOMPurify.sanitize(rawSvg, { USE_PROFILES: { svg: true, svgFilters: true } }) : null;
   const hasLongPassage = Boolean(passage_ar && passage_ar.length > 220 && !compact);
   const densityClass = getQuestionDensityClass(appearance.density);
   const scaleClass = getQuestionTextScale(appearance.textSize);

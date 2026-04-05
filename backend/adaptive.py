@@ -8,6 +8,8 @@ SCHEDULED_MOCK_DAYS = (11, 18, 24, 27)
 # ── Elo-based ability tracking ──────────────────────────────────────────────
 
 def update_ability(db: Session, user_id: int, skill_id: str, is_correct: bool, item_difficulty: float):
+    if item_difficulty is None:
+        item_difficulty = 0.5  # safe default
     ability = db.query(UserAbility).filter_by(user_id=user_id, skill_id=skill_id).first()
     if not ability:
         ability = UserAbility(user_id=user_id, skill_id=skill_id, theta=0.0, questions_seen=0, correct_count=0)
@@ -15,7 +17,9 @@ def update_ability(db: Session, user_id: int, skill_id: str, is_correct: bool, i
         db.flush()
 
     K = max(0.1, 0.4 - 0.003 * ability.questions_seen)
-    expected = 1 / (1 + math.exp(-(ability.theta - item_difficulty)))
+    diff = ability.theta - item_difficulty
+    diff = max(-10.0, min(10.0, diff))  # prevent math overflow
+    expected = 1 / (1 + math.exp(-diff))
     ability.theta += K * (int(is_correct) - expected)
     ability.theta = max(-3.0, min(3.0, ability.theta))  # clamp
     ability.questions_seen += 1

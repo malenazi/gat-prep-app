@@ -167,7 +167,7 @@ export default function Practice() {
     api.today().then((t: TodayPlan) => {
       setTodayTarget(t.target_questions || 15);
       setTodayCompleted(t.completed_questions || 0);
-    }).catch(() => {});
+    }).catch(() => { /* today plan is optional */ });
     void loadNext();
   }, [loadNext]);
 
