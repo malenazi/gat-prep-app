@@ -41,6 +41,13 @@ jobs:
       - name: Run question bank tests
         run: python -m pytest backend/tests/test_questions.py -q
 
+      - name: Run question quality checks
+        run: python -m pytest backend/tests/test_question_quality.py -q
+
+      - name: Run dark mode audit
+        run: node frontend/scripts/check-dark-mode.cjs
+        working-directory: .
+
       - name: Start isolated backend API server
         run: python backend/run_test_server.py > backend-server.log 2>&1 &
 

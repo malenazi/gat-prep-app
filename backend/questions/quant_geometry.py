@@ -1293,7 +1293,7 @@ def get_questions():
                 # ── Q125: Open-top box 8×5×3 Area (diff=0.4) ── foundation
                 Question(skill_id="quant_geometry", question_type="geometry", difficulty=0.4,
                                     text_ar="Open-top box: Length = 8 cm , Width = 5 cm , Height = 3 cm.\nWhat is Area?",
-                                    option_a="118 cm²",             option_b="158 cm²",             option_c="79 cm²",             option_d="158 cm²",
+                                    option_a="118 cm²",             option_b="158 cm²",             option_c="79 cm²",             option_d="120 cm²",
                                     correct_option="a",
                                     explanation_ar="Area = Base + Lateral faces\n = (8 × 5) + 2 × (8 × 3) + 2 × (5 × 3)\n = 40 + 48 + 30 = 118 cm²\n\nWhy other options are wrong:\n            • (a) 8 cm: Result of Calculate Area instead of Volume\n            • (c) 79 cm²: Result of forgetting one dimension\n            • (d) 158 cm²: Result of using 2D shape formula",
                                     solution_steps_ar='["Base = 8 × 5 = 40 cm²","Lateral faces sides = 2 × (8 × 3) = 48 cm²","Lateral faces = 2 × (5 × 3) = 30 cm²","sum = 40 + 48 + 30 = 118 cm²"]',
