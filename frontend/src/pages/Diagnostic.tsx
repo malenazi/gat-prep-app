@@ -250,7 +250,7 @@ export default function Diagnostic() {
             <p className="text-xs font-medium text-slate-400">completed</p>
           </div>
         </div>
-        <div className="h-3 rounded-full bg-slate-100/90 overflow-hidden">
+        <div className="h-3 rounded-full bg-slate-100/90 dark:bg-slate-800/90 overflow-hidden">
           <div className="h-full rounded-full bg-gradient-to-r from-teal-400 via-teal-500 to-cyan-500 transition-all duration-500" style={{ width: `${pct}%` }} />
         </div>
       </div>
@@ -262,11 +262,9 @@ export default function Diagnostic() {
         </div>
       )}
 
-      <div className="mb-5 rounded-[1.75rem] border border-amber-200/80 dark:border-amber-800/80 bg-gradient-to-r from-amber-50 dark:from-amber-950/30 to-white dark:to-slate-900 px-4 py-3.5 shadow-[0_18px_40px_-34px_rgba(245,158,11,0.3)]" data-testid="diagnostic-testing-note">
-        <p className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">Test Mode</p>
-        <p className="mt-1 text-sm font-medium leading-relaxed text-slate-700 lg:text-base">
-          Review and explanations are hidden until the diagnostic is finished.
-        </p>
+      <div className="mb-4 rounded-2xl border border-amber-200/80 dark:border-amber-800/80 bg-gradient-to-r from-amber-50 dark:from-amber-950/30 to-white dark:to-slate-900 px-4 py-2.5 flex items-center gap-3" data-testid="diagnostic-testing-note">
+        <span className="text-[11px] font-black uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400 shrink-0">Test Mode</span>
+        <span className="text-sm text-slate-500 dark:text-slate-400">Review and explanations are hidden until the diagnostic is finished.</span>
       </div>
 
       {question && (

@@ -513,6 +513,21 @@
   background: #0f172a;
 }
 
+/* ═══ SVG Figure Dark Mode Adaptation ═══ */
+.dark [data-testid*="question-figure"] svg,
+.dark [data-testid*="diagnostic-question"] svg {
+  filter: brightness(0.9) contrast(1.1);
+}
+
+/* Neutralize cream/beige fills in dark mode */
+.dark [data-testid*="question-figure"] svg [fill="#FFF8E1"],
+.dark [data-testid*="question-figure"] svg [fill="#FFFDE7"],
+.dark [data-testid*="question-figure"] svg [fill="#FFF9C4"],
+.dark [data-testid*="question-figure"] svg [fill="#ffffff"],
+.dark [data-testid*="question-figure"] svg [fill="white"] {
+  fill: #334155;
+}
+
 /* ═══ Confetti ═══ */
 @keyframes confetti-1 { 0%{opacity:1;transform:translate(0,0) rotate(0) scale(1)} 100%{opacity:0;transform:translate(-80px,100px) rotate(720deg) scale(0.5)} }
 @keyframes confetti-2 { 0%{opacity:1;transform:translate(0,0) rotate(0) scale(1)} 100%{opacity:0;transform:translate(60px,120px) rotate(-540deg) scale(0.5)} }

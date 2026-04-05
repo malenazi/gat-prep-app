@@ -1492,7 +1492,7 @@ def get_questions():
         # Q148
         Question(skill_id="verbal_completion", question_type="completion", difficulty=0.6,
             text_ar="After years of research and experimentation, the medical team finally _____ in developing an effective vaccine against the disease.",
-            option_a="failed", option_b="failed", option_c="succeeded", option_d="retreated",
+            option_a="failed", option_b="hesitated", option_c="succeeded", option_d="retreated",
             correct_option="c",
             explanation_ar="Temporal clue: after years plus finally means achieving goal means team succeeded.",
             solution_steps_ar='["Temporal clue: after years plus finally means achievement","Result: developing effective vaccine (positive)","medical team succeeded so option (c)"]',
