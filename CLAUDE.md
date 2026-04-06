@@ -1,10 +1,11 @@
 # Qudra Academy — AI Coding Rules
 
 ## Tech Stack
-- **Backend:** Python 3.12, FastAPI, SQLAlchemy, SQLite
+- **Backend:** Python 3.12, FastAPI, SQLAlchemy
 - **Frontend:** React 19, TypeScript, Vite 7, Tailwind CSS 4
+- **Database:** PostgreSQL (production), SQLite (local/test)
 - **Testing:** pytest (backend), Playwright (frontend E2E)
-- **Deployment:** Railway (Nixpacks), deploy via `railway up`
+- **Deployment:** Railway (Railpack), `railway up` (~90 sec deploys)
 
 ## Dark Mode (CRITICAL)
 - Every `bg-white` MUST have `dark:bg-slate-900` (or `dark:bg-slate-950` for nested)
@@ -45,7 +46,7 @@
 ## Before Finishing
 - Run `cd frontend && npm run lint` — must pass clean
 - Run `cd frontend && npm run build` — must succeed
-- Run `npx playwright test --grep-invert "full-journey"` — 27/27 must pass
+- Run `npx playwright test --grep-invert "full-journey|dark-mode-visual"` — 27/27 must pass
 - For backend changes: `python -m pytest backend/tests/ -q`
 
 ## Database
@@ -56,6 +57,8 @@
 - Never commit `.db` files
 
 ## Deployment
-- Deploy via `railway up` (auto-deploy from git may be disabled)
+- Build frontend first: `cd frontend && npm run build`
+- `frontend/dist/` is committed to git — Railpack skips Node.js install
+- Deploy: `railway up` (~90 seconds)
 - After deploy: `python smoke_check.py --base-url https://gat-prep-prod-production.up.railway.app --skip-admin`
-- Always hard-refresh browser (Ctrl+Shift+R) to verify new bundle
+- Hard-refresh browser (Ctrl+Shift+R) to verify new bundle

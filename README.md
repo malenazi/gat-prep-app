@@ -2,140 +2,120 @@
 
 English-language GAT prep platform with adaptive 30-day study plan.
 
-- **Backend:** FastAPI + SQLAlchemy (Python)
-- **Frontend:** React 19 + TypeScript + Vite
+- **Backend:** Python 3.12, FastAPI, SQLAlchemy
+- **Frontend:** React 19, TypeScript, Vite 7, Tailwind CSS 4
+- **Database:** PostgreSQL (Railway) / SQLite (local dev)
 - **Question Bank:** 1,503 questions across 9 skills
-- **Features:** Adaptive practice, diagnostic assessment, mock exams, analytics, admin dashboard
-- **Deployment:** Railway (Nixpacks)
+- **Deployment:** Railway (Railpack), ~90 second deploys
+
+**Live:** https://gat-prep-prod-production.up.railway.app
 
 ## Quick Start
 
-```bash
-bash start.sh
-```
-
-## Manual Setup
-
 Backend:
-
 ```bash
-pip install -r backend/requirements.txt
-cd backend
-python -m uvicorn main:app --reload --port 8000
+pip install -r requirements.txt
+cd backend && python -m uvicorn main:app --reload --port 8000
 ```
 
 Frontend:
-
 ```bash
-cd frontend
-npm install
-npm run dev
+cd frontend && npm install && npm run dev
 ```
 
 The frontend proxies `/api` to `http://localhost:8000` in development.
 
 ## Question Bank
 
-| Skill | Questions |
-|-------|-----------|
-| Quant Algebra | 167 |
-| Quant Arithmetic | 167 |
-| Quant Geometry | 167 |
-| Quant Statistics | 167 |
-| Verbal Analogy | 167 |
-| Verbal Completion | 167 |
-| Verbal Error | 167 |
-| Verbal Oddword | 167 |
-| Verbal Reading | 167 |
+| Skill | Count |
+|-------|-------|
+| Quant: Algebra, Arithmetic, Geometry, Statistics | 167 each |
+| Verbal: Reading, Analogy, Completion, Error, Oddword | 167 each |
 | **Total** | **1,503** |
 
-Questions are organized by difficulty (0.2-0.8) and stage (diagnostic, foundation, building, peak, mock).
-
-## Bootstrap Admin
-
-```bash
-export BOOTSTRAP_ADMIN_EMAIL=admin@qudra.academy
-export BOOTSTRAP_ADMIN_PASSWORD='replace-with-a-strong-password'
-python backend/bootstrap_admin.py
-```
-
-Admin panel: https://gat-prep-prod-production.up.railway.app/admin
+Organized by difficulty (0.2-0.8) and stage (diagnostic, foundation, building, peak, mock).
 
 ## Testing
 
-### Backend Tests
-
 ```bash
-# All unit tests
+# Backend unit tests
 python -m pytest backend/tests/ -q
 
-# API integration tests (requires running server)
-cd backend && python run_test_server.py &
-API_BASE_URL=http://127.0.0.1:8000/api python -m pytest backend/tests/test_api_questions.py backend/tests/test_api_auth_reset.py -q
-```
+# Frontend lint + build
+cd frontend && npm run lint && npm run build
 
-### Frontend Tests
+# Quality audits
+npm run dark:audit        # Dark mode coverage (15 rules, strict)
+npm run svg:audit         # Hardcoded color check
 
-```bash
-cd frontend
-npm run lint
-npm run build
-
-# E2E tests (auto-starts backend + frontend)
+# E2E tests (28 tests, auto-starts servers)
 npx playwright test
 
-# Full 30-day journey test
-npx playwright test tests/e2e/new-user-full-journey.spec.ts
-
-# Responsive audit (7 viewports + webkit)
-PW_ENABLE_RESPONSIVE_AUDIT=1 npx playwright test tests/e2e/responsive-audit.spec.ts
-```
-
-### Production Smoke Tests
-
-```bash
-# Quick health check
-python production_check.py
-
-# Full smoke check (auto-registers test learner)
-python smoke_check.py --base-url https://gat-prep-prod-production.up.railway.app
-
-# Live E2E against production
-cd frontend && E2E_BASE_URL=https://gat-prep-prod-production.up.railway.app \
-  npx playwright test tests/e2e/new-user-full-journey.spec.ts
+# Visual regression (dark mode contrast)
+npx playwright test tests/e2e/dark-mode-visual.spec.ts
 ```
 
 ## Deployment
 
-Before every deploy:
-
 ```bash
-python sqlite_backup.py --label railway-predeploy
+# 1. Build frontend locally
+cd frontend && npm run build
+
+# 2. Deploy (~90 seconds with Railpack)
+railway up
+
+# 3. Verify
+python smoke_check.py --base-url https://gat-prep-prod-production.up.railway.app --skip-admin
 ```
 
-After every deploy:
+## Admin
 
 ```bash
-python smoke_check.py --base-url https://gat-prep-prod-production.up.railway.app
+# Bootstrap admin (first time only — set in Railway env vars)
+BOOTSTRAP_ADMIN_EMAIL=admin@qudra.academy
+BOOTSTRAP_ADMIN_PASSWORD='...'
 ```
+
+Admin panel: https://gat-prep-prod-production.up.railway.app/admin
 
 ## Project Structure
 
 ```
 backend/
-  main.py              # FastAPI app with all API endpoints
-  models.py            # SQLAlchemy models
-  database.py          # DB connection
-  auth_utils.py        # JWT auth, rate limiting
-  adaptive.py          # IRT-based adaptive algorithm
-  seed.py              # Question bank loader
+  main.py              # FastAPI app — all API endpoints
+  models.py            # SQLAlchemy models (User, Question, StudyPlan, etc.)
+  database.py          # DB connection (PostgreSQL/SQLite auto-detect)
+  adaptive.py          # IRT-based adaptive question selection
+  auth_utils.py        # JWT auth, password hashing, rate limiting
+  seed.py              # Question bank sync on startup
   questions/           # 9 skill modules (167 questions each)
-  tests/               # pytest test suite
+  tests/               # pytest suite (35+ tests)
 frontend/
+  dist/                # Pre-built static files (committed for fast deploys)
   src/
-    pages/             # Dashboard, Practice, Plan, Analytics, Admin, etc.
-    components/        # Shared UI components
-    hooks/useAuth.tsx  # Auth context
+    pages/             # Dashboard, Practice, Plan, Analytics, Admin, MockExam, Diagnostic
+    components/        # UI components, question rendering, auth form
+    hooks/useAuth.tsx  # Auth context provider
     lib/api.ts         # API client
-  tests/e2e/           # Playwright E2E tests (13 test files)
+  scripts/             # Quality audit tools (dark mode, SVG colors)
+  tests/e2e/           # Playwright E2E tests (15 spec files, 28+ tests)
 ```
+
+## Architecture
+
+```
+Browser → Railway (HTTPS)
+  ├── Static files (frontend/dist → backend/static)
+  ├── /api/* → FastAPI (Python)
+  └── PostgreSQL (persistent user data)
+```
+
+## Quality Tools
+
+| Tool | Command | What it checks |
+|------|---------|---------------|
+| Dark mode audit | `npm run dark:audit` | 15 rules — bg, text, border dark variants |
+| SVG color audit | `npm run svg:audit` | Hardcoded hex colors in TSX |
+| Visual regression | `npx playwright test dark-mode-visual` | Screenshots + contrast check |
+| Question quality | `pytest tests/test_question_quality.py` | Duplicates, empty fields, SVG fills |
+| Pre-commit hooks | Husky + lint-staged | ESLint fix + Prettier on commit |
