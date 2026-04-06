@@ -41,7 +41,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Build outputs
-frontend/dist/
+# frontend/dist/ is committed for fast Railway deploys (no Node.js needed on server)
 backend/static/
 
 # Environment variables

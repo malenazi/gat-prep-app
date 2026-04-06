@@ -1,11 +1,8 @@
 providers = ["python"]
 
-[phases.setup]
-nixPkgs = ["...", "nodejs_23"]
-
+# No Node.js needed — frontend/dist/ is pre-built and committed to git
 [phases.build]
 cmds = [
-    "cd frontend && npm ci && npm run build",
     "mkdir -p backend/static",
     "cp -r frontend/dist/* backend/static/"
 ]
