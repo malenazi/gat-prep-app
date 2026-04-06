@@ -154,15 +154,22 @@ function TopBar() {
       </div>
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
-          <div className="h-2 w-40 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-            <div
-              className="h-full rounded-full bg-gradient-to-l from-teal-400 to-teal-600 transition-all duration-500 animate-bar-fill"
-              style={{ width: `${Math.round((user.current_day / 30) * 100)}%` }}
-            />
+          <div className="flex flex-col items-end gap-0.5">
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-40 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                <div
+                  className="h-full rounded-full bg-gradient-to-l from-teal-400 to-teal-600 transition-all duration-500 animate-bar-fill"
+                  style={{ width: `${Math.round((user.current_day / 30) * 100)}%` }}
+                />
+              </div>
+              <span className="text-sm font-bold text-teal-600 dark:text-teal-400">
+                {Math.round((user.current_day / 30) * 100)}%
+              </span>
+            </div>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500">
+              Day {user.current_day}/30 · {user.abilities?.reduce((s: number, a: { questions_seen: number }) => s + a.questions_seen, 0) || 0} questions answered
+            </span>
           </div>
-          <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
-            {Math.round((user.current_day / 30) * 100)}%
-          </span>
         </div>
         <div className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
         <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
