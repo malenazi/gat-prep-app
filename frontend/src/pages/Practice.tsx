@@ -357,23 +357,34 @@ export default function Practice() {
       <div className="mb-3 rounded-2xl bg-white p-3 shadow-card stagger-1 lg:mb-5 lg:px-5 lg:py-3 dark:bg-slate-900" data-testid="practice-daily-progress">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
-            <span className="text-slate-800 dark:text-slate-100 text-sm font-black">Q{sessionStats.total + 1}<span className="text-slate-400 dark:text-slate-500 font-medium">/{todayTarget}</span></span>
+            <span className="text-slate-800 dark:text-slate-100 text-sm font-black">
+              {todayCompleted}<span className="text-slate-400 dark:text-slate-500 font-medium">/{todayTarget} today</span>
+            </span>
             {todayCompleted < todayTarget && (
               <span className="text-xs text-slate-400 dark:text-slate-500 hidden sm:inline">
-                ~{Math.ceil((todayTarget - todayCompleted) * QUESTION_TIME / 60)} min left
+                {todayTarget - todayCompleted} left · ~{Math.ceil((todayTarget - todayCompleted) * QUESTION_TIME / 60)} min
+              </span>
+            )}
+            {sessionStats.total > 0 && (
+              <span className="text-xs text-slate-400 dark:text-slate-500">
+                ({sessionStats.total} this session)
               </span>
             )}
           </div>
           <div className="flex items-center gap-2">
-            {dailyPct >= 100 && <span className="text-emerald-500 text-xs font-bold">🎉 Goal done!</span>}
-            <span className="text-xs font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10 px-2 py-0.5 rounded-full">{dailyPct}%</span>
+            {dailyPct >= 100 && <span className="text-emerald-500 text-xs font-bold">🎉 Goal done! Extra practice</span>}
+            {dailyPct < 100 && <span className="text-xs font-bold text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10 px-2 py-0.5 rounded-full">{dailyPct}%</span>}
           </div>
         </div>
         <div className="h-2 lg:h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden relative">
           <div className="h-full bg-gradient-to-l from-teal-400 to-teal-600 rounded-full transition-all duration-500" style={{ width: `${dailyPct}%` }} />
-          <div className="progress-milestone-marker" style={{ left: '25%' }} />
-          <div className="progress-milestone-marker" style={{ left: '50%' }} />
-          <div className="progress-milestone-marker" style={{ left: '75%' }} />
+          {dailyPct < 100 && (
+            <>
+              <div className="progress-milestone-marker" style={{ left: '25%' }} />
+              <div className="progress-milestone-marker" style={{ left: '50%' }} />
+              <div className="progress-milestone-marker" style={{ left: '75%' }} />
+            </>
+          )}
         </div>
       </div>
 
