@@ -232,9 +232,9 @@ export default function Practice() {
   });
 
   const accuracy = sessionStats.total > 0 ? Math.round(sessionStats.correct / sessionStats.total * 100) : 0;
-  // dailyPct: use the higher of todayCompleted (API + increments) or session total (in case API didn't load yet)
-  const effectiveCompleted = Math.max(todayCompleted, sessionStats.total);
-  const dailyPct = Math.min(100, Math.round((effectiveCompleted / Math.max(1, todayTarget)) * 100));
+  // dailyPct: use todayCompleted from API (which the backend increments per answer)
+  // Cap at 100% and only show "Goal done!" when truly at target
+  const dailyPct = todayTarget > 0 ? Math.min(100, Math.round((todayCompleted / todayTarget) * 100)) : 0;
 
   if (error && !question) return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center page-enter text-slate-800 dark:text-slate-100">

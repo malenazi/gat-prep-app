@@ -325,24 +325,28 @@ export default function Dashboard() {
           <AccomplishmentCard icon="⚡" value={user.xp} label="XP Points" gradient="from-amber-500 to-amber-600" />
         </div>
 
-        {/* Earned badges inline */}
-        {earnedBadges.length > 0 && (
-          <div className="mt-3 lg:mt-4 bg-white dark:bg-slate-900 shadow-card rounded-2xl p-3 lg:p-5 flex items-center gap-4">
-            <div className="flex -space-x-1 space-x-reverse">
-              {earnedBadges.slice(0, 5).map(b => (
-                <div key={b.id} title={b.name_ar}
-                  className="w-10 h-10 rounded-full bg-slate-50 border-2 border-white shadow-sm flex items-center justify-center text-lg">
-                  {b.icon}
-                </div>
-              ))}
+        {/* Badges — earned and remaining */}
+        {badges.length > 0 && (
+          <div className="mt-3 lg:mt-4 bg-white dark:bg-slate-900 shadow-card rounded-2xl p-3 lg:p-5">
+            <p className="text-slate-700 dark:text-slate-200 font-bold text-sm mb-3">{earnedBadges.length} Badge{earnedBadges.length !== 1 ? 's' : ''} Earned <span className="text-slate-400 dark:text-slate-500 font-medium">of {badges.length}</span></p>
+            <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2">
+              {badges.map(b => {
+                const earned = b.earned;
+                return (
+                  <div key={b.id}
+                    className={`group relative flex flex-col items-center gap-1 rounded-xl p-2 transition-all ${earned ? 'bg-amber-50 dark:bg-amber-950/20 cursor-default' : 'bg-slate-50 dark:bg-slate-800 opacity-50 cursor-default'}`}>
+                    <span className={`text-2xl ${earned ? '' : 'grayscale'}`}>{b.icon}</span>
+                    <span className={`text-[10px] font-bold text-center leading-tight ${earned ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-600'}`}>{b.name_ar}</span>
+                    {/* Tooltip on hover */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
+                      <div className="bg-slate-800 dark:bg-slate-700 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
+                        {b.name_ar} {earned ? '✓' : '(locked)'}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <div className="flex-1">
-              <p className="text-slate-700 dark:text-slate-200 font-bold text-sm">{earnedBadges.length} Badge{earnedBadges.length !== 1 ? 's' : ''} Earned</p>
-              <p className="text-slate-500 dark:text-slate-400 text-sm">{earnedBadges.map(b => b.name_ar).join(' • ')}</p>
-            </div>
-            {badges.length > earnedBadges.length && (
-              <span className="text-slate-500 text-sm">{badges.length - earnedBadges.length} remaining</span>
-            )}
           </div>
         )}
       </div>
@@ -398,11 +402,11 @@ export default function Dashboard() {
           {(() => {
             const sections = [
               { label: 'Verbal', skills: verbal, icon: '📖',
-                bg: 'bg-blue-50', border: 'border-blue-200', title: 'text-blue-700', score: 'text-blue-600',
-                trackBg: 'bg-blue-100', bar: 'bg-blue-500', sub: 'text-blue-400' },
+                bg: 'bg-blue-50 dark:bg-blue-950/30', border: 'border-blue-200 dark:border-blue-800', title: 'text-blue-700 dark:text-blue-300', score: 'text-blue-600 dark:text-blue-400',
+                trackBg: 'bg-blue-100 dark:bg-blue-900/40', bar: 'bg-blue-500', sub: 'text-blue-400 dark:text-blue-500' },
               { label: 'Quant', skills: quant, icon: '🔢',
-                bg: 'bg-violet-50', border: 'border-violet-200', title: 'text-violet-700', score: 'text-violet-600',
-                trackBg: 'bg-violet-100', bar: 'bg-violet-500', sub: 'text-violet-400' },
+                bg: 'bg-violet-50 dark:bg-violet-950/30', border: 'border-violet-200 dark:border-violet-800', title: 'text-violet-700 dark:text-violet-300', score: 'text-violet-600 dark:text-violet-400',
+                trackBg: 'bg-violet-100 dark:bg-violet-900/40', bar: 'bg-violet-500', sub: 'text-violet-400 dark:text-violet-500' },
             ];
             return sections.map(sec => {
               const totalSeen = sec.skills.reduce((s, a) => s + a.questions_seen, 0);

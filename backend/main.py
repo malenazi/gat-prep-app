@@ -357,7 +357,9 @@ def diagnostic_next(user: User = Depends(get_user), db: Session = Depends(get_db
     if not remaining_skills:
         return {"done": True, "total_answered": len(answered_ids)}
 
-    # Pick next skill and find a medium-difficulty question for it
+    # Pick next skill randomly (not always the same order)
+    import random
+    random.shuffle(remaining_skills)
     next_skill = remaining_skills[0]
     q = db.query(Question).filter(
         Question.skill_id == next_skill,
@@ -365,10 +367,12 @@ def diagnostic_next(user: User = Depends(get_user), db: Session = Depends(get_db
         ~Question.id.in_(answered_ids) if answered_ids else True
     ).order_by(Question.difficulty).all()
 
-    # Pick a medium-difficulty question (closest to 0.5)
+    # Pick a question near medium difficulty with some randomness
     if not q:
         return {"done": True, "total_answered": len(answered_ids)}
-    q = min(q, key=lambda x: abs(x.difficulty - 0.5))
+    # Sort by distance from 0.5, then pick randomly from the 5 closest
+    candidates = sorted(q, key=lambda x: abs(x.difficulty - 0.5))[:5]
+    q = random.choice(candidates)
 
     return {
         "done": False,
