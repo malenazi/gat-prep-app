@@ -1,10 +1,10 @@
 providers = ["python"]
 
-# No Node.js needed — frontend/dist/ is pre-built and committed to git
+# Frontend is pre-built and committed to git — no Node.js needed
 [phases.build]
 cmds = [
     "mkdir -p backend/static",
-    "cp -r frontend/dist/* backend/static/"
+    "if [ -d frontend/dist ]; then cp -r frontend/dist/* backend/static/; else echo 'WARNING: frontend/dist not found'; fi"
 ]
 
 [start]
