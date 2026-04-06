@@ -6,7 +6,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+# dist/ — commented out so frontend/dist/ is included in railway up uploads
 downloads/
 eggs/
 .eggs/
