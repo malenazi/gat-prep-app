@@ -48,6 +48,13 @@
 - Run `npx playwright test --grep-invert "full-journey"` — 27/27 must pass
 - For backend changes: `python -m pytest backend/tests/ -q`
 
+## Database
+- **Production:** PostgreSQL on Railway (set `DATABASE_URL` env var)
+- **Local dev:** SQLite (no env var needed, uses `backend/gat_prep.db`)
+- **Tests:** SQLite (E2E_DATABASE_URL for test server)
+- Railway may use `postgres://` prefix — `database.py` auto-converts to `postgresql://`
+- Never commit `.db` files
+
 ## Deployment
 - Deploy via `railway up` (auto-deploy from git may be disabled)
 - After deploy: `python smoke_check.py --base-url https://gat-prep-prod-production.up.railway.app --skip-admin`

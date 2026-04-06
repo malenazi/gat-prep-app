@@ -2,29 +2,27 @@ import os
 from pathlib import Path
 
 
-def sqlite_db_path(database_url: str) -> Path:
-    prefix = "sqlite:///"
-    if not database_url.startswith(prefix):
-        raise ValueError(f"Only sqlite URLs are supported for reset: {database_url}")
-    return Path(database_url[len(prefix):]).resolve()
+def reset_database():
+    from database import DATABASE_URL, engine, Base
 
+    if DATABASE_URL.startswith("sqlite"):
+        # SQLite: delete the file and recreate
+        prefix = "sqlite:///"
+        if DATABASE_URL.startswith(prefix):
+            db_path = Path(DATABASE_URL[len(prefix):]).resolve()
+            if db_path.exists():
+                db_path.unlink()
+    else:
+        # PostgreSQL: drop all tables
+        Base.metadata.drop_all(engine)
 
-def reset_database() -> Path:
-    default_sqlite_url = f"sqlite:///{Path(__file__).resolve().with_name('gat_prep.db').as_posix()}"
-    database_url = os.getenv(
-        "DATABASE_URL",
-        os.getenv("E2E_DATABASE_URL", default_sqlite_url),
-    )
-    db_path = sqlite_db_path(database_url)
-
-    if db_path.exists():
-        db_path.unlink()
-
-    from database import SessionLocal
+    # Re-import to pick up fresh engine state
     from seed import seed_all
     from test_support import bootstrap_sample_users
 
     seed_all()
+
+    from database import SessionLocal
     db = SessionLocal()
     try:
         bootstrap_sample_users(
@@ -35,7 +33,8 @@ def reset_database() -> Path:
         )
     finally:
         db.close()
-    return db_path
+
+    return DATABASE_URL
 
 
 def _env_user(prefix: str) -> dict[str, str] | None:
@@ -48,5 +47,5 @@ def _env_user(prefix: str) -> dict[str, str] | None:
 
 
 if __name__ == "__main__":
-    path = reset_database()
-    print(f"Reset database at {path}")
+    url = reset_database()
+    print(f"Reset database: {url}")
