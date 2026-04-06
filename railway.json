@@ -1,8 +1,8 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "cd frontend && npm ci && npm run build && mkdir -p ../backend/static && cp -r dist/* ../backend/static/"
+    "builder": "RAILPACK",
+    "buildCommand": "mkdir -p backend/static && cp -r frontend/dist/* backend/static/"
   },
   "deploy": {
     "startCommand": "cd backend && python -m uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}",
