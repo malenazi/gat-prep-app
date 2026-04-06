@@ -1,10 +1,12 @@
 providers = ["python"]
 
-# Frontend is pre-built and committed to git — no Node.js needed
+[phases.setup]
+nixPkgs = ["...", "nodejs_23"]
+
 [phases.build]
 cmds = [
     "mkdir -p backend/static",
-    "if [ -d frontend/dist ]; then cp -r frontend/dist/* backend/static/; else echo 'WARNING: frontend/dist not found'; fi"
+    "cp -r frontend/dist/* backend/static/"
 ]
 
 [start]
