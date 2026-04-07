@@ -152,34 +152,53 @@ function TopBar() {
           Day {user.current_day} of 30
         </span>
       </div>
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          <div className="flex flex-col items-end gap-0.5">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-40 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                <div
-                  className="h-full rounded-full bg-gradient-to-l from-teal-400 to-teal-600 transition-all duration-500 animate-bar-fill"
-                  style={{ width: `${Math.round((user.current_day / 30) * 100)}%` }}
-                />
+      <div className="flex items-center gap-4">
+        {/* Performance indicators */}
+        <div className="flex items-center gap-3">
+          {/* Accuracy */}
+          {(() => {
+            const totalQ = user.abilities?.reduce((s: number, a: { questions_seen: number }) => s + a.questions_seen, 0) || 0;
+            const totalC = user.abilities?.reduce((s: number, a: { correct_count: number }) => s + a.correct_count, 0) || 0;
+            const acc = totalQ > 0 ? Math.round((totalC / totalQ) * 100) : 0;
+            return totalQ > 0 ? (
+              <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1">
+                <span className="text-xs">🎯</span>
+                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{acc}%</span>
               </div>
-              <span className="text-sm font-bold text-teal-600 dark:text-teal-400">
-                {Math.round((user.current_day / 30) * 100)}%
-              </span>
-            </div>
-            <span className="text-[10px] text-slate-400 dark:text-slate-500">
-              Day {user.current_day}/30 · {user.abilities?.reduce((s: number, a: { questions_seen: number }) => s + a.questions_seen, 0) || 0} questions answered
-            </span>
+            ) : null;
+          })()}
+          {/* Streak */}
+          <div className={`flex items-center gap-1 rounded-full px-2.5 py-1 ${user.streak > 0 ? 'bg-amber-50 dark:bg-amber-900/30' : 'bg-slate-50 dark:bg-slate-800'}`}>
+            <span className={`text-xs ${user.streak > 0 ? 'animate-fire' : ''}`}>🔥</span>
+            <span className={`text-xs font-bold ${user.streak > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500'}`}>{user.streak}</span>
+          </div>
+          {/* XP */}
+          <div className="flex items-center gap-1 rounded-full bg-teal-50 dark:bg-teal-900/30 px-2.5 py-1">
+            <span className="text-xs">⚡</span>
+            <span className="text-xs font-bold text-teal-600 dark:text-teal-400">{user.xp}</span>
           </div>
         </div>
+
         <div className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
-        <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
-          <span className={user.streak > 0 ? 'animate-fire' : ''}>*</span>
-          <span className="font-bold">{user.streak}</span>
+
+        {/* Course progress */}
+        <div className="flex flex-col items-end gap-0.5">
+          <div className="flex items-center gap-2">
+            <div className="h-1.5 w-32 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+              <div
+                className="h-full rounded-full bg-gradient-to-l from-teal-400 to-teal-600 transition-all duration-500"
+                style={{ width: `${Math.round((user.current_day / 30) * 100)}%` }}
+              />
+            </div>
+            <span className="text-xs font-bold text-teal-600 dark:text-teal-400">
+              {Math.round((user.current_day / 30) * 100)}%
+            </span>
+          </div>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500">
+            Day {user.current_day}/30 · {user.abilities?.reduce((s: number, a: { questions_seen: number }) => s + a.questions_seen, 0) || 0} Qs
+          </span>
         </div>
-        <div className="flex items-center gap-1.5 text-sm text-teal-600 dark:text-teal-300">
-          <span>XP</span>
-          <span className="font-bold">{user.xp}</span>
-        </div>
+
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-teal-400 to-teal-600 text-sm font-bold text-white shadow-brand">
           {user.name?.charAt(0)}
         </div>

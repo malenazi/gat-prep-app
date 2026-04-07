@@ -229,12 +229,29 @@ export default function Dashboard() {
             <Link to="/plan" className="text-teal-600 text-sm font-bold hover:text-teal-500 transition">View Details ←</Link>
           </div>
 
-          {/* Phase Progress Bar */}
+          {/* Overall Course Progress */}
+          {(() => {
+            const overallPct = Math.round((completedDays / Math.max(1, plan.length)) * 100);
+            return (
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Overall Course Progress</span>
+                  <span className="text-sm font-black text-teal-600 dark:text-teal-400">{overallPct}%</span>
+                </div>
+                <div className="h-3 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+                  <div className="h-full rounded-full bg-gradient-to-r from-blue-500 via-teal-500 to-amber-500 transition-all duration-700" style={{ width: `${overallPct}%` }} />
+                </div>
+                <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{completedDays} of {plan.length} days completed</p>
+              </div>
+            );
+          })()}
+
+          {/* Phase Progress Bars */}
           <div className="flex gap-1.5 mb-5">
             {([
-              { key: 'foundation' as const, label: 'Foundation', range: '1-7', gradient: 'from-blue-400 to-blue-500', text: 'text-blue-600', bg: 'bg-blue-50' },
-              { key: 'building' as const, label: 'Building', range: '8-22', gradient: 'from-teal-400 to-teal-500', text: 'text-teal-600', bg: 'bg-teal-50' },
-              { key: 'peak' as const, label: 'Mastery', range: '23-30', gradient: 'from-amber-400 to-amber-500', text: 'text-amber-600', bg: 'bg-amber-50' },
+              { key: 'foundation' as const, label: 'Foundation', range: '1-7', gradient: 'from-blue-400 to-blue-500', text: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/30' },
+              { key: 'building' as const, label: 'Building', range: '8-22', gradient: 'from-teal-400 to-teal-500', text: 'text-teal-600 dark:text-teal-400', bg: 'bg-teal-50 dark:bg-teal-900/30' },
+              { key: 'peak' as const, label: 'Mastery', range: '23-30', gradient: 'from-amber-400 to-amber-500', text: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/30' },
             ]).map(ph => {
               const phDays = plan.filter(d => d.phase === ph.key);
               const phCompleted = phDays.filter(d => d.completed).length;
@@ -243,10 +260,10 @@ export default function Dashboard() {
               return (
                 <div key={ph.key} className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <span className={`text-sm font-bold ${isCurrent ? ph.text : 'text-slate-500'}`}>{ph.label}</span>
-                    <span className="text-sm text-slate-500">{ph.range}</span>
+                    <span className={`text-xs font-bold ${isCurrent ? ph.text : 'text-slate-500 dark:text-slate-400'}`}>{ph.label}</span>
+                    <span className="text-xs text-slate-400 dark:text-slate-500">{Math.round(phPct)}%</span>
                   </div>
-                  <div className={`h-2.5 rounded-full overflow-hidden ${isCurrent ? ph.bg : 'bg-slate-100 dark:bg-slate-800'}`}>
+                  <div className={`h-2 rounded-full overflow-hidden ${isCurrent ? ph.bg : 'bg-slate-100 dark:bg-slate-800'}`}>
                     <div className={`h-full bg-gradient-to-l ${ph.gradient} rounded-full transition-all duration-700`} style={{ width: `${phPct}%` }} />
                   </div>
                 </div>
