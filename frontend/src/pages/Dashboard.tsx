@@ -271,47 +271,47 @@ export default function Dashboard() {
             })}
           </div>
 
-          {/* Compact 30-Day Calendar Strip */}
-          <div className="grid grid-cols-10 lg:grid-cols-15 gap-1.5">
+          {/* 30-Day Calendar Grid */}
+          <div className="grid grid-cols-6 sm:grid-cols-10 lg:grid-cols-10 gap-2">
             {plan.map(day => {
               const isCurrent = day.is_today;
-              // Phase-aware coloring
               const phaseColor = day.phase === 'foundation' ? 'border-blue-300 dark:border-blue-700' : day.phase === 'building' ? 'border-teal-300 dark:border-teal-700' : 'border-amber-300 dark:border-amber-700';
               let bg = 'bg-slate-50 dark:bg-slate-800/60';
-              let textColor = 'text-slate-400 dark:text-slate-500';
+              let textColor = 'text-slate-500 dark:text-slate-400';
               let ring = '';
-              let border = `border ${phaseColor}`;
+              let border = `border-2 ${phaseColor}`;
 
               if (day.completed) {
                 bg = 'bg-emerald-100 dark:bg-emerald-900/40';
-                textColor = 'text-emerald-600 dark:text-emerald-400';
-                border = 'border border-emerald-300 dark:border-emerald-700';
+                textColor = 'text-emerald-700 dark:text-emerald-300';
+                border = 'border-2 border-emerald-400 dark:border-emerald-600';
               } else if (isCurrent) {
                 bg = 'bg-teal-500 dark:bg-teal-600';
                 textColor = 'text-white';
-                ring = 'ring-2 ring-teal-300 ring-offset-1 dark:ring-offset-slate-900 animate-glow-ring';
+                ring = 'ring-2 ring-teal-300 ring-offset-2 dark:ring-offset-slate-900 animate-glow-ring shadow-lg shadow-teal-500/30';
                 border = 'border-0';
               } else if (day.is_rest_day) {
                 bg = 'bg-slate-100 dark:bg-slate-800';
-                textColor = 'text-slate-300 dark:text-slate-600';
+                textColor = 'text-slate-400 dark:text-slate-500';
+                border = 'border border-dashed border-slate-300 dark:border-slate-700';
               } else if (day.is_mock_day) {
                 bg = 'bg-amber-50 dark:bg-amber-900/30';
-                textColor = 'text-amber-600 dark:text-amber-400';
-                border = 'border border-amber-300 dark:border-amber-700';
+                textColor = 'text-amber-700 dark:text-amber-300';
+                border = 'border-2 border-amber-400 dark:border-amber-600';
               }
 
               return (
                 <Link key={day.day} to="/plan" title={`Day ${day.day}${day.completed ? ' ✓' : ''}${day.is_mock_day ? ' — Mock Exam' : ''}${day.is_rest_day ? ' — Rest' : ''}`}
-                  className={`aspect-square rounded-lg ${bg} ${ring} ${border} flex flex-col items-center justify-center transition-all hover:scale-110 hover:shadow-md`}>
-                  <span className={`text-xs font-black ${textColor}`}>{day.day}</span>
+                  className={`aspect-square rounded-xl ${bg} ${ring} ${border} flex flex-col items-center justify-center transition-all hover:scale-105 hover:shadow-md cursor-pointer`}>
+                  <span className={`text-base font-black leading-none ${textColor}`}>{day.day}</span>
                   {day.completed && (
-                    <svg className="w-2.5 h-2.5 text-emerald-500 dark:text-emerald-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                    <svg className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400 mt-1" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
                   )}
                   {day.is_mock_day && !day.completed && !isCurrent && (
-                    <span className="text-[8px] font-bold text-amber-500 dark:text-amber-400 mt-0.5">M</span>
+                    <span className="text-[9px] font-bold text-amber-500 dark:text-amber-400 mt-0.5 uppercase">Mock</span>
                   )}
                   {day.is_rest_day && !day.completed && (
-                    <span className="text-[8px] text-slate-300 dark:text-slate-600 mt-0.5">R</span>
+                    <span className="text-[9px] text-slate-400 dark:text-slate-500 mt-0.5">Rest</span>
                   )}
                 </Link>
               );
