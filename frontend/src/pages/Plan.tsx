@@ -537,6 +537,14 @@ export default function Plan() {
                     {secondaryValue}
                   </p>
 
+                  {day.is_today && !day.completed && !day.is_rest_day && (
+                    <a href={day.is_mock_day ? '/mock' : '/practice'}
+                      className="mt-4 flex items-center justify-center gap-1.5 rounded-xl bg-teal-500 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-teal-600"
+                      onClick={(e) => e.stopPropagation()}>
+                      Start Session <ArrowRight className="h-3 w-3" />
+                    </a>
+                  )}
+
                   {!day.is_rest_day ? (
                     <div className="mt-auto pt-5">
                       <div className="mb-2 flex items-center justify-between text-xs font-medium text-slate-500">

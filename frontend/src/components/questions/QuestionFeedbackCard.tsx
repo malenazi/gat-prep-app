@@ -45,7 +45,7 @@ export function QuestionFeedbackCard({
       </div>
 
       <div className="grid gap-3 lg:grid-cols-2">
-        <div className="rounded-2xl border border-white/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+        <div className="rounded-2xl border border-white/70 bg-white/75 p-4 dark:border-slate-700 dark:bg-slate-900">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">Result</p>
           <p className="mt-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
             {feedback.is_correct ? 'You chose the correct option.' : 'Your first answer needs a second look.'}
@@ -58,7 +58,7 @@ export function QuestionFeedbackCard({
           </p>
         </div>
 
-        <div className="rounded-2xl border border-white/70 bg-white/75 p-4 dark:border-slate-800 dark:bg-slate-950/70">
+        <div className="rounded-2xl border border-white/70 bg-white/75 p-4 dark:border-slate-700 dark:bg-slate-900">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">Short Explanation</p>
           <RichTextContent
             content={feedback.explanation_ar || 'No explanation available yet.'}

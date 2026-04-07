@@ -1620,6 +1620,16 @@ if FRONTEND_DIR and os.path.exists(FRONTEND_DIR):
     assets_dir = os.path.join(FRONTEND_DIR, "assets")
     if os.path.exists(assets_dir):
         app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    # Serve root-level static files (logo, favicon, robots.txt, etc.)
+    for static_ext in ('.png', '.ico', '.svg', '.txt', '.xml', '.webmanifest'):
+        for fname in os.listdir(FRONTEND_DIR):
+            if fname.endswith(static_ext):
+                fpath = os.path.join(FRONTEND_DIR, fname)
+                if os.path.isfile(fpath):
+                    @app.get(f"/{fname}")
+                    async def _serve_static(f=fpath):
+                        return FileResponse(f)
     
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str):
