@@ -6,7 +6,7 @@ import {
   ArrowRight, Sparkles, CheckSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { LogoMark } from '@/brand/Logo';
+import logoImg from '/logo.png';
 
 interface LandingPageProps {
   onStart: () => void;
@@ -314,9 +314,8 @@ export function LandingPage({ onStart }: LandingPageProps) {
         <div className="max-w-7xl mx-auto px-4 lg:px-6">
           <div className="flex items-center justify-between h-16 lg:h-18">
             {/* Logo */}
-            <a href="#" aria-label="Qudra Academy home" className="flex items-center gap-2" data-testid="landing-logo">
-              <LogoMark size={36} />
-              <span className="text-lg font-black text-slate-800 dark:text-slate-100 hidden sm:inline">Qudra Academy</span>
+            <a href="#" aria-label="Qudra Academy home" className="flex items-center" data-testid="landing-logo">
+              <img src={logoImg} alt="Qudra Academy" className="h-9 sm:h-10 w-auto drop-shadow-sm" />
             </a>
 
             {/* Nav Links (desktop) */}
@@ -829,7 +828,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
             {/* Brand */}
             <div className="md:col-span-1">
               <div className="inline-flex items-center rounded-2xl bg-white dark:bg-slate-900 px-4 py-3 mb-4 shadow-lg shadow-slate-950/20">
-                <LogoMark size={40} />
+                <img src={logoImg} alt="Qudra Academy" className="h-10 w-auto" />
               </div>
               <p className="text-sm text-slate-400 leading-relaxed">
                 A focused GAT preparation platform built around adaptive practice and clear study guidance.
