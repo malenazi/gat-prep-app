@@ -189,14 +189,14 @@ export default function Diagnostic() {
 
           <div className="grid grid-cols-2 gap-4 mb-8 animate-slide-up" style={{ animationDelay: '0.25s' }}>
             <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-2xl p-4">
-              <p className="text-blue-400 text-sm mb-1">Verbal Section</p>
+              <p className="text-blue-400 dark:text-blue-300 text-sm mb-1">Verbal Section</p>
               <p className="text-blue-700 dark:text-blue-300 font-black text-2xl">{verbalMastery}%</p>
               <div className="h-1.5 bg-blue-100 dark:bg-blue-900/40 rounded-full overflow-hidden mt-2">
                 <div className="h-full bg-blue-400 rounded-full transition-all duration-1000" style={{ width: `${verbalMastery}%` }} />
               </div>
             </div>
             <div className="bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-2xl p-4">
-              <p className="text-purple-400 text-sm mb-1">Quantitative Section</p>
+              <p className="text-purple-400 dark:text-purple-300 text-sm mb-1">Quantitative Section</p>
               <p className="text-purple-700 dark:text-purple-300 font-black text-2xl">{quantMastery}%</p>
               <div className="h-1.5 bg-purple-100 dark:bg-purple-900/40 rounded-full overflow-hidden mt-2">
                 <div className="h-full bg-purple-400 rounded-full transition-all duration-1000" style={{ width: `${quantMastery}%` }} />

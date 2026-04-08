@@ -356,7 +356,7 @@ export default function Dashboard() {
                     <span className={`text-[10px] font-bold text-center leading-tight ${earned ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-600'}`}>{b.name_ar}</span>
                     {/* Tooltip on hover */}
                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
-                      <div className="bg-slate-800 dark:bg-slate-700 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
+                      <div className="bg-slate-900 dark:bg-slate-950 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap shadow-lg">
                         {b.name_ar} {earned ? '✓' : '(locked)'}
                       </div>
                     </div>

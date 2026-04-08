@@ -55,7 +55,7 @@ export function PracticeHintPanel({
               className="rounded-xl border border-white/70 bg-white/80 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-950/70"
               data-testid={`practice-hint-${hint.index}`}
             >
-              <p className="text-xs font-black uppercase tracking-[0.14em] text-indigo-600 dark:text-indigo-300 mb-1">
+              <p className="text-xs font-black uppercase tracking-[0.14em] text-indigo-600 dark:text-indigo-200 mb-1">
                 {hint.title}
               </p>
               <RichTextContent

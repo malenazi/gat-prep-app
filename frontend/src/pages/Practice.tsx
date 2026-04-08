@@ -333,15 +333,15 @@ export default function Practice() {
             <div className="grid grid-cols-3 gap-2 mb-5">
               <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-2">
                 <p className="font-black text-lg text-slate-800 dark:text-slate-100">{sessionStats.total}</p>
-                <p className="text-xs text-slate-500">Questions</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Questions</p>
               </div>
               <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-2">
                 <p className="font-black text-lg text-emerald-500">{accuracy}%</p>
-                <p className="text-xs text-slate-500">Accuracy</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Accuracy</p>
               </div>
               <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-2">
                 <p className="font-black text-lg text-amber-500">+{sessionStats.xp}</p>
-                <p className="text-xs text-slate-500">XP</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">XP</p>
               </div>
             </div>
             {streak >= 3 && <p className="text-amber-500 text-sm font-bold mb-3">🔥 You'll lose your {streak}-question streak!</p>}

@@ -79,7 +79,7 @@ export function QuestionOptions({
           badgeClass = 'bg-emerald-500 text-white';
           stateLabel = 'Correct answer';
         } else if (isIncorrectSelection) {
-          cardClass = 'border-red-300 bg-red-50/70 shadow-[0_22px_45px_-34px_rgba(239,68,68,0.18)] dark:border-red-400/60 dark:bg-red-500/18 animate-wrong';
+          cardClass = 'border-red-300 bg-red-50/70 shadow-[0_22px_45px_-34px_rgba(239,68,68,0.18)] dark:border-red-400 dark:bg-red-500/18 animate-wrong';
           badgeClass = 'bg-red-500 text-white';
           stateLabel = 'Selected answer';
         } else if (isSelected) {
