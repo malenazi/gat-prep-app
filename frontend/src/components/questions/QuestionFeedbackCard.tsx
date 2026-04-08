@@ -103,7 +103,7 @@ export function QuestionFeedbackCard({
 function CollapsibleSection({ title, defaultOpen = true, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="mt-3 rounded-2xl border border-white/70 bg-white/75 dark:border-slate-800 dark:bg-slate-950/70 overflow-hidden">
+    <div className="mt-3 rounded-2xl border border-white/70 bg-white/75 dark:border-slate-700 dark:bg-slate-900 overflow-hidden">
       <button type="button" onClick={() => setOpen(v => !v)} className="w-full flex items-center justify-between p-4 text-left">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">{title}</p>
         <svg className={`h-4 w-4 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

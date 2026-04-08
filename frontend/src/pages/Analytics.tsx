@@ -161,8 +161,9 @@ export default function Analytics() {
                   <XAxis dataKey="date" tick={{ fontSize: 13 }} className="[&_text]:fill-slate-500 dark:[&_text]:fill-slate-400" tickFormatter={(d: string) => d.slice(5)} />
                   <YAxis domain={[0, 1]} tick={{ fontSize: 13 }} className="[&_text]:fill-slate-500 dark:[&_text]:fill-slate-400" tickFormatter={(v: number) => `${Math.round(v * 100)}%`} />
                   <Tooltip formatter={(v: number) => `${Math.round(v * 100)}%`}
-                    contentStyle={{ borderRadius: 12, fontSize: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                    wrapperClassName="[&_.recharts-default-tooltip]:!bg-white dark:[&_.recharts-default-tooltip]:!bg-slate-800 [&_.recharts-tooltip-label]:!text-slate-700 dark:[&_.recharts-tooltip-label]:!text-slate-200 [&_.recharts-tooltip-item]:!text-slate-600 dark:[&_.recharts-tooltip-item]:!text-slate-300" />
+                    contentStyle={{ borderRadius: 12, fontSize: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', backgroundColor: 'var(--tooltip-bg, #fff)', border: '1px solid var(--tooltip-border, #e2e8f0)', color: 'var(--tooltip-text, #334155)' }}
+                    labelStyle={{ color: 'var(--tooltip-text, #334155)', fontWeight: 600 }}
+                    itemStyle={{ color: 'var(--tooltip-text, #334155)' }} />
                   <Line type="monotone" dataKey="accuracy" stroke={`url(#${gradId})`} strokeWidth={3} dot={{ fill: '#0d9488', r: 4, strokeWidth: 2 }} />
                   <defs>
                     <linearGradient id={gradId} x1="0" y1="0" x2="1" y2="0">
@@ -223,8 +224,9 @@ export default function Analytics() {
               <BarChart data={data.skill_breakdown} layout="vertical" margin={{ left: 10 }}>
                 <XAxis type="number" tick={{ fontSize: 13 }} className="[&_text]:fill-slate-500 dark:[&_text]:fill-slate-400" />
                 <YAxis type="category" dataKey="name_ar" tick={{ fontSize: 13 }} className="[&_text]:fill-slate-500 dark:[&_text]:fill-slate-400" width={90} />
-                <Tooltip contentStyle={{ borderRadius: 12, fontSize: 12, direction: 'rtl', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                  wrapperClassName="[&_.recharts-default-tooltip]:!bg-white dark:[&_.recharts-default-tooltip]:!bg-slate-800 [&_.recharts-tooltip-label]:!text-slate-700 dark:[&_.recharts-tooltip-label]:!text-slate-200 [&_.recharts-tooltip-item]:!text-slate-600 dark:[&_.recharts-tooltip-item]:!text-slate-300" />
+                <Tooltip contentStyle={{ borderRadius: 12, fontSize: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.15)', backgroundColor: 'var(--tooltip-bg, #fff)', border: '1px solid var(--tooltip-border, #e2e8f0)', color: 'var(--tooltip-text, #334155)' }}
+                  labelStyle={{ color: 'var(--tooltip-text, #334155)', fontWeight: 600 }}
+                  itemStyle={{ color: 'var(--tooltip-text, #334155)' }} />
                 <Bar dataKey="correct" stackId="a" fill="#22c55e" radius={[0, 0, 0, 0]} name="Correct" />
                 <Bar dataKey="total" stackId="b" className="fill-slate-200 dark:fill-slate-700" radius={[0, 4, 4, 0]} name="Total" />
               </BarChart>
