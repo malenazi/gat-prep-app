@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { BarChart3, CalendarDays, Home, LogOut, PenLine, Settings } from 'lucide-react';
 
 import { useAuth } from '@/hooks/useAuth';
+import { LogoMark } from '@/brand/Logo';
 
 const navItems = [
   { path: '/', label: 'Home', icon: Home },
@@ -57,7 +58,7 @@ function DesktopSidebar() {
     >
       <div className="border-b border-slate-100 p-6 dark:border-slate-800">
         <div className="flex items-center gap-3">
-          <img src="/logo-icon.png" alt="Qudra Academy" className="h-10 w-10" />
+          <LogoMark size={40} />
           <div>
             <h1 className="text-lg font-black text-slate-800 dark:text-slate-100">Qudra Academy</h1>
             <p className="text-sm text-slate-500 dark:text-slate-400">Guided GAT prep</p>
