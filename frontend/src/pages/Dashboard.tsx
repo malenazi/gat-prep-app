@@ -239,7 +239,7 @@ export default function Dashboard() {
                   <span className="text-sm font-black text-teal-600 dark:text-teal-400">{overallPct}%</span>
                 </div>
                 <div className="h-3 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-                  <div className="h-full rounded-full bg-gradient-to-r from-blue-500 via-teal-500 to-amber-500 transition-all duration-700" style={{ width: `${overallPct}%` }} />
+                  <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-700 transition-all duration-700" style={{ width: `${overallPct}%` }} />
                 </div>
                 <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{completedDays} of {plan.length} days completed</p>
               </div>
