@@ -6,7 +6,7 @@ import { PracticeAdaptivePanel } from '@/components/practice/PracticeAdaptivePan
 import { PracticeHintPanel } from '@/components/practice/PracticeHintPanel';
 import { QuestionFeedbackCard } from '@/components/questions/QuestionFeedbackCard';
 import { QuestionOptions } from '@/components/questions/QuestionOptions';
-import { QuestionPrompt } from '@/components/questions/QuestionPrompt';
+import { QuestionPrompt, formatQuestionCode } from '@/components/questions/QuestionPrompt';
 import { useAuth } from '@/hooks/useAuth';
 import { pageShell } from '@/lib/layout';
 import { defaultQuestionAppearance } from '@/lib/questionPresentation';
@@ -458,6 +458,7 @@ export default function Practice() {
                 comparison_columns={question.comparison_columns}
                 testIdPrefix="practice-question"
                 appearance={appearance}
+                questionCode={formatQuestionCode(question.skill_id, question.id)}
               />
 
               <div className={submitting && selected ? 'option-submitting rounded-2xl' : ''}>

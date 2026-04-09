@@ -13,6 +13,24 @@ import {
 } from '@/lib/questionPresentation';
 import type { ComparisonColumns, QuestionContentFormat, QuestionTable } from '@/types';
 
+const SKILL_PREFIX: Record<string, string> = {
+  verbal_reading: 'RC',
+  verbal_analogy: 'VA',
+  verbal_completion: 'SC',
+  verbal_error: 'CE',
+  verbal_oddword: 'OW',
+  quant_arithmetic: 'AR',
+  quant_geometry: 'GM',
+  quant_algebra: 'AG',
+  quant_statistics: 'ST',
+};
+
+export function formatQuestionCode(skillId?: string | null, questionId?: number | null): string | null {
+  if (!skillId || !questionId) return null;
+  const prefix = SKILL_PREFIX[skillId] ?? skillId.slice(0, 2).toUpperCase();
+  return `${prefix}-${questionId}`;
+}
+
 function normalizeFigureCaption(figureAlt?: string | null, questionText?: string) {
   const raw = figureAlt?.trim();
   if (!raw) return null;
@@ -50,6 +68,7 @@ interface QuestionPromptProps {
   figureFrameClassName?: string;
   compact?: boolean;
   appearance?: QuestionAppearance;
+  questionCode?: string | null;
 }
 
 export function QuestionPrompt({
@@ -67,6 +86,7 @@ export function QuestionPrompt({
   figureFrameClassName = 'rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950',
   compact = false,
   appearance = defaultQuestionAppearance,
+  questionCode = null,
 }: QuestionPromptProps) {
   const [passageExpanded, setPassageExpanded] = useState(false);
   const rawSvg = sanitizeInlineSvg(figure_svg);
@@ -159,6 +179,11 @@ export function QuestionPrompt({
             <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-slate-500 dark:bg-slate-800 dark:text-slate-300">
             Question
           </span>
+          {questionCode && (
+            <span className="rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-mono font-bold tracking-wider text-teal-600 dark:bg-teal-900/30 dark:text-teal-400" data-testid={`${testIdPrefix}-code`}>
+              {questionCode}
+            </span>
+          )}
           {safeSvg && (
               <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 dark:border-amber-900 dark:bg-amber-500/10 dark:text-amber-300">
               Use the diagram

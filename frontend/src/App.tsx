@@ -42,6 +42,7 @@ const Plan = lazy(() => import('@/pages/Plan'));
 const Analytics = lazy(() => import('@/pages/Analytics'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const MockExam = lazy(() => import('@/pages/MockExam'));
+const Settings = lazy(() => import('@/pages/Settings'));
 
 function Spinner() {
   return (
@@ -104,6 +105,7 @@ function AppRoutes() {
         <Route path="/practice" element={<Practice />} />
         <Route path="/plan" element={<Plan />} />
         <Route path="/analytics" element={<Analytics />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to={defaultRoute} replace />} />
       </Route>
     </Routes>

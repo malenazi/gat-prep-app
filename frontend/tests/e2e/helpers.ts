@@ -159,6 +159,12 @@ export async function goToAdmin(page: Page) {
   await expect(page.getByTestId('admin-page')).toBeVisible();
 }
 
+export async function goToSettings(page: Page) {
+  await clickResponsiveNav(page, 'nav-settings', 'mobile-nav-settings');
+  await expect(page).toHaveURL(/\/settings$/);
+  await expect(page.getByTestId('settings-page')).toBeVisible();
+}
+
 export async function goToDashboard(page: Page) {
   await clickResponsiveNav(page, 'nav-home', 'mobile-nav-home');
   await expect(page).toHaveURL(/\/$/);

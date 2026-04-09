@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api';
 import { QuestionOptions } from '@/components/questions/QuestionOptions';
-import { QuestionPrompt } from '@/components/questions/QuestionPrompt';
+import { QuestionPrompt, formatQuestionCode } from '@/components/questions/QuestionPrompt';
 import { defaultQuestionAppearance, validateMarkdownMathFields } from '@/lib/questionPresentation';
 import { parseTableEditorValue, sanitizeInlineSvg } from '@/lib/questionVisuals';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend } from 'recharts';
@@ -775,6 +775,7 @@ export default function Admin() {
                         compact
                         passageClassName="bg-white border border-slate-200 rounded-lg p-3 text-sm text-slate-600 dark:text-slate-400"
                         questionClassName="text-sm text-slate-800 font-medium whitespace-pre-line"
+                        questionCode={formatQuestionCode(q.skill_id, q.id)}
                         figureFrameClassName="rounded-lg border border-slate-200 bg-white p-3 dark:bg-slate-900 dark:border-slate-700"
                         appearance={defaultQuestionAppearance}
                       />

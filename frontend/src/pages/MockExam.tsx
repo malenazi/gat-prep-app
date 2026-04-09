@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { QuestionFeedbackCard } from '@/components/questions/QuestionFeedbackCard';
 import { QuestionOptions } from '@/components/questions/QuestionOptions';
-import { QuestionPrompt } from '@/components/questions/QuestionPrompt';
+import { QuestionPrompt, formatQuestionCode } from '@/components/questions/QuestionPrompt';
 import { useAuth } from '@/hooks/useAuth';
 import { ScoreRing } from '@/components/shared/ScoreRing';
 import { defaultQuestionAppearance } from '@/lib/questionPresentation';
@@ -482,6 +482,7 @@ export default function MockExam() {
             passageClassName="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 lg:p-5 mb-3 text-xs lg:text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-h-32 lg:max-h-48 overflow-y-auto"
             questionClassName="text-base lg:text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 lg:mb-6 leading-relaxed whitespace-pre-line math-text"
             appearance={appearance}
+            questionCode={formatQuestionCode(question.skill_id, question.id)}
           />
 
           <QuestionOptions
@@ -778,6 +779,7 @@ export default function MockExam() {
                           questionClassName="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line math-text"
                           figureFrameClassName="mb-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3"
                           appearance={appearance}
+                          questionCode={formatQuestionCode(q.skill_id, q.question_id)}
                         />
                       </div>
                     </div>

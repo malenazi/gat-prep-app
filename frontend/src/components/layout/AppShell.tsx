@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { BarChart3, CalendarDays, Home, LogOut, PenLine, Settings } from 'lucide-react';
+import { BarChart3, CalendarDays, Home, LogOut, PenLine, Settings, ShieldCheck } from 'lucide-react';
 
 import { useAuth } from '@/hooks/useAuth';
 import logoImg from '/logo-icon.png';
@@ -9,6 +9,7 @@ const navItems = [
   { path: '/practice', label: 'Practice', icon: PenLine },
   { path: '/plan', label: 'Plan', icon: CalendarDays },
   { path: '/analytics', label: 'Analytics', icon: BarChart3 },
+  { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
 function navTestId(path: string) {
@@ -99,7 +100,7 @@ function DesktopSidebar() {
                 : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-100'
             }`}
           >
-            <Settings className="h-5 w-5" />
+            <ShieldCheck className="h-5 w-5" />
             <span>Admin Panel</span>
           </Link>
         </div>
@@ -118,7 +119,7 @@ function DesktopSidebar() {
         <div className="flex items-center justify-between px-2 text-sm">
           <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
             <span className={user.streak > 0 ? 'animate-fire' : ''}>*</span>
-            {user.streak} day
+            {user.streak} day streak
           </span>
           <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">XP {user.xp}</span>
         </div>
@@ -211,7 +212,7 @@ function TopBar() {
 function MobileNav() {
   const loc = useLocation();
   const { user } = useAuth();
-  const items = user?.is_admin ? [...navItems, { path: '/admin', label: 'Admin', icon: Settings }] : navItems;
+  const items = user?.is_admin ? [...navItems, { path: '/admin', label: 'Admin', icon: ShieldCheck }] : navItems;
 
   return (
     <nav

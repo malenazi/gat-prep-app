@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '@/lib/api';
 import { QuestionOptions } from '@/components/questions/QuestionOptions';
-import { QuestionPrompt } from '@/components/questions/QuestionPrompt';
+import { QuestionPrompt, formatQuestionCode } from '@/components/questions/QuestionPrompt';
 import { useAuth } from '@/hooks/useAuth';
 import { ScoreRing } from '@/components/shared/ScoreRing';
 import { pageShell } from '@/lib/layout';
@@ -280,6 +280,7 @@ export default function Diagnostic() {
             comparison_columns={question.comparison_columns}
             testIdPrefix="diagnostic-question"
             appearance={appearance}
+            questionCode={formatQuestionCode(question.skill_id, question.id)}
           />
 
           <QuestionOptions
