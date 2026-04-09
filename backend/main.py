@@ -308,6 +308,8 @@ def get_me(user: User = Depends(get_user), db: Session = Depends(get_db)):
         "mock_attempts": user.mock_attempts,
         "mock_score": user.mock_score,
         "mock_max_attempts": get_mock_max(db),
+        "streak_freezes": user.streak_freezes or 0,
+        "course_started_at": user.course_started_at.isoformat() if user.course_started_at else None,
         "predicted_score": score,
         "abilities": [{
             "skill_id": a.skill_id,

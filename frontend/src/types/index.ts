@@ -72,6 +72,8 @@ export interface ApiUser {
   xp: number;
   streak: number;
   streak_longest: number;
+  streak_freezes: number;
+  course_started_at: string | null;
   league: LeagueTier;
   is_admin: boolean;
   mock_attempts: number;

@@ -93,6 +93,14 @@ export default function Dashboard() {
   const allAbilities = user.abilities || [];
   const weakest = allAbilities.length > 0 ? allAbilities.reduce((w, a) => a.mastery < w.mastery ? a : w, allAbilities[0]) : null;
 
+  // Exam countdown
+  const daysRemaining = Math.max(0, 30 - user.current_day);
+
+  // Daily XP goal (10 XP per target question)
+  const dailyXpGoal = today ? today.target_questions * 10 : 100;
+  const todayXp = today ? today.completed_questions * 10 : 0;
+  const xpPct = Math.min(100, Math.round((todayXp / Math.max(1, dailyXpGoal)) * 100));
+
   return (
     <div className={`${pageShell.wide} ${pageStack} page-enter`} data-testid="dashboard-page">
       {/* ═══ Mobile Header ═══ */}
@@ -110,6 +118,41 @@ export default function Dashboard() {
             <span className="text-base">⚡</span>
             <span className="font-bold text-teal-600 dark:text-teal-400 text-sm">{user.xp}</span>
           </div>
+        </div>
+      </div>
+
+      {/* ═══ Engagement Strip: XP Progress + Countdown + Streak Freeze ═══ */}
+      <div className="grid grid-cols-3 gap-2 lg:gap-3 stagger-1">
+        {/* Daily XP Progress */}
+        <div className="bg-white dark:bg-slate-900 shadow-card rounded-2xl p-3 lg:p-4 text-center">
+          <div className="relative inline-flex items-center justify-center">
+            <svg width="52" height="52" viewBox="0 0 52 52" className="transform -rotate-90">
+              <circle cx="26" cy="26" r="22" fill="none" className="stroke-slate-100 dark:stroke-slate-800" strokeWidth="4" />
+              <circle cx="26" cy="26" r="22" fill="none" stroke="#14b8a6" strokeWidth="4"
+                strokeDasharray={`${138 * xpPct / 100} 138`} strokeLinecap="round" />
+            </svg>
+            <span className="absolute text-xs font-black text-teal-600 dark:text-teal-400">⚡</span>
+          </div>
+          <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mt-1">{todayXp}/{dailyXpGoal} XP</p>
+          <p className="text-[10px] text-slate-400 dark:text-slate-500">Daily Goal</p>
+        </div>
+
+        {/* Exam Countdown */}
+        <div className="bg-white dark:bg-slate-900 shadow-card rounded-2xl p-3 lg:p-4 text-center">
+          <div className="text-2xl font-black text-slate-800 dark:text-slate-100">{daysRemaining}</div>
+          <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mt-0.5">days left</p>
+          <p className="text-[10px] text-slate-400 dark:text-slate-500">in your plan</p>
+        </div>
+
+        {/* Streak + Freezes */}
+        <div className="bg-white dark:bg-slate-900 shadow-card rounded-2xl p-3 lg:p-4 text-center">
+          <div className="text-2xl font-black text-amber-500">
+            <span className={user.streak > 0 ? 'animate-fire inline-block' : ''}>🔥</span> {user.streak}
+          </div>
+          <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mt-0.5">day streak</p>
+          {(user.streak_freezes ?? 0) > 0 && (
+            <p className="text-[10px] text-blue-500 dark:text-blue-400 mt-0.5">🛡️ {user.streak_freezes} freeze{user.streak_freezes > 1 ? 's' : ''}</p>
+          )}
         </div>
       </div>
 
