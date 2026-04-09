@@ -1524,12 +1524,12 @@ def get_questions():
 
         # Q148 — expected value: game decision
         Question(skill_id="quant_statistics", question_type="statistics", difficulty=0.6,
-            text_ar="Game costs $10 to play:\n- 1/4 probability win $20\n- 1/4 probability win $10\n- 1/2 probability win nothing\nIs the game fair?",
-            option_a="Yes, expected gain $5", option_b="No, expected loss $5",
-            option_c="No, expected loss $2.50", option_d="Fair game",
+            text_ar="A game costs 10 riyals to play:\n- 1/4 probability of winning 20 riyals\n- 1/4 probability of winning 10 riyals\n- 1/2 probability of winning nothing\nIs the game fair?",
+            option_a="Yes, expected gain of 5 riyals", option_b="No, expected loss of 5 riyals",
+            option_c="No, expected loss of 2.50 riyals", option_d="Fair game",
             correct_option="c",
-            explanation_ar="Net outcomes:\n- Win $20: net = $20 − $10 = +$10 (prob 1/4)\n- Win $10: net = $10 − $10 = $0 (prob 1/4)\n- No win: net = −$10 (prob 1/2)\nEV = 10 x 1/4 + 0 x 1/4 + (−10) x 1/2 = 2.5 − 5 = −2.5\nExpected loss $2.50\n\nWhy other options are wrong:\n  • Yes, expected gain $5 ← Wrong calculation\n  • No, expected loss $5 ← Incorrect\n  • Fair game ← EV != 0",
-            solution_steps_ar='["Net outcomes: +$10, $0, or −$10","EV = 10 x 1/4 + 0 x 1/4 + (−10) x 1/2","= 2.5 + 0 − 5 = −2.5","Expected loss $2.50"]',
+            explanation_ar="Net outcomes:\n- Win 20: net = 20 - 10 = +10 (prob 1/4)\n- Win 10: net = 10 - 10 = 0 (prob 1/4)\n- No win: net = -10 (prob 1/2)\nEV = 10 x 1/4 + 0 x 1/4 + (-10) x 1/2 = 2.5 - 5 = -2.5\nExpected loss of 2.50 riyals\n\nWhy other options are wrong:\n• Yes, expected gain of 5: Wrong calculation of expected value\n• No, expected loss of 5: Incorrect probability weighting\n• Fair game: EV is not zero, so the game is not fair",
+            solution_steps_ar='["Net outcomes: +10, 0, or -10 riyals","EV = 10 x 1/4 + 0 x 1/4 + (-10) x 1/2","= 2.5 + 0 - 5 = -2.5","Expected loss of 2.50 riyals"]',
     tags="probability,mean", stage="peak",
     rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5, rating_difficulty_align=4, rating_explanation=5, rating_discrimination=5, rating_overall=4.71),
 

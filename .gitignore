@@ -79,3 +79,4 @@ dist-verify-*/
 *.png
 !frontend/src/**/*.png
 !frontend/public/**/*.png
+backend/quality_audit_report.json

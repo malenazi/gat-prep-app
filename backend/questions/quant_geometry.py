@@ -1215,8 +1215,8 @@ def get_questions():
                                     text_ar="Sphere: Radius (r) = 3 cm.\nWhat is Surface area?\n(π = ²²⁄₇)",
                                     option_a="72 cm²",             option_b="1131 cm²",             option_c="36 cm²",             option_d="154 cm²",
                                     correct_option="b",
-                                    explanation_ar="Formula:\n         Area ofof Sphere = 4 × π × r²\n\nSubstitution:\n = 4 × (22 ÷ 7) × 3²\n = 4 × (22 ÷ 7) × 9\n = (4 × 22 × 9) ÷ 7\n = 792 ÷ 7 = 1131 cm²\n\nWhy other options are wrong:\n            • (a) 72 cm²: Result of using formula Area instead of Volume\n            • (c) 36 cm²: Result of forgetting ⁴⁄₃ in formula Volume\n            • (d) 154 cm²: Result of error in Calculate cubing",
-                                    solution_steps_ar='[" Area ofof Sphere = 4 × π × r²","= 4 × (22 ÷ 7) × 9","= 792 ÷ 7 ≈ 1131 cm²"]',
+                                    explanation_ar="Formula:\nSurface Area of Sphere = 4 × π × r²\n\nSubstitution:\n= 4 × (22/7) × 3²\n= 4 × (22/7) × 9\n= (4 × 22 × 9) / 7\n= 792 / 7 ≈ 113.1 cm²\n\nWhy other options are wrong:\n• (a) 72 cm²: Incorrect formula application\n• (c) 36 cm²: Only calculated r² without full formula\n• (d) 154 cm²: Used wrong radius value",
+                                    solution_steps_ar='["Surface Area of Sphere = 4 × π × r²","= 4 × (22/7) × 9","= 792 / 7 ≈ 113.1 cm²"]',
         tags="sphere,area,3d-shape", stage="foundation",
         rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5, rating_difficulty_align=4, rating_explanation=5, rating_discrimination=4, rating_overall=4.57),
 
@@ -1342,7 +1342,7 @@ def get_questions():
 
                 # ── Q130: Circle inscribed in Square side 10 (diff=0.5) ── building
                 Question(skill_id="quant_geometry", question_type="geometry", difficulty=0.5,
-                                    text_ar="Square side edge = 10 cm.\ndrawn Circle inscribed in it (in Square).\nWhat is Area of Circle of Square?\n(π = ²²⁄₇)",
+                                    text_ar="A square has side length 10 cm.\nA circle is inscribed inside the square.\nWhat is the area of the circle?\n(π = 22/7)",
                                     option_a="215 cm²",             option_b="43 cm²",             option_c="785 cm²",             option_d="100 cm²",
                                     correct_option="a",
                                     explanation_ar="r Circle = Square ÷ 2 = 5 cm\n\nArea of Diagonal = 10² = 100 cm²\nArea of Circle = π × r² = (22 ÷ 7) × 25 = 550 ÷ 7 = 786 cm²\n\nRemaining = 100 − 786 ≈ 214 ≈ 215 cm²\n\nWhy other options are wrong:\n            • (a) 8 cm: Result of using formula Perimeter instead of Area or vice versa\n            • (b) 43 cm²: Result of using Diameter instead of Radius in Formula\n            • (d) 100 cm²: Result of forgetting squaring Radius when calculating Area",
@@ -1375,8 +1375,8 @@ def get_questions():
                                     text_ar="Sphere: Radius (r) = 7 cm.\nWhat is Surface area?\n(π = ²²⁄₇)",
                                     option_a="308 cm²",             option_b="616 cm²",             option_c="154 cm²",             option_d="1232 cm²",
                                     correct_option="b",
-                                    explanation_ar="Formula:\n         Area ofof Sphere = 4 × π × r²\n\nSubstitution:\n = 4 × (22 ÷ 7) × 7²\n = 4 × (22 ÷ 7) × 49\n = 4 × 22 × 7 = 616 cm²\n\nWhy other options are wrong:\n            • (a) 308 cm²: Result of using formula Area instead of Volume\n            • (c) 154 cm²: Result of forgetting ⁴⁄₃ in formula Volume\n            • (d) 1232 cm²: Result of error in Calculate cubing",
-                                    solution_steps_ar='[" Area ofof Sphere = 4 × π × r²","= 4 × (22 ÷ 7) × 49","= 4 × 22 × 7 = 616 cm²"]',
+                                    explanation_ar="Formula:\nSurface Area of Sphere = 4 × π × r²\n\nSubstitution:\n= 4 × (22/7) × 7²\n= 4 × (22/7) × 49\n= 4 × 22 × 7 = 616 cm²\n\nWhy other options are wrong:\n• (a) 308 cm²: Only calculated 2πr² (half the surface area)\n• (c) 154 cm²: Only calculated πr² (one-quarter of surface area)\n• (d) 1232 cm²: Doubled the correct answer",
+                                    solution_steps_ar='["Surface Area of Sphere = 4 × π × r²","= 4 × (22/7) × 49","= 4 × 22 × 7 = 616 cm²"]',
         tags="sphere,area,3d-shape", stage="building",
         rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5, rating_difficulty_align=4, rating_explanation=5, rating_discrimination=4, rating_overall=4.57),
 
@@ -1563,7 +1563,7 @@ def get_questions():
 
                 # ── Q152: Circle of Square side 14 (diff=0.7) ── mock
                 Question(skill_id="quant_geometry", question_type="geometry", difficulty=0.7,
-                                    text_ar="Square side edge = 14 cm.\ndrawn Circle inscribed in it.\nWhat is Area of Circle?\n(π = ²²⁄₇)",
+                                    text_ar="A square has side length 14 cm.\nA circle is inscribed inside the square.\nWhat is the area of the circle?\n(π = 22/7)",
                                     option_a="154 cm²",             option_b="308 cm²",             option_c="616 cm²",             option_d="44 cm²",
                                     correct_option="a",
                                     explanation_ar="r = Square ÷ 2 = 14 ÷ 2 = 7 cm\n\nArea of Circle = π × r²\n = (22 ÷ 7) × 7² = (22 ÷ 7) × 49 = 154 cm²\n\nWhy other options are wrong:\n            • (a) 770 cm²: Result of using formula Perimeter instead of Area or vice versa\n            • (c) 616 cm²: Result of using Diameter instead of Radius in Formula\n            • (d) 44 cm²: Result of forgetting squaring Radius when calculating Area",
@@ -1626,7 +1626,7 @@ def get_questions():
                                     text_ar="Sphere: Surface area = 2464 cm².\nWhat is its radius?\n(π = ²²⁄₇)",
                                     option_a="7 cm",             option_b="14 cm",             option_c="21 cm",             option_d="28 cm",
                                     correct_option="b",
-                                    explanation_ar="Formula:\n         Area ofof Sphere = 4 × π × r²\n 2464 = 4 × (22 ÷ 7) × r²\n 2464 = (88 ÷ 7) × r²\n r² = 2464 × 7 ÷ 88 = 17248 ÷ 88 = 196\n r = √196 = 14 cm\n\nWhy other options are wrong:\n            • (b) 49√3 + 154 cm²: Result of using formula Area instead of Volume\n            • (c) 21 cm: Result of forgetting ⁴⁄₃ in formula Volume\n            • (d) 28 cm: Result of error in Calculate cubing",
+                                    explanation_ar="Formula:\nSurface Area of Sphere = 4 × π × r²\n2464 = 4 × (22/7) × r²\n2464 = (88/7) × r²\nr² = 2464 × 7 / 88 = 17248 / 88 = 196\nr = sqrt(196) = 14 cm\n\nWhy other options are wrong:\n• (a) 7 cm: Used r instead of r² in the formula\n• (c) 21 cm: Arithmetic error in the division step\n• (d) 28 cm: Calculated diameter (2r) instead of radius",
                                     solution_steps_ar='["4 × π × r² = 2464","r² = 2464 × 7 ÷ 88 = 196","r = √196 = 14 cm"]',
         tags="sphere,area,3d-shape", stage="mock",
         rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5, rating_difficulty_align=4, rating_explanation=5, rating_discrimination=5, rating_overall=4.71),
