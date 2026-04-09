@@ -7,6 +7,13 @@ def _steps(*items: str) -> str:
     return json.dumps(list(items))
 
 
+def _find_by_key(questions: list[Question], source_key: str) -> Question:
+    for question in questions:
+        if getattr(question, "source_key", None) == source_key:
+            return question
+    raise ValueError(f"Could not find question with source_key: {source_key}")
+
+
 def _find_question(questions: list[Question], skill_id: str, prefix: str) -> Question:
     for question in questions:
         if question.skill_id == skill_id and question.text_ar.startswith(prefix):
@@ -59,7 +66,7 @@ def _svg(content: str, view_box: str = "0 0 220 140") -> str:
 def _revise_geometry_questions(questions: list[Question]) -> int:
     revised = 0
 
-    q = _find_question(questions, "quant_geometry", "Rectangle: Length = 8 cm")
+    q = _find_by_key(questions, "quant_geometry:0001")
     _apply_updates(
         q,
         text_ar="The diagram shows a rectangle. What is its area?",
@@ -74,7 +81,7 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question(questions, "quant_geometry", "Right triangle:\nFirst Side = 3 cm")
+    q = _find_by_key(questions, "quant_geometry:0002")
     _apply_updates(
         q,
         text_ar="The diagram shows a right triangle with side lengths 3 cm and 4 cm. What is the hypotenuse?",
@@ -91,7 +98,7 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question(questions, "quant_geometry", "Circle: Radius (r) = 7 cm")
+    q = _find_by_key(questions, "quant_geometry:0003")
     _apply_updates(
         q,
         text_ar="The diagram shows a circle with radius 7 cm. What is its circumference? (Use pi = 22/7.)",
@@ -106,7 +113,7 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question(questions, "quant_geometry", "Square: Perimeter = 24 cm")
+    q = _find_by_key(questions, "quant_geometry:0004")
     _apply_updates(
         q,
         text_ar="A square is shown with total perimeter 24 cm. What is its area?",
@@ -121,7 +128,7 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question(questions, "quant_geometry", "Triangle: Base = 10 cm , Height = 6 cm.")
+    q = _find_by_key(questions, "quant_geometry:0006")
     _apply_updates(
         q,
         text_ar="The diagram shows a triangle with base 10 cm and height 6 cm. What is its area?",
@@ -137,7 +144,7 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question(questions, "quant_geometry", "Rectangle: Length = 12 cm , Width = 4 cm.")
+    q = _find_by_key(questions, "quant_geometry:0007")
     _apply_updates(
         q,
         text_ar="The rectangle in the diagram has side lengths 12 cm and 4 cm. What is its perimeter?",
@@ -152,7 +159,7 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question(questions, "quant_geometry", "Circle: Radius (r) = 14 cm.")
+    q = _find_by_key(questions, "quant_geometry:0008")
     _apply_updates(
         q,
         text_ar="The diagram shows a circle with radius 14 cm. What is its area? (Use pi = 22/7.)",
@@ -167,7 +174,7 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question(questions, "quant_geometry", "Right triangle: Hypotenuse = 13 cm")
+    q = _find_by_key(questions, "quant_geometry:0011")
     _apply_updates(
         q,
         text_ar="The right triangle shows hypotenuse 13 cm and one leg 5 cm. Find the missing leg.",
@@ -190,7 +197,7 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
 def _revise_statistics_questions(questions: list[Question]) -> int:
     revised = 0
 
-    q = _find_question(questions, "quant_statistics", "Scores of 4 students in a math test:")
+    q = _find_by_key(questions, "quant_statistics:0001")
     _apply_updates(
         q,
         text_ar="Use the table to find the arithmetic mean of the four scores.",
@@ -201,7 +208,7 @@ def _revise_statistics_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question(questions, "quant_statistics", "Scores of 8 students:")
+    q = _find_by_key(questions, "quant_statistics:0002")
     _apply_updates(
         q,
         text_ar="The table lists quiz scores and their frequencies. What is the mode?",
@@ -215,7 +222,7 @@ def _revise_statistics_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question(questions, "quant_statistics", "Find the median of the following numbers:")
+    q = _find_by_key(questions, "quant_statistics:0012")
     _apply_updates(
         q,
         text_ar="Use the values in the table to find the median.",
@@ -226,7 +233,7 @@ def _revise_statistics_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question(questions, "quant_statistics", "Find the range of the following numbers:")
+    q = _find_by_key(questions, "quant_statistics:0013")
     _apply_updates(
         q,
         text_ar="Use the table to find the range of the data set.",
@@ -237,7 +244,7 @@ def _revise_statistics_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question(questions, "quant_statistics", "In a class of 30 students, 12 play football.")
+    q = _find_by_key(questions, "quant_statistics:0014")
     _apply_updates(
         q,
         text_ar="The table summarizes the class. What is the probability of selecting a football player?",
@@ -251,7 +258,7 @@ def _revise_statistics_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question(questions, "quant_statistics", "How many ways can 2 students be chosen from 5")
+    q = _find_by_key(questions, "quant_statistics:0015")
     _apply_updates(
         q,
         text_ar="A school has the five students listed in the table. How many different 2-student teams can be formed?",
@@ -262,7 +269,7 @@ def _revise_statistics_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question(questions, "quant_statistics", "A student scored 80 in a subject with weight 3")
+    q = _find_by_key(questions, "quant_statistics:0016")
     _apply_updates(
         q,
         text_ar="Use the weighted-score table to find the weighted average.",
@@ -282,7 +289,7 @@ def _revise_statistics_questions(questions: list[Question]) -> int:
 def _revise_arithmetic_questions(questions: list[Question]) -> int:
     revised = 0
 
-    q = _find_question(questions, "quant_arithmetic", "If the price of a book = 120 riyals")
+    q = _find_by_key(questions, "quant_arithmetic:0001")
     _apply_updates(
         q,
         text_ar="Use the table to find the final amount paid after the discount.",
@@ -293,7 +300,7 @@ def _revise_arithmetic_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question(questions, "quant_arithmetic", "The ratio of boys to girls in a class = 3 : 2")
+    q = _find_by_key(questions, "quant_arithmetic:0002")
     _apply_updates(
         q,
         text_ar="The class information is summarized in the table. How many girls are there?",
@@ -307,7 +314,7 @@ def _revise_arithmetic_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question(questions, "quant_arithmetic", "The average score of 5 students = 80")
+    q = _find_by_key(questions, "quant_arithmetic:0005")
     _apply_updates(
         q,
         text_ar="Use the summary table to find the new average after one more student joins.",
@@ -321,7 +328,7 @@ def _revise_arithmetic_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question_containing(questions, "quant_arithmetic", "25% of 200")
+    q = _find_by_key(questions, "quant_arithmetic:0007")
     _apply_updates(
         q,
         text_ar="Use the comparison table, then choose the correct relationship.",
@@ -335,7 +342,7 @@ def _revise_arithmetic_questions(questions: list[Question]) -> int:
     )
     revised += 1
 
-    q = _find_question_containing(questions, "quant_arithmetic", "Average of numbers 4, 6, 8, 10")
+    q = _find_by_key(questions, "quant_arithmetic:0015")
     _apply_updates(
         q,
         text_ar="Use the comparison table, then choose the correct relationship.",
