@@ -29,6 +29,7 @@ from adaptive import (
     predict_score,
     recalculate_all_question_stats,
     calibrate_question_difficulties,
+    maybe_auto_calibrate,
 )
 from password_reset import (
     get_password_reset_support_email,
@@ -394,7 +395,7 @@ def diagnostic_answer(req: AnswerReq, user: User = Depends(get_user), db: Sessio
                         selected_option=req.selected_option, is_correct=is_correct,
                         time_spent_seconds=req.time_spent_seconds)
     db.add(resp)
-    update_ability(db, user.id, q.skill_id, is_correct, q.difficulty)
+    update_ability(db, user.id, q.skill_id, is_correct, q.difficulty, q.discrimination)
     update_question_stats(q, is_correct, req.time_spent_seconds)
 
     # Award XP
@@ -507,8 +508,9 @@ def practice_answer(req: AnswerReq, user: User = Depends(get_user), db: Session 
                         selected_option=req.selected_option, is_correct=is_correct,
                         time_spent_seconds=req.time_spent_seconds)
     db.add(resp)
-    update_ability(db, user.id, q.skill_id, is_correct, q.difficulty)
+    update_ability(db, user.id, q.skill_id, is_correct, q.difficulty, q.discrimination)
     update_question_stats(q, is_correct, req.time_spent_seconds)
+    maybe_auto_calibrate(db)
 
     # Update plan progress
     if plan:

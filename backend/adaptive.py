@@ -7,9 +7,27 @@ SCHEDULED_MOCK_DAYS = (11, 18, 24, 27)
 
 # ── Elo-based ability tracking ──────────────────────────────────────────────
 
-def update_ability(db: Session, user_id: int, skill_id: str, is_correct: bool, item_difficulty: float):
+def _irt_expected(theta: float, difficulty: float, discrimination: float = 1.0) -> float:
+    """2PL IRT probability: P(correct) = 1 / (1 + exp(-a*(theta - b)))."""
+    a = max(0.3, min(3.0, discrimination))  # clamp discrimination
+    z = a * (theta - difficulty)
+    z = max(-10.0, min(10.0, z))  # prevent math overflow
+    return 1 / (1 + math.exp(-z))
+
+
+def _item_information(theta: float, difficulty: float, discrimination: float = 1.0) -> float:
+    """Fisher information for 2PL model: I = a^2 * P * (1-P)."""
+    a = max(0.3, min(3.0, discrimination))
+    p = _irt_expected(theta, difficulty, discrimination)
+    return a * a * p * (1 - p)
+
+
+def update_ability(db: Session, user_id: int, skill_id: str, is_correct: bool,
+                   item_difficulty: float, item_discrimination: float = 1.0):
     if item_difficulty is None:
         item_difficulty = 0.5  # safe default
+    if item_discrimination is None or item_discrimination <= 0:
+        item_discrimination = 1.0  # default to 1PL behavior
     ability = db.query(UserAbility).filter_by(user_id=user_id, skill_id=skill_id).first()
     if not ability:
         ability = UserAbility(user_id=user_id, skill_id=skill_id, theta=0.0, questions_seen=0, correct_count=0)
@@ -17,9 +35,7 @@ def update_ability(db: Session, user_id: int, skill_id: str, is_correct: bool, i
         db.flush()
 
     K = max(0.1, 0.4 - 0.003 * ability.questions_seen)
-    diff = ability.theta - item_difficulty
-    diff = max(-10.0, min(10.0, diff))  # prevent math overflow
-    expected = 1 / (1 + math.exp(-diff))
+    expected = _irt_expected(ability.theta, item_difficulty, item_discrimination)
     ability.theta += K * (int(is_correct) - expected)
     ability.theta = max(-3.0, min(3.0, ability.theta))  # clamp
     ability.questions_seen += 1
@@ -100,12 +116,18 @@ def select_next_question(db: Session, user_id: int, session_type: str = "drill",
     if not questions:
         return None
 
-    # Pick question closest to student's ability (target ~85% accuracy → slight undershoot)
-    target_diff = target_theta - 0.3  # aim slightly easier for 85% zone
-    questions.sort(key=lambda q: abs(q.difficulty - target_diff))
-    # Add some randomness in top 5 matches
-    top = questions[:min(5, len(questions))]
-    return random.choice(top)
+    # 2PL information-based selection: pick items that maximize Fisher information
+    # at the student's current ability level, with slight bias toward ~85% success
+    target_theta_adj = target_theta - 0.3  # aim slightly easier for 85% zone
+    scored = []
+    for q in questions:
+        disc = max(0.3, q.discrimination or 1.0)
+        info = _item_information(target_theta_adj, q.difficulty, disc)
+        scored.append((q, info))
+    scored.sort(key=lambda x: x[1], reverse=True)
+    # Pick randomly from top 5 most informative items
+    top = scored[:min(5, len(scored))]
+    return random.choice(top)[0]
 
 # ── Diagnostic item selection (CAT-style) ───────────────────────────────────
 
@@ -134,10 +156,15 @@ def select_diagnostic_question(db: Session, user_id: int, current_theta: float, 
     if not questions:
         return None
 
-    # Select question maximizing information at current theta
-    questions.sort(key=lambda q: abs(q.difficulty - current_theta))
-    top = questions[:min(3, len(questions))]
-    return random.choice(top)
+    # Select question maximizing Fisher information at current theta (2PL)
+    scored = []
+    for q in questions:
+        disc = max(0.3, q.discrimination or 1.0)
+        info = _item_information(current_theta, q.difficulty, disc)
+        scored.append((q, info))
+    scored.sort(key=lambda x: x[1], reverse=True)
+    top = scored[:min(3, len(scored))]
+    return random.choice(top)[0]
 
 # ── Study plan generator ────────────────────────────────────────────────────
 
@@ -335,3 +362,29 @@ def calibrate_question_difficulties(db: Session, min_answers: int = 10, learning
         db.commit()
 
     return {"calibrated": calibrated, "skipped": skipped, "changes": changes}
+
+
+# ── Auto-calibration trigger ──────────────────────────────────────────────
+
+AUTO_CALIBRATE_INTERVAL = 100  # recalibrate after every N new responses
+
+def maybe_auto_calibrate(db: Session):
+    """Check if enough new responses accumulated and trigger recalibration.
+
+    Runs after each answer submission. Lightweight check — only counts
+    responses, doesn't do heavy computation unless threshold is met.
+    """
+    total_responses = db.query(func.count(UserResponse.id)).scalar() or 0
+
+    # Only calibrate if we have meaningful data
+    if total_responses < 50:
+        return None
+
+    # Check if calibration is due (every AUTO_CALIBRATE_INTERVAL responses)
+    if total_responses % AUTO_CALIBRATE_INTERVAL != 0:
+        return None
+
+    # Recalculate stats and calibrate
+    recalculate_all_question_stats(db)
+    result = calibrate_question_difficulties(db, min_answers=10, learning_rate=0.3)
+    return result
