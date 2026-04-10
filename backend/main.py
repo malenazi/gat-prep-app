@@ -239,16 +239,27 @@ def login(req: LoginReq, request: Request, db: Session = Depends(get_db)):
 
 @app.post("/api/auth/forgot-password")
 def forgot_password(req: ForgotPasswordReq, db: Session = Depends(get_db)):
+    from email_service import is_email_enabled, send_password_reset_email
+
     email = normalize_email(req.email)
     preview_enabled = password_reset_preview_enabled()
     support_email = get_password_reset_support_email()
+    email_enabled = is_email_enabled()
     reset_token_preview = None
+    ttl = get_password_reset_ttl_minutes()
 
-    if preview_enabled:
-        reset_token_preview = issue_password_reset_token_for_email(db, email)
+    # Generate token if we can deliver it (preview mode or email enabled)
+    if preview_enabled or email_enabled:
+        token = issue_password_reset_token_for_email(db, email)
+        if preview_enabled:
+            reset_token_preview = token
+        if email_enabled and token:
+            send_password_reset_email(to=email, reset_code=token, expires_minutes=ttl)
 
     if preview_enabled:
         message = "If an account exists for that email, use the one-time reset code below to choose a new password."
+    elif email_enabled:
+        message = "If an account exists for that email, a reset code has been sent to your inbox."
     elif support_email:
         message = f"If an account exists for that email, contact {support_email} for a one-time reset code."
     else:
@@ -257,8 +268,8 @@ def forgot_password(req: ForgotPasswordReq, db: Session = Depends(get_db)):
     return {
         "message": message,
         "reset_token_preview": reset_token_preview,
-        "expires_in_minutes": get_password_reset_ttl_minutes() if preview_enabled else None,
-        "requires_support": not preview_enabled,
+        "expires_in_minutes": ttl if preview_enabled else None,
+        "requires_support": not preview_enabled and not email_enabled,
         "support_email": support_email,
     }
 
@@ -916,6 +927,12 @@ def submit_feedback(req: FeedbackReq, user: User = Depends(get_user), db: Sessio
     )
     db.add(fb)
     db.commit()
+
+    # Send confirmation email if enabled
+    from email_service import is_email_enabled, send_ticket_confirmation_email
+    if is_email_enabled() and req.category:
+        send_ticket_confirmation_email(to=user.email, ticket_id=fb.id, category=req.category)
+
     return {"message": "Thank you for your feedback!", "ticket_id": fb.id}
 
 @app.get("/api/me/tickets")
