@@ -19,9 +19,6 @@ export default function Settings() {
   const [showFAQ, setShowFAQ] = useState(false);
   const [showTickets, setShowTickets] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
-  const [feedbackCategory, setFeedbackCategory] = useState('other');
-  const [feedbackPriority, setFeedbackPriority] = useState('normal');
-  const [feedbackQuestionCode, setFeedbackQuestionCode] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [dailyMinutes, setDailyMinutes] = useState(0);
@@ -88,15 +85,9 @@ export default function Settings() {
         rating: 0,
         comment: feedbackText,
         trigger: 'settings_support',
-        category: feedbackCategory,
-        priority: feedbackPriority,
-        question_code: feedbackQuestionCode || undefined,
       });
-      setFeedbackMsg(`Ticket #${result.ticket_id} submitted. We'll review it shortly.`);
+      setFeedbackMsg(`Message #${result.ticket_id} sent. We'll review it shortly.`);
       setFeedbackText('');
-      setFeedbackQuestionCode('');
-      setFeedbackCategory('other');
-      setFeedbackPriority('normal');
       loadTickets();
       setTimeout(() => setFeedbackMsg(null), 5000);
     } catch {
@@ -309,63 +300,7 @@ export default function Settings() {
           {/* Feedback Form */}
           {showFeedback && (
             <div className="bg-white dark:bg-slate-900 shadow-card rounded-2xl p-5 animate-slide-down" data-testid="support-form">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Submit a Support Ticket</h2>
-
-              {/* Category Pills */}
-              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">Category</p>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {([
-                  { key: 'bug', label: 'Bug Report', icon: '🐛' },
-                  { key: 'feature', label: 'Feature Request', icon: '💡' },
-                  { key: 'question', label: 'Question Issue', icon: '❓' },
-                  { key: 'account', label: 'Account Help', icon: '👤' },
-                  { key: 'other', label: 'Other', icon: '📝' },
-                ] as const).map(cat => (
-                  <button key={cat.key} type="button" onClick={() => setFeedbackCategory(cat.key)}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                      feedbackCategory === cat.key
-                        ? 'bg-teal-100 text-teal-700 ring-1 ring-teal-300 dark:bg-teal-900/30 dark:text-teal-300 dark:ring-teal-700'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
-                    }`}>
-                    {cat.icon} {cat.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Question Code (shown for question category) */}
-              {feedbackCategory === 'question' && (
-                <div className="mb-4">
-                  <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Question Code (optional)</p>
-                  <input
-                    type="text"
-                    value={feedbackQuestionCode}
-                    onChange={(e) => setFeedbackQuestionCode(e.target.value)}
-                    placeholder="e.g. AG-1345"
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  />
-                </div>
-              )}
-
-              {/* Priority */}
-              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">Priority</p>
-              <div className="flex gap-2 mb-4">
-                {([
-                  { key: 'low', label: 'Low', color: 'text-slate-500' },
-                  { key: 'normal', label: 'Normal', color: 'text-blue-600 dark:text-blue-400' },
-                  { key: 'urgent', label: 'Urgent', color: 'text-red-600 dark:text-red-400' },
-                ] as const).map(p => (
-                  <button key={p.key} type="button" onClick={() => setFeedbackPriority(p.key)}
-                    className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                      feedbackPriority === p.key
-                        ? `bg-slate-100 ${p.color} ring-1 ring-slate-300 dark:bg-slate-800 dark:ring-slate-600`
-                        : 'bg-slate-50 text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 dark:text-slate-500 dark:hover:bg-slate-700'
-                    }`}>
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Message */}
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Send us a message</h2>
               <textarea
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
@@ -377,7 +312,7 @@ export default function Settings() {
               )}
               <button onClick={handleFeedback} disabled={!feedbackText.trim()}
                 className="mt-3 bg-teal-600 text-white font-bold py-2.5 px-6 rounded-xl text-sm hover:bg-teal-500 transition disabled:opacity-50">
-                Submit Ticket
+                Send Message
               </button>
             </div>
           )}
