@@ -74,6 +74,31 @@ from seed import seed_all
 from sync_question_bank import generate_admin_source_key
 from user_management import create_user, find_user_by_email
 
+def ensure_feedback_columns(eng):
+    """Add new feedback columns if they don't exist (safe for production)."""
+    from sqlalchemy import inspect, text
+    inspector = inspect(eng)
+    if "feedback" not in inspector.get_table_names():
+        return
+    existing = {c["name"] for c in inspector.get_columns("feedback")}
+    migrations = []
+    if "category" not in existing:
+        migrations.append("ALTER TABLE feedback ADD COLUMN category TEXT")
+    if "priority" not in existing:
+        migrations.append("ALTER TABLE feedback ADD COLUMN priority TEXT")
+    if "question_code" not in existing:
+        migrations.append("ALTER TABLE feedback ADD COLUMN question_code TEXT")
+    if "status" not in existing:
+        migrations.append("ALTER TABLE feedback ADD COLUMN status TEXT DEFAULT 'open'")
+    if "admin_response" not in existing:
+        migrations.append("ALTER TABLE feedback ADD COLUMN admin_response TEXT")
+    if "responded_at" not in existing:
+        migrations.append("ALTER TABLE feedback ADD COLUMN responded_at TIMESTAMP")
+    if migrations:
+        with eng.begin() as conn:
+            for stmt in migrations:
+                conn.execute(text(stmt))
+
 # ── App setup ────────────────────────────────────────────────────────────────
 SECRET = get_secret_key()
 CORS_ORIGINS, CORS_ALLOW_CREDENTIALS = resolve_cors_configuration()
@@ -81,6 +106,7 @@ CORS_ORIGINS, CORS_ALLOW_CREDENTIALS = resolve_cors_configuration()
 Base.metadata.create_all(bind=engine)
 ensure_question_visual_columns(engine)
 ensure_question_content_columns(engine)
+ensure_feedback_columns(engine)
 seed_all()
 
 app = FastAPI(title="Qudra Academy — GAT Prep")

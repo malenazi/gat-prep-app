@@ -152,7 +152,12 @@ export default function Settings() {
                   <User className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                   <div>
                     <p className="text-xs text-slate-400 dark:text-slate-500">Member since</p>
-                    <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Day {user.current_day} of 30-day plan</p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                      {user.course_started_at
+                        ? new Date(user.course_started_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+                        : 'Recently joined'}
+                      {' '}<span className="text-slate-400 dark:text-slate-500">(Day {user.current_day}/30)</span>
+                    </p>
                   </div>
                 </div>
               </div>
