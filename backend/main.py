@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import json, math, datetime, os
 from uuid import uuid4
 from fastapi import FastAPI, Depends, HTTPException, Query, Request, Header
