@@ -275,30 +275,35 @@ def forgot_password(req: ForgotPasswordReq, db: Session = Depends(get_db)):
     support_email = get_password_reset_support_email()
     email_enabled = is_email_enabled()
     reset_token_preview = None
+    email_sent = False
     ttl = get_password_reset_ttl_minutes()
 
-    # Generate token if we can deliver it (preview mode or email enabled)
-    if preview_enabled or email_enabled:
-        token = issue_password_reset_token_for_email(db, email)
-        if preview_enabled:
-            reset_token_preview = token
-        if email_enabled and token:
-            send_password_reset_email(to=email, reset_code=token, expires_minutes=ttl)
+    # Always generate a token
+    token = issue_password_reset_token_for_email(db, email)
 
-    if preview_enabled:
-        message = "If an account exists for that email, use the one-time reset code below to choose a new password."
-    elif email_enabled:
+    if token:
+        # Try sending email first
+        if email_enabled:
+            email_sent = send_password_reset_email(to=email, reset_code=token, expires_minutes=ttl)
+
+        # If email failed or not enabled, show the code directly as fallback
+        if not email_sent:
+            reset_token_preview = token
+
+    if email_sent:
         message = "If an account exists for that email, a reset code has been sent to your inbox."
+    elif reset_token_preview:
+        message = "Use the reset code below to change your password."
     elif support_email:
         message = f"If an account exists for that email, contact {support_email} for a one-time reset code."
     else:
-        message = "If an account exists for that email, contact the academy team for a one-time reset code."
+        message = "If an account exists for that email, a reset code will be provided."
 
     return {
         "message": message,
         "reset_token_preview": reset_token_preview,
-        "expires_in_minutes": ttl if preview_enabled else None,
-        "requires_support": not preview_enabled and not email_enabled,
+        "expires_in_minutes": ttl if reset_token_preview else None,
+        "requires_support": not email_sent and not reset_token_preview,
         "support_email": support_email,
     }
 

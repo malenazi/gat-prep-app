@@ -59,8 +59,12 @@ export default function Settings() {
     setPasswordMsg(null);
     setPasswordLoading(true);
     try {
-      await api.forgotPassword({ email: user.email });
-      setPasswordMsg({ type: 'success', text: 'A password reset link has been sent to your email.' });
+      const result = await api.forgotPassword({ email: user.email });
+      if (result.reset_token_preview) {
+        setPasswordMsg({ type: 'success', text: `Your reset code: ${result.reset_token_preview} (expires in ${result.expires_in_minutes} minutes). Use this on the login page to set a new password.` });
+      } else {
+        setPasswordMsg({ type: 'success', text: result.message });
+      }
     } catch {
       setPasswordMsg({ type: 'error', text: 'Failed to initiate password reset. Please try again.' });
     }
