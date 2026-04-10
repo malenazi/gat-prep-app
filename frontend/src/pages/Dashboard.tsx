@@ -7,6 +7,7 @@ import { SkeletonCard } from '@/components/shared/SkeletonCard';
 import { FeedbackModal } from '@/components/shared/FeedbackModal';
 import { pageShell, pageStack } from '@/lib/layout';
 import type { TodayPlan, StudyPlanDay, ApiBadge } from '@/types';
+import { HelpTooltip } from '@/components/support/HelpTooltip';
 
 export default function Dashboard() {
   const { user, loadUser, logout: onLogout } = useAuth();
@@ -134,7 +135,10 @@ export default function Dashboard() {
             <span className="absolute text-xs font-black text-teal-600 dark:text-teal-400">⚡</span>
           </div>
           <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mt-1">{todayXp}/{dailyXpGoal} XP</p>
-          <p className="text-[10px] text-slate-400 dark:text-slate-500">Daily Goal</p>
+          <div className="flex items-center gap-0.5">
+            <p className="text-[10px] text-slate-400 dark:text-slate-500">Daily Goal</p>
+            <HelpTooltip text="Earn XP by answering questions. Correct = 10 XP, Incorrect = 5 XP. Streaks of 3+ give double XP!" />
+          </div>
         </div>
 
         {/* Exam Countdown */}
@@ -226,7 +230,10 @@ export default function Dashboard() {
 
         {/* Score Ring */}
         <div className="bg-white shadow-card rounded-2xl p-4 lg:p-6 flex flex-col items-center justify-center card-hover dark:bg-slate-900" data-testid="dashboard-score-card">
-          <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">Predicted Score</p>
+          <div className="flex items-center gap-1 mb-4">
+            <p className="text-slate-500 dark:text-slate-400 text-sm">Predicted Score</p>
+            <HelpTooltip text="Your predicted GAT score is based on your performance across all 9 skills, weighted by exam importance. It updates after every practice session." />
+          </div>
           <ScoreRing score={score.mid} label="of 100" />
           <div className="flex gap-6 mt-5 w-full">
             <div className="flex-1 text-center">

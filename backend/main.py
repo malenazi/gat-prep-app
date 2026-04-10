@@ -894,15 +894,44 @@ class FeedbackReq(BaseModel):
     comment: Optional[str] = None
     trigger: str
     page: Optional[str] = None
+    category: Optional[str] = None
+    priority: Optional[str] = None
+    question_code: Optional[str] = None
+
+VALID_CATEGORIES = {"bug", "feature", "question", "account", "other"}
+VALID_PRIORITIES = {"low", "normal", "urgent"}
 
 @app.post("/api/feedback")
 def submit_feedback(req: FeedbackReq, user: User = Depends(get_user), db: Session = Depends(get_db)):
-    if req.rating < 1 or req.rating > 5:
-        raise HTTPException(400, "Rating must be between 1 and 5")
-    fb = Feedback(user_id=user.id, rating=req.rating, comment=req.comment, trigger=req.trigger, page=req.page)
+    if req.rating < 0 or req.rating > 5:
+        raise HTTPException(400, "Rating must be between 0 and 5")
+    if req.category and req.category not in VALID_CATEGORIES:
+        raise HTTPException(400, f"Invalid category. Must be one of: {', '.join(VALID_CATEGORIES)}")
+    if req.priority and req.priority not in VALID_PRIORITIES:
+        raise HTTPException(400, f"Invalid priority. Must be one of: {', '.join(VALID_PRIORITIES)}")
+    fb = Feedback(
+        user_id=user.id, rating=req.rating, comment=req.comment,
+        trigger=req.trigger, page=req.page,
+        category=req.category, priority=req.priority, question_code=req.question_code,
+    )
     db.add(fb)
     db.commit()
-    return {"message": "Thank you for your feedback!"}
+    return {"message": "Thank you for your feedback!", "ticket_id": fb.id}
+
+@app.get("/api/me/tickets")
+def get_my_tickets(user: User = Depends(get_user), db: Session = Depends(get_db)):
+    tickets = db.query(Feedback).filter_by(user_id=user.id).order_by(Feedback.created_at.desc()).limit(20).all()
+    return [{
+        "id": t.id,
+        "category": t.category,
+        "priority": t.priority,
+        "comment": t.comment,
+        "question_code": t.question_code,
+        "status": t.status or "open",
+        "admin_response": t.admin_response,
+        "responded_at": t.responded_at.isoformat() if t.responded_at else None,
+        "created_at": t.created_at.isoformat() if t.created_at else None,
+    } for t in tickets]
 
 # ── Admin ────────────────────────────────────────────────────────────────────
 
@@ -919,7 +948,10 @@ def admin_feedback(days: int = Query(30), trigger: Optional[str] = None, admin: 
         q = q.filter(Feedback.trigger == trigger)
     items = q.order_by(Feedback.created_at.desc()).limit(200).all()
     return [{"id": f.id, "user_id": f.user_id, "rating": f.rating, "comment": f.comment,
-             "trigger": f.trigger, "page": f.page, "created_at": f.created_at.isoformat()} for f in items]
+             "trigger": f.trigger, "page": f.page, "category": f.category, "priority": f.priority,
+             "question_code": f.question_code, "status": f.status or "open",
+             "admin_response": f.admin_response, "responded_at": f.responded_at.isoformat() if f.responded_at else None,
+             "created_at": f.created_at.isoformat()} for f in items]
 
 @app.get("/api/admin/feedback/analytics")
 def admin_feedback_analytics(admin: User = Depends(get_admin), db: Session = Depends(get_db)):
@@ -944,6 +976,25 @@ def admin_feedback_analytics(admin: User = Depends(get_admin), db: Session = Dep
         "by_trigger": by_trigger,
         "recent_comments": recent,
     }
+
+class AdminTicketResponse(BaseModel):
+    status: Optional[str] = None
+    admin_response: Optional[str] = None
+
+@app.put("/api/admin/feedback/{ticket_id}")
+def admin_respond_ticket(ticket_id: int, req: AdminTicketResponse, admin: User = Depends(get_admin), db: Session = Depends(get_db)):
+    fb = db.query(Feedback).get(ticket_id)
+    if not fb:
+        raise HTTPException(404, "Ticket not found")
+    if req.status:
+        if req.status not in ("open", "in_review", "resolved"):
+            raise HTTPException(400, "Invalid status")
+        fb.status = req.status
+    if req.admin_response is not None:
+        fb.admin_response = req.admin_response
+        fb.responded_at = datetime.datetime.utcnow()
+    db.commit()
+    return {"message": "Ticket updated"}
 
 @app.get("/api/admin/users")
 def admin_users(admin: User = Depends(get_admin), db: Session = Depends(get_db)):

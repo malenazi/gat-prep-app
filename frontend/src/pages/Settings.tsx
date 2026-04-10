@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api';
+import type { SupportTicket } from '@/types';
 import { useTheme } from 'next-themes';
 import { pageShell, pageStack } from '@/lib/layout';
-import { User, Mail, Lock, Sun, Moon, HelpCircle, MessageSquare, AlertTriangle, ExternalLink, Clock } from 'lucide-react';
+import { User, Mail, Lock, Sun, Moon, HelpCircle, MessageSquare, AlertTriangle, Clock } from 'lucide-react';
+import { FAQAccordion } from '@/components/support/FAQAccordion';
 
 const MINUTE_PRESETS = [15, 30, 45, 60, 90, 120] as const;
 
@@ -14,8 +16,14 @@ export default function Settings() {
   const [passwordMsg, setPasswordMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [showFAQ, setShowFAQ] = useState(false);
+  const [showTickets, setShowTickets] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackCategory, setFeedbackCategory] = useState('other');
+  const [feedbackPriority, setFeedbackPriority] = useState('normal');
+  const [feedbackQuestionCode, setFeedbackQuestionCode] = useState('');
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [dailyMinutes, setDailyMinutes] = useState(0);
   const [studyMsg, setStudyMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [studySaving, setStudySaving] = useState(false);
@@ -62,13 +70,35 @@ export default function Settings() {
     setPasswordLoading(false);
   };
 
+  const loadTickets = async () => {
+    try {
+      const data = await api.myTickets();
+      setTickets(data);
+    } catch { /* ignore */ }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'support') loadTickets();
+  }, [activeTab]);
+
   const handleFeedback = async () => {
     if (!feedbackText.trim()) return;
     try {
-      await api.submitFeedback({ rating: 0, comment: feedbackText, trigger: 'settings_support' });
-      setFeedbackMsg('Thank you! Your message has been sent.');
+      const result = await api.submitFeedback({
+        rating: 0,
+        comment: feedbackText,
+        trigger: 'settings_support',
+        category: feedbackCategory,
+        priority: feedbackPriority,
+        question_code: feedbackQuestionCode || undefined,
+      });
+      setFeedbackMsg(`Ticket #${result.ticket_id} submitted. We'll review it shortly.`);
       setFeedbackText('');
-      setTimeout(() => setFeedbackMsg(null), 3000);
+      setFeedbackQuestionCode('');
+      setFeedbackCategory('other');
+      setFeedbackPriority('normal');
+      loadTickets();
+      setTimeout(() => setFeedbackMsg(null), 5000);
     } catch {
       setFeedbackMsg('Failed to send. Please try again.');
     }
@@ -234,22 +264,26 @@ export default function Settings() {
           <div className="bg-white dark:bg-slate-900 shadow-card rounded-2xl p-5">
             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-4">Help & Resources</h2>
             <div className="grid gap-2">
-              <a href="#faq" onClick={(e) => { e.preventDefault(); window.scrollTo(0, 0); }}
-                className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800 px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+              <button onClick={() => { setShowFAQ(!showFAQ); setShowFeedback(false); }}
+                data-testid="support-faq-btn"
+                className={`flex items-center justify-between rounded-xl px-4 py-3 transition w-full text-left ${showFAQ ? 'bg-teal-50 dark:bg-teal-900/20 ring-1 ring-teal-200 dark:ring-teal-800' : 'bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
                 <div className="flex items-center gap-3">
                   <HelpCircle className="h-4 w-4 text-teal-500" />
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">FAQs</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Frequently Asked Questions</span>
                 </div>
-                <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
-              </a>
-              <button onClick={() => setShowFeedback(!showFeedback)}
-                className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800 px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-700 transition w-full text-left">
+                <svg className={`h-4 w-4 text-slate-400 transition-transform dark:text-slate-500 ${showFAQ ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <button onClick={() => { setShowFeedback(!showFeedback); setShowFAQ(false); }}
+                data-testid="support-contact-btn"
+                className={`flex items-center justify-between rounded-xl px-4 py-3 transition w-full text-left ${showFeedback ? 'bg-teal-50 dark:bg-teal-900/20 ring-1 ring-teal-200 dark:ring-teal-800' : 'bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
                 <div className="flex items-center gap-3">
                   <MessageSquare className="h-4 w-4 text-teal-500" />
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Contact Support</span>
                 </div>
               </button>
-              <button onClick={() => setShowFeedback(!showFeedback)}
+              <button onClick={() => { setShowFeedback(!showFeedback); setShowFAQ(false); }}
                 className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800 px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-700 transition w-full text-left">
                 <div className="flex items-center gap-3">
                   <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -259,10 +293,74 @@ export default function Settings() {
             </div>
           </div>
 
+          {/* FAQ Accordion */}
+          {showFAQ && (
+            <div className="bg-white dark:bg-slate-900 shadow-card rounded-2xl p-5 animate-slide-down">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Frequently Asked Questions</h2>
+              <FAQAccordion />
+            </div>
+          )}
+
           {/* Feedback Form */}
           {showFeedback && (
-            <div className="bg-white dark:bg-slate-900 shadow-card rounded-2xl p-5 animate-slide-down">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Send us a message</h2>
+            <div className="bg-white dark:bg-slate-900 shadow-card rounded-2xl p-5 animate-slide-down" data-testid="support-form">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Submit a Support Ticket</h2>
+
+              {/* Category Pills */}
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">Category</p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {([
+                  { key: 'bug', label: 'Bug Report', icon: '🐛' },
+                  { key: 'feature', label: 'Feature Request', icon: '💡' },
+                  { key: 'question', label: 'Question Issue', icon: '❓' },
+                  { key: 'account', label: 'Account Help', icon: '👤' },
+                  { key: 'other', label: 'Other', icon: '📝' },
+                ] as const).map(cat => (
+                  <button key={cat.key} type="button" onClick={() => setFeedbackCategory(cat.key)}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                      feedbackCategory === cat.key
+                        ? 'bg-teal-100 text-teal-700 ring-1 ring-teal-300 dark:bg-teal-900/30 dark:text-teal-300 dark:ring-teal-700'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+                    }`}>
+                    {cat.icon} {cat.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Question Code (shown for question category) */}
+              {feedbackCategory === 'question' && (
+                <div className="mb-4">
+                  <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Question Code (optional)</p>
+                  <input
+                    type="text"
+                    value={feedbackQuestionCode}
+                    onChange={(e) => setFeedbackQuestionCode(e.target.value)}
+                    placeholder="e.g. AG-1345"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  />
+                </div>
+              )}
+
+              {/* Priority */}
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">Priority</p>
+              <div className="flex gap-2 mb-4">
+                {([
+                  { key: 'low', label: 'Low', color: 'text-slate-500' },
+                  { key: 'normal', label: 'Normal', color: 'text-blue-600 dark:text-blue-400' },
+                  { key: 'urgent', label: 'Urgent', color: 'text-red-600 dark:text-red-400' },
+                ] as const).map(p => (
+                  <button key={p.key} type="button" onClick={() => setFeedbackPriority(p.key)}
+                    className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                      feedbackPriority === p.key
+                        ? `bg-slate-100 ${p.color} ring-1 ring-slate-300 dark:bg-slate-800 dark:ring-slate-600`
+                        : 'bg-slate-50 text-slate-400 hover:bg-slate-100 dark:bg-slate-800/50 dark:text-slate-500 dark:hover:bg-slate-700'
+                    }`}>
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Message */}
               <textarea
                 value={feedbackText}
                 onChange={(e) => setFeedbackText(e.target.value)}
@@ -274,8 +372,58 @@ export default function Settings() {
               )}
               <button onClick={handleFeedback} disabled={!feedbackText.trim()}
                 className="mt-3 bg-teal-600 text-white font-bold py-2.5 px-6 rounded-xl text-sm hover:bg-teal-500 transition disabled:opacity-50">
-                Send Message
+                Submit Ticket
               </button>
+            </div>
+          )}
+
+          {/* My Tickets History */}
+          {tickets.length > 0 && (
+            <div className="bg-white dark:bg-slate-900 shadow-card rounded-2xl p-5">
+              <button onClick={() => setShowTickets(!showTickets)}
+                className="w-full flex items-center justify-between">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  My Tickets ({tickets.length})
+                </h2>
+                <svg className={`h-4 w-4 text-slate-400 transition-transform dark:text-slate-500 ${showTickets ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {showTickets && (
+                <div className="mt-3 space-y-2" data-testid="support-tickets">
+                  {tickets.map(t => (
+                    <div key={t.id} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-mono text-slate-400 dark:text-slate-500">#{t.id}</span>
+                          {t.category && (
+                            <span className="rounded-full bg-slate-200 dark:bg-slate-700 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                              {t.category}
+                            </span>
+                          )}
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            t.status === 'resolved' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' :
+                            t.status === 'in_review' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' :
+                            'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                          }`}>
+                            {t.status === 'in_review' ? 'In Review' : t.status === 'resolved' ? 'Resolved' : 'Open'}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                          {t.created_at ? new Date(t.created_at).toLocaleDateString() : ''}
+                        </span>
+                      </div>
+                      <p className="text-sm text-slate-700 dark:text-slate-200 line-clamp-2">{t.comment}</p>
+                      {t.admin_response && (
+                        <div className="mt-2 rounded-lg bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 px-3 py-2">
+                          <p className="text-[10px] font-bold text-teal-600 dark:text-teal-400 mb-0.5">Admin Response</p>
+                          <p className="text-sm text-teal-800 dark:text-teal-200">{t.admin_response}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

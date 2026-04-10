@@ -52,12 +52,16 @@ test.describe('Settings Page', () => {
     await expect(darkBtn).toBeVisible();
   });
 
-  test('support tab opens feedback form', async ({ page }) => {
+  test('support tab opens feedback form with categories', async ({ page }) => {
     await goToSettings(page);
     await page.getByTestId('settings-tab-support').click();
-    await page.getByText('Contact Support').click();
-    await expect(page.getByText('Send us a message')).toBeVisible();
+    await page.getByTestId('support-contact-btn').click();
+    await expect(page.getByTestId('support-form')).toBeVisible();
     await expect(page.getByPlaceholder('Describe your issue or suggestion...')).toBeVisible();
+    // Category pills visible
+    await expect(page.getByText('Bug Report')).toBeVisible();
+    await expect(page.getByText('Feature Request')).toBeVisible();
+    await expect(page.getByText('Question Issue')).toBeVisible();
   });
 
   test('shows study preferences with time presets', async ({ page }) => {

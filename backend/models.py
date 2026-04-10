@@ -182,4 +182,10 @@ class Feedback(Base):
     comment = Column(Text, nullable=True)
     trigger = Column(String, nullable=False)
     page = Column(String, nullable=True)
+    category = Column(String, nullable=True)       # bug, feature, question, account, other
+    priority = Column(String, nullable=True)        # low, normal, urgent
+    question_code = Column(String, nullable=True)   # e.g. AG-1345
+    status = Column(String, default="open")         # open, in_review, resolved
+    admin_response = Column(Text, nullable=True)
+    responded_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)

@@ -20,6 +20,7 @@ import type {
   ApiBadge,
   ApiSkill,
   FeedbackPayload,
+  SupportTicket,
   AdminFeedbackItem,
   AdminFeedbackAnalytics,
   AdminUsersResponse,
@@ -98,8 +99,9 @@ export const api = {
   badges: () => req<ApiBadge[]>('/badges'),
   skills: () => req<ApiSkill[]>('/skills'),
 
-  // Feedback
-  submitFeedback: (d: FeedbackPayload) => req<{ message: string }>('/feedback', { method: 'POST', body: JSON.stringify(d) }),
+  // Feedback & Support Tickets
+  submitFeedback: (d: FeedbackPayload) => req<{ message: string; ticket_id: number }>('/feedback', { method: 'POST', body: JSON.stringify(d) }),
+  myTickets: () => req<SupportTicket[]>('/me/tickets'),
 
   // Admin
   adminFeedback: (days = 30, trigger = '') =>

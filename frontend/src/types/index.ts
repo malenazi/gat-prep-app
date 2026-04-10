@@ -272,6 +272,21 @@ export interface FeedbackPayload {
   comment?: string;
   trigger: string;
   page?: string;
+  category?: string;
+  priority?: string;
+  question_code?: string;
+}
+
+export interface SupportTicket {
+  id: number;
+  category: string | null;
+  priority: string | null;
+  comment: string | null;
+  question_code: string | null;
+  status: string;
+  admin_response: string | null;
+  responded_at: string | null;
+  created_at: string | null;
 }
 
 // ── Admin ───────────────────────────────────────────────────────────────────
