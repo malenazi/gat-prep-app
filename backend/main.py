@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-import json, math, datetime, os
+import json, math, datetime, os, random
 from uuid import uuid4
 from fastapi import FastAPI, Depends, HTTPException, Query, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
@@ -804,8 +804,22 @@ def build_question_review_payload(q: Question, skill: Optional[Skill] = None):
     return payload
 
 
-def format_question(q: Question):
+def format_question(q: Question, *, shuffle_options: bool = True):
     render_content = get_render_content(q)
+    labels = ["A", "B", "C", "D"]
+    options = [
+        {"key": "a", "label": "A", "text_ar": render_content["options"]["a"]},
+        {"key": "b", "label": "B", "text_ar": render_content["options"]["b"]},
+        {"key": "c", "label": "C", "text_ar": render_content["options"]["c"]},
+        {"key": "d", "label": "D", "text_ar": render_content["options"]["d"]},
+    ]
+
+    if shuffle_options:
+        random.shuffle(options)
+        # Relabel A-D based on new display order, keep original key for answer matching
+        for i, opt in enumerate(options):
+            opt["label"] = labels[i]
+
     payload = {
         "id": q.id,
         "skill_id": q.skill_id,
@@ -813,12 +827,7 @@ def format_question(q: Question):
         "difficulty": q.difficulty,
         "text_ar": render_content["text_ar"],
         "passage_ar": render_content["passage_ar"],
-        "options": [
-            {"key": "a", "label": "A", "text_ar": render_content["options"]["a"]},
-            {"key": "b", "label": "B", "text_ar": render_content["options"]["b"]},
-            {"key": "c", "label": "C", "text_ar": render_content["options"]["c"]},
-            {"key": "d", "label": "D", "text_ar": render_content["options"]["d"]},
-        ],
+        "options": options,
         "paper_only": q.paper_only,
         "content_format": render_content["content_format"],
         "comparison_columns": render_content["comparison_columns"],

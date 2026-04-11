@@ -285,12 +285,6 @@ export default function Practice() {
     </div>
   );
 
-  // Skip question (counts as wrong)
-  const skipQuestion = () => {
-    if (!question || selected) return;
-    submitAnswer(['a', 'b', 'c', 'd'].find(k => k !== 'a') || 'b');
-  };
-
   if (loading && !question) return (
     <div className={`${pageShell.standard} pt-14 lg:pt-10`}>
       {/* Skeleton: progress bar */}
@@ -397,12 +391,6 @@ export default function Practice() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                 End
               </button>
-              {!selected && question && (
-                <button onClick={skipQuestion} className="text-slate-500 hover:text-amber-600 text-sm font-medium transition flex items-center gap-1 dark:text-slate-400 dark:hover:text-amber-400">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
-                  Skip
-                </button>
-              )}
             </div>
             <div className="flex items-center gap-2">
               {streak >= 3 && (
