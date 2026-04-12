@@ -92,8 +92,8 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
             '<text x="88" y="126" class="label">4 cm</text>'
             '<text x="100" y="58" class="label">?</text>'
         ),
-        explanation_ar="The diagram gives the two legs of a right triangle: 3 cm and 4 cm. By the Pythagorean theorem, c^2 = 3^2 + 4^2 = 9 + 16 = 25, so c = 5.",
-        solution_steps_ar=_steps("Use c^2 = a^2 + b^2.", "c^2 = 3^2 + 4^2 = 25.", "c = 5."),
+        explanation_ar="The diagram gives the two legs of a right triangle: 3 cm and 4 cm. By the Pythagorean theorem, $c^2 = 3^2 + 4^2 = 9 + 16 = 25$, so $c = 5$.",
+        solution_steps_ar=_steps("Use $c^2 = a^2 + b^2$.", "$c^2 = 3^2 + 4^2 = 25$.", "$c = 5$."),
         tags="triangle,pythagorean,figure",
     )
     revised += 1
@@ -107,8 +107,8 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
             '<line x1="95" y1="70" x2="139" y2="70" class="line"/>'
             '<text x="110" y="62" text-anchor="middle" class="label">7 cm</text>'
         ),
-        explanation_ar="The radius shown is 7 cm. Circumference = 2 x pi x r = 2 x (22/7) x 7 = 44 cm.",
-        solution_steps_ar=_steps("Use circumference = 2 x pi x r.", "Substitute r = 7 and pi = 22/7.", "2 x 22 = 44."),
+        explanation_ar="The radius shown is 7 cm. Circumference = $2 \\times \\pi \\times r = 2 \\times \\frac{22}{7} \\times 7 = 44$ cm.",
+        solution_steps_ar=_steps("Use circumference = $2\\pi r$.", "Substitute $r = 7$ and $\\pi = \\frac{22}{7}$.", "$2 \\times 22 = 44$."),
         tags="circle,circumference,figure",
     )
     revised += 1
@@ -138,8 +138,8 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
             '<text x="102" y="126" class="label">10 cm</text>'
             '<text x="84" y="74" class="label">6 cm</text>'
         ),
-        explanation_ar="Use triangle area = (1/2) x base x height. From the diagram, area = (1/2) x 10 x 6 = 30 square cm.",
-        solution_steps_ar=_steps("Read base = 10 cm and height = 6 cm.", "Apply triangle area = (1/2) x base x height.", "Area = 30."),
+        explanation_ar="Use triangle area = $\\frac{1}{2} \\times$ base $\\times$ height. From the diagram, area = $\\frac{1}{2} \\times 10 \\times 6 = 30$ square cm.",
+        solution_steps_ar=_steps("Read base = 10 cm and height = 6 cm.", "Apply triangle area = $\\frac{1}{2} \\times$ base $\\times$ height.", "Area = 30."),
         tags="triangle,area,figure",
     )
     revised += 1
@@ -168,8 +168,8 @@ def _revise_geometry_questions(questions: list[Question]) -> int:
             '<line x1="95" y1="72" x2="141" y2="72" class="line"/>'
             '<text x="112" y="64" text-anchor="middle" class="label">14 cm</text>'
         ),
-        explanation_ar="Area = pi x r^2 = (22/7) x 14^2 = (22/7) x 196 = 616 square cm.",
-        solution_steps_ar=_steps("Use area = pi x r^2.", "Square the radius: 14^2 = 196.", "Multiply by 22/7 to get 616."),
+        explanation_ar="Area = $\\pi r^2 = \\frac{22}{7} \\times 14^2 = \\frac{22}{7} \\times 196 = 616$ square cm.",
+        solution_steps_ar=_steps("Use area = $\\pi r^2$.", "Square the radius: $14^2 = 196$.", "Multiply by $\\frac{22}{7}$ to get 616."),
         tags="circle,area,figure",
     )
     revised += 1
@@ -399,7 +399,7 @@ def _new_geometry_questions() -> list[Question]:
             option_c="32 square cm",
             option_d="40 square cm",
             correct_option="c",
-            explanation_ar="Use trapezoid area = (1/2) x (sum of parallel sides) x height = (1/2) x (10 + 6) x 4 = 32.",
+            explanation_ar="Use trapezoid area = $\\frac{1}{2} \\times$ (sum of parallel sides) $\\times$ height = $\\frac{1}{2} \\times (10 + 6) \\times 4 = 32$.",
             solution_steps_ar=_steps("Add the parallel sides: 10 + 6 = 16.", "Multiply by the height: 16 x 4 = 64.", "Take half: 64 / 2 = 32."),
             tags="trapezoid,area,figure",
             stage="building",
@@ -421,7 +421,7 @@ def _new_geometry_questions() -> list[Question]:
             option_c="12 cm",
             option_d="14 cm",
             correct_option="b",
-            explanation_ar="By the Pythagorean theorem, c^2 = 6^2 + 8^2 = 36 + 64 = 100, so c = 10.",
+            explanation_ar="By the Pythagorean theorem, $c^2 = 6^2 + 8^2 = 36 + 64 = 100$, so $c = 10$.",
             solution_steps_ar=_steps("Compute 6^2 + 8^2 = 100.", "Take the square root.", "The hypotenuse is 10."),
             tags="triangle,pythagorean,figure",
             stage="foundation",
@@ -484,8 +484,8 @@ def _new_geometry_questions() -> list[Question]:
             option_c="36 cm",
             option_d="44 cm",
             correct_option="c",
-            explanation_ar="Perimeter of a semicircle = half the circumference + the diameter = pi x r + 2r = 22 + 14 = 36 cm.",
-            solution_steps_ar=_steps("Half circumference = pi x r = 22.", "Diameter = 14.", "22 + 14 = 36."),
+            explanation_ar="Perimeter of a semicircle = half the circumference + the diameter = $\\pi r + 2r = 22 + 14 = 36$ cm.",
+            solution_steps_ar=_steps("Half circumference = $\\pi r = 22$.", "Diameter = 14.", "$22 + 14 = 36$."),
             tags="circle,semicircle,perimeter,figure",
             stage="building",
         ),

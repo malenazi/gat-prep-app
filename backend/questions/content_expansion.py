@@ -54,7 +54,7 @@ def get_geometry_questions() -> list[Question]:
             tags="square,perimeter,figure", stage="foundation",
             rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=4, rating_overall=4.71,
-            source_key="expansion_geom:0001", authoring_source="human", content_format="plain"),
+            source_key="expansion_geom:0001", authoring_source="human", content_format="markdown_math"),
 
         Question(skill_id="quant_geometry", question_type="geometry", difficulty=0.2,
             text_ar="What is the area of this rectangle?",
@@ -71,7 +71,7 @@ def get_geometry_questions() -> list[Question]:
             tags="rectangle,area,figure", stage="foundation",
             rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=4, rating_overall=4.71,
-            source_key="expansion_geom:0002", authoring_source="human", content_format="plain"),
+            source_key="expansion_geom:0002", authoring_source="human", content_format="markdown_math"),
 
         # ── Medium (0.4-0.5) ──
         Question(skill_id="quant_geometry", question_type="geometry", difficulty=0.4,
@@ -85,12 +85,12 @@ def get_geometry_questions() -> list[Question]:
             figure_alt="A triangle with base 16 cm and height 8 cm.",
             option_a="32 cm", option_b="48 cm", option_c="64 cm", option_d="128 cm",
             correct_option="c",
-            explanation_ar="Area = (1/2) x base x height = (1/2) x 16 x 8 = 64 cm.\n\nWhy other options are wrong:\n- 32 cm: Divided by 4 instead of 2\n- 48 cm: Used wrong formula\n- 128 cm: Forgot to divide by 2",
-            solution_steps_ar=_steps("Read base = 16 cm and height = 8 cm.", "Area = (1/2) x base x height.", "(1/2) x 16 x 8 = 64 cm."),
+            explanation_ar="Area = $\\frac{1}{2}$ x base x height = $\\frac{1}{2}$ x 16 x 8 = 64 cm.\n\nWhy other options are wrong:\n- 32 cm: Divided by 4 instead of 2\n- 48 cm: Used wrong formula\n- 128 cm: Forgot to divide by 2",
+            solution_steps_ar=_steps("Read base = 16 cm and height = 8 cm.", "Area = $\\frac{1}{2}$ x base x height.", "$\\frac{1}{2}$ x 16 x 8 = 64 cm."),
             tags="triangle,area,figure", stage="building",
             rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=4, rating_explanation=5, rating_discrimination=4, rating_overall=4.57,
-            source_key="expansion_geom:0003", authoring_source="human", content_format="plain"),
+            source_key="expansion_geom:0003", authoring_source="human", content_format="markdown_math"),
 
         Question(skill_id="quant_geometry", question_type="geometry", difficulty=0.4,
             text_ar="The diagram shows two parallel lines crossed by a transversal. Find angle x.",
@@ -109,7 +109,7 @@ def get_geometry_questions() -> list[Question]:
             tags="angles,parallel-lines,figure", stage="building",
             rating_clarity=5, rating_cognitive=5, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=4, rating_explanation=5, rating_discrimination=5, rating_overall=4.86,
-            source_key="expansion_geom:0004", authoring_source="human", content_format="plain"),
+            source_key="expansion_geom:0004", authoring_source="human", content_format="markdown_math"),
 
         Question(skill_id="quant_geometry", question_type="geometry", difficulty=0.5,
             text_ar="A trapezoid has parallel sides of 8 cm and 12 cm, with height 5 cm. What is its area?",
@@ -123,12 +123,12 @@ def get_geometry_questions() -> list[Question]:
             figure_alt="A trapezoid with parallel sides 8 cm and 12 cm, and height 5 cm.",
             option_a="40 cm", option_b="50 cm", option_c="60 cm", option_d="100 cm",
             correct_option="b",
-            explanation_ar="Trapezoid area = (1/2) x (sum of parallel sides) x height = (1/2) x (8+12) x 5 = (1/2) x 20 x 5 = 50.\n\nWhy other options are wrong:\n- 40 cm: Used only one parallel side (8 x 5)\n- 60 cm: Used only one parallel side (12 x 5)\n- 100 cm: Forgot to divide by 2",
+            explanation_ar="Trapezoid area = $\\frac{1}{2}$ x (sum of parallel sides) x height = (1/2) x (8+12) x 5 = (1/2) x 20 x 5 = 50.\n\nWhy other options are wrong:\n- 40 cm: Used only one parallel side (8 x 5)\n- 60 cm: Used only one parallel side (12 x 5)\n- 100 cm: Forgot to divide by 2",
             solution_steps_ar=_steps("Sum parallel sides: 8 + 12 = 20.", "Multiply by height: 20 x 5 = 100.", "Divide by 2: 100 / 2 = 50."),
             tags="trapezoid,area,figure", stage="building",
             rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=4, rating_overall=4.71,
-            source_key="expansion_geom:0005", authoring_source="human", content_format="plain"),
+            source_key="expansion_geom:0005", authoring_source="human", content_format="markdown_math"),
 
         Question(skill_id="quant_geometry", question_type="geometry", difficulty=0.5,
             text_ar="The diagram shows a right triangle. What is the length of the hypotenuse?",
@@ -142,12 +142,12 @@ def get_geometry_questions() -> list[Question]:
             figure_alt="Right triangle with legs 6 and 8.",
             option_a="7", option_b="10", option_c="12", option_d="14",
             correct_option="b",
-            explanation_ar="By the Pythagorean theorem: c = sqrt(6^2 + 8^2) = sqrt(36 + 64) = sqrt(100) = 10.\n\nWhy other options are wrong:\n- 7: Sum of digits in the legs\n- 12: Added the legs directly\n- 14: Common error",
-            solution_steps_ar=_steps("Use c^2 = a^2 + b^2.", "c^2 = 36 + 64 = 100.", "c = 10."),
+            explanation_ar="By the Pythagorean theorem: $c = \\sqrt{6^2 + 8^2} = \\sqrt{100} = 10$.\n\nWhy other options are wrong:\n- 7: Sum of digits in the legs\n- 12: Added the legs directly\n- 14: Common error",
+            solution_steps_ar=_steps("Use $c^2 = a^2 + b^2$.", "$c^2 = 36 + 64 = 100$.", "$c = 10$."),
             tags="triangle,pythagorean,figure", stage="building",
             rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=4, rating_overall=4.71,
-            source_key="expansion_geom:0006", authoring_source="human", content_format="plain"),
+            source_key="expansion_geom:0006", authoring_source="human", content_format="markdown_math"),
 
         # ── Hard (0.7-0.8) ──
         Question(skill_id="quant_geometry", question_type="geometry", difficulty=0.7,
@@ -161,12 +161,12 @@ def get_geometry_questions() -> list[Question]:
             figure_alt="A square with side 12 cm containing an inscribed circle.",
             option_a="30.9 cm", option_b="31.0 cm", option_c="144 cm", option_d="113.1 cm",
             correct_option="a",
-            explanation_ar="Square area = 12^2 = 144. Circle radius = 12/2 = 6. Circle area = pi x 6^2 = 113.1. Shaded = 144 - 113.1 = 30.9.\n\nWhy other options are wrong:\n- 31.0: Rounding error\n- 144 cm: That is the square area, not the shaded region\n- 113.1 cm: That is the circle area",
-            solution_steps_ar=_steps("Square area = 12^2 = 144.", "Radius = 12/2 = 6, circle area = pi x 36 = 113.1.", "Shaded = 144 - 113.1 = 30.9."),
+            explanation_ar="Square area = $12^2 = 144$. Circle radius = $\\frac{12}{2} = 6$. Circle area = $\\pi \\times 6^2 = 113.1$. Shaded = $144 - 113.1 = 30.9$.\n\nWhy other options are wrong:\n- 31.0: Rounding error\n- 144 cm: That is the square area, not the shaded region\n- 113.1 cm: That is the circle area",
+            solution_steps_ar=_steps("Square area = $12^2 = 144$.", "Radius = $\\frac{12}{2} = 6$, circle area = $\\pi \\times 36 = 113.1$.", "Shaded = $144 - 113.1 = 30.9$."),
             tags="composite,area,figure", stage="peak",
             rating_clarity=5, rating_cognitive=5, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=5, rating_overall=5.0,
-            source_key="expansion_geom:0007", authoring_source="human", content_format="plain"),
+            source_key="expansion_geom:0007", authoring_source="human", content_format="markdown_math"),
 
         Question(skill_id="quant_geometry", question_type="geometry", difficulty=0.7,
             text_ar="The diagram shows a semicircle on top of a rectangle. Find the total perimeter.",
@@ -185,7 +185,7 @@ def get_geometry_questions() -> list[Question]:
             tags="composite,perimeter,figure", stage="peak",
             rating_clarity=5, rating_cognitive=5, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=5, rating_overall=5.0,
-            source_key="expansion_geom:0008", authoring_source="human", content_format="plain"),
+            source_key="expansion_geom:0008", authoring_source="human", content_format="markdown_math"),
 
         Question(skill_id="quant_geometry", question_type="geometry", difficulty=0.8,
             text_ar="In the figure, triangle ABC has AB = 13, BC = 14, and height from A to BC = 12. Find the area.",
@@ -199,12 +199,12 @@ def get_geometry_questions() -> list[Question]:
             figure_alt="Triangle with base 14, side 13, and height 12.",
             option_a="78", option_b="84", option_c="91", option_d="168",
             correct_option="b",
-            explanation_ar="Area = (1/2) x base x height = (1/2) x 14 x 12 = 84.\n\nWhy other options are wrong:\n- 78: Used 13 as base instead of 14\n- 91: Used (1/2) x 13 x 14\n- 168: Forgot to divide by 2",
-            solution_steps_ar=_steps("Base = BC = 14, height = 12.", "Area = (1/2) x 14 x 12.", "Area = 84."),
+            explanation_ar="Area = $\\frac{1}{2}$ x base x height = $\\frac{1}{2}$ x 14 x 12 = 84.\n\nWhy other options are wrong:\n- 78: Used 13 as base instead of 14\n- 91: Used (1/2) x 13 x 14\n- 168: Forgot to divide by 2",
+            solution_steps_ar=_steps("Base = BC = 14, height = 12.", "Area = $\\frac{1}{2}$ x 14 x 12.", "Area = 84."),
             tags="triangle,area,figure", stage="peak",
             rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=5, rating_overall=4.86,
-            source_key="expansion_geom:0009", authoring_source="human", content_format="plain"),
+            source_key="expansion_geom:0009", authoring_source="human", content_format="markdown_math"),
 
         Question(skill_id="quant_geometry", question_type="geometry", difficulty=0.8,
             text_ar="The diagram shows a rhombus with diagonals 10 cm and 24 cm. What is its area?",
@@ -218,12 +218,12 @@ def get_geometry_questions() -> list[Question]:
             figure_alt="Rhombus with diagonals 10 cm and 24 cm.",
             option_a="34 cm", option_b="68 cm", option_c="120 cm", option_d="240 cm",
             correct_option="c",
-            explanation_ar="Area of a rhombus = (1/2) x d1 x d2 = (1/2) x 10 x 24 = 120.\n\nWhy other options are wrong:\n- 34 cm: Sum of diagonals\n- 68 cm: Perimeter calculation\n- 240 cm: Forgot to divide by 2",
-            solution_steps_ar=_steps("Use rhombus area = (1/2) x d1 x d2.", "(1/2) x 10 x 24.", "Area = 120 cm."),
+            explanation_ar="Area of a rhombus = $\\frac{1}{2}$ x $d_1$ x $d_2$ = $\\frac{1}{2}$ x 10 x 24 = 120.\n\nWhy other options are wrong:\n- 34 cm: Sum of diagonals\n- 68 cm: Perimeter calculation\n- 240 cm: Forgot to divide by 2",
+            solution_steps_ar=_steps("Use rhombus area = $\\frac{1}{2}$ x $d_1$ x $d_2$.", "$\\frac{1}{2}$ x 10 x 24.", "Area = 120 cm."),
             tags="rhombus,area,figure", stage="peak",
             rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=5, rating_overall=4.86,
-            source_key="expansion_geom:0010", authoring_source="human", content_format="plain"),
+            source_key="expansion_geom:0010", authoring_source="human", content_format="markdown_math"),
     ]
 
 
@@ -241,7 +241,7 @@ def get_statistics_questions() -> list[Question]:
             tags="sum,table", stage="foundation",
             rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=4, rating_overall=4.71,
-            source_key="expansion_stat:0001", authoring_source="human", content_format="plain"),
+            source_key="expansion_stat:0001", authoring_source="human", content_format="markdown_math"),
 
         Question(skill_id="quant_statistics", question_type="statistics", difficulty=0.3,
             text_ar="From the frequency table, what is the mode?",
@@ -254,7 +254,7 @@ def get_statistics_questions() -> list[Question]:
             tags="mode,table", stage="foundation",
             rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=4, rating_overall=4.71,
-            source_key="expansion_stat:0002", authoring_source="human", content_format="plain"),
+            source_key="expansion_stat:0002", authoring_source="human", content_format="markdown_math"),
 
         # ── Medium (0.4-0.6) ──
         Question(skill_id="quant_statistics", question_type="statistics", difficulty=0.4,
@@ -268,7 +268,7 @@ def get_statistics_questions() -> list[Question]:
             tags="mean,frequency,table", stage="building",
             rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=4, rating_explanation=5, rating_discrimination=4, rating_overall=4.57,
-            source_key="expansion_stat:0003", authoring_source="human", content_format="plain"),
+            source_key="expansion_stat:0003", authoring_source="human", content_format="markdown_math"),
 
         Question(skill_id="quant_statistics", question_type="statistics", difficulty=0.5,
             text_ar="The table shows test scores. What is the median?",
@@ -281,7 +281,7 @@ def get_statistics_questions() -> list[Question]:
             tags="median,table", stage="building",
             rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=5, rating_overall=4.86,
-            source_key="expansion_stat:0004", authoring_source="human", content_format="plain"),
+            source_key="expansion_stat:0004", authoring_source="human", content_format="markdown_math"),
 
         Question(skill_id="quant_statistics", question_type="statistics", difficulty=0.6,
             text_ar="Use the two-way table to find P(Male AND Passed).",
@@ -294,7 +294,7 @@ def get_statistics_questions() -> list[Question]:
             tags="probability,two-way-table", stage="building",
             rating_clarity=5, rating_cognitive=5, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=5, rating_overall=5.0,
-            source_key="expansion_stat:0005", authoring_source="human", content_format="plain"),
+            source_key="expansion_stat:0005", authoring_source="human", content_format="markdown_math"),
 
         # ── Hard (0.7-0.8) ──
         Question(skill_id="quant_statistics", question_type="statistics", difficulty=0.7,
@@ -303,12 +303,12 @@ def get_statistics_questions() -> list[Question]:
             table_caption="Daily sales for one week.",
             option_a="5.0", option_b="6.3", option_c="7.1", option_d="10.0",
             correct_option="b",
-            explanation_ar="Mean = 100/5 = 20. Deviations: -10, 0, 10, 0, 0. Squared: 100, 0, 100, 0, 0. Variance = 200/5 = 40. SD = sqrt(40) = 6.3.\n\nWhy other options are wrong:\n- 5.0: Used wrong formula\n- 7.1: Used sample variance (n-1)\n- 10.0: This is the range / 2",
-            solution_steps_ar=_steps("Mean = 100/5 = 20.", "Squared deviations sum = 200.", "Variance = 40, SD = sqrt(40) = 6.3."),
+            explanation_ar="Mean = $\\frac{100}{5} = 20$. Deviations: -10, 0, 10, 0, 0. Squared: 100, 0, 100, 0, 0. Variance = $\\frac{200}{5} = 40$. SD = $\\sqrt{40} = 6.3$.\n\nWhy other options are wrong:\n- 5.0: Used wrong formula\n- 7.1: Used sample variance (n-1)\n- 10.0: This is the range / 2",
+            solution_steps_ar=_steps("Mean = $\\frac{100}{5} = 20$.", "Squared deviations sum = 200.", "Variance = 40, SD = $\\sqrt{40} = 6.3$."),
             tags="standard-deviation,table", stage="peak",
             rating_clarity=5, rating_cognitive=5, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=5, rating_overall=5.0,
-            source_key="expansion_stat:0006", authoring_source="human", content_format="plain"),
+            source_key="expansion_stat:0006", authoring_source="human", content_format="markdown_math"),
 
         Question(skill_id="quant_statistics", question_type="statistics", difficulty=0.8,
             text_ar="From the cumulative frequency table, estimate the median class.",
@@ -321,7 +321,7 @@ def get_statistics_questions() -> list[Question]:
             tags="median,cumulative-frequency,table", stage="peak",
             rating_clarity=5, rating_cognitive=5, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=5, rating_overall=5.0,
-            source_key="expansion_stat:0007", authoring_source="human", content_format="plain"),
+            source_key="expansion_stat:0007", authoring_source="human", content_format="markdown_math"),
     ]
 
 
@@ -339,7 +339,7 @@ def get_comparison_questions() -> list[Question]:
             tags="comparison,algebra,table", stage="building",
             rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=4, rating_explanation=5, rating_discrimination=4, rating_overall=4.57,
-            source_key="expansion_comp:0001", authoring_source="human", content_format="plain"),
+            source_key="expansion_comp:0001", authoring_source="human", content_format="markdown_math"),
 
         Question(skill_id="quant_arithmetic", question_type="comparison", difficulty=0.3,
             text_ar="Compare the two values in the table.",
@@ -353,7 +353,7 @@ def get_comparison_questions() -> list[Question]:
             tags="comparison,fractions,table", stage="foundation",
             rating_clarity=5, rating_cognitive=4, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=4, rating_overall=4.71,
-            source_key="expansion_comp:0002", authoring_source="human", content_format="plain"),
+            source_key="expansion_comp:0002", authoring_source="human", content_format="markdown_math"),
 
         Question(skill_id="quant_statistics", question_type="comparison", difficulty=0.5,
             text_ar="Compare the mean and median using the data table.",
@@ -367,7 +367,7 @@ def get_comparison_questions() -> list[Question]:
             tags="comparison,mean,median,table", stage="building",
             rating_clarity=5, rating_cognitive=5, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=5, rating_overall=5.0,
-            source_key="expansion_comp:0003", authoring_source="human", content_format="plain"),
+            source_key="expansion_comp:0003", authoring_source="human", content_format="markdown_math"),
 
         Question(skill_id="quant_geometry", question_type="comparison", difficulty=0.6,
             text_ar="Compare the two areas described in the table.",
@@ -376,16 +376,16 @@ def get_comparison_questions() -> list[Question]:
             option_a="Circle area is greater", option_b="Square area is greater",
             option_c="They are equal", option_d="Cannot be determined",
             correct_option="b",
-            explanation_ar="Circle area = pi x 5^2 = 25pi = 78.5. Square area = 9^2 = 81. Square is greater (81 > 78.5).\n\nWhy other options are wrong:\n- Circle is greater: 78.5 < 81\n- They are equal: Different values\n- Cannot be determined: Both are computable",
+            explanation_ar="Circle area = $\\pi \\times 5^2 = 25\\pi = 78.5$. Square area = $9^2 = 81$. Square is greater ($81 > 78.5$).\n\nWhy other options are wrong:\n- Circle is greater: 78.5 < 81\n- They are equal: Different values\n- Cannot be determined: Both are computable",
             solution_steps_ar=_steps("Circle: pi x 25 = 78.5.", "Square: 81.", "81 > 78.5, square is greater."),
             tags="comparison,area,table", stage="building",
             rating_clarity=5, rating_cognitive=5, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=5, rating_overall=5.0,
-            source_key="expansion_comp:0004", authoring_source="human", content_format="plain"),
+            source_key="expansion_comp:0004", authoring_source="human", content_format="markdown_math"),
 
         Question(skill_id="quant_algebra", question_type="comparison", difficulty=0.7,
             text_ar="Compare the two quantities for all positive values of x.",
-            table_ar={"headers": ["Column", "Expression"], "rows": [["A", "x^2 + 1"], ["B", "2x"]]},
+            table_ar={"headers": ["Column", "Expression"], "rows": [["A", "$x^2 + 1$"], ["B", "$2x$"]]},
             table_caption="Compare expressions for positive x.",
             option_a="Column A is always greater", option_b="Column B is always greater",
             option_c="They are always equal", option_d="The relationship cannot be determined",
@@ -395,7 +395,7 @@ def get_comparison_questions() -> list[Question]:
             tags="comparison,algebra,table", stage="peak",
             rating_clarity=5, rating_cognitive=5, rating_fairness=5, rating_distractors=5,
             rating_difficulty_align=5, rating_explanation=5, rating_discrimination=5, rating_overall=5.0,
-            source_key="expansion_comp:0005", authoring_source="human", content_format="plain"),
+            source_key="expansion_comp:0005", authoring_source="human", content_format="markdown_math"),
     ]
 
 
