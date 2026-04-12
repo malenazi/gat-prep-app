@@ -513,16 +513,24 @@ def practice_next(user: User = Depends(get_user), db: Session = Depends(get_db))
     if plan and plan.is_mock_day and not plan.completed:
         raise HTTPException(400, "Today's session is a mock exam")
 
-    # Get today's answered questions
-    today_start = datetime.datetime.combine(datetime.date.today(), datetime.time.min)
-    today_responses = db.query(UserResponse).filter(
+    # Exclude ALL previously answered questions to prevent repeats
+    all_answered = db.query(UserResponse.question_id).filter(
         UserResponse.user_id == user.id,
-        UserResponse.session_type == "drill",
-        UserResponse.created_at >= today_start
-    ).all()
-    excluded = [r.question_id for r in today_responses]
+    ).distinct().all()
+    excluded = [r[0] for r in all_answered]
 
     q = select_next_question(db, user.id, "drill", excluded, current_day=user.current_day)
+
+    # Fallback: if no unseen questions, allow questions not answered in the last 7 days
+    if not q:
+        week_ago = datetime.datetime.utcnow() - datetime.timedelta(days=7)
+        recent_answered = db.query(UserResponse.question_id).filter(
+            UserResponse.user_id == user.id,
+            UserResponse.created_at >= week_ago,
+        ).distinct().all()
+        excluded_recent = [r[0] for r in recent_answered]
+        q = select_next_question(db, user.id, "drill", excluded_recent, current_day=user.current_day)
+
     if not q:
         return {"done": True, "message": "You have completed all available questions!"}
 
