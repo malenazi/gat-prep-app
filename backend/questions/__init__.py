@@ -11,6 +11,7 @@ from generated_question_bank import AUTHORING_SOURCE_HUMAN, load_generated_quest
 from question_content import apply_content_refresh
 from .visual_quant_upgrade import apply_visual_refresh
 from .content_expansion import get_all_expansion_questions
+from .expansion_wave2 import get_all_wave2_questions
 from question_visuals import normalize_question_visual_fields
 
 QUESTION_MODULES = (
@@ -42,6 +43,7 @@ def load_all_questions(*, apply_refresh: bool = True):
 
     apply_visual_refresh(questions)
     questions.extend(get_all_expansion_questions())
+    questions.extend(get_all_wave2_questions())
     if apply_refresh:
         apply_content_refresh(questions)
     return [normalize_question_visual_fields(question) for question in questions]
