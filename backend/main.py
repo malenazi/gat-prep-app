@@ -720,10 +720,10 @@ def get_render_content(q: Question) -> dict[str, Any]:
     text_ar = q.text_ar
     passage_ar = q.passage_ar
 
-    # Convert (word) brackets to underline for contextual error questions
-    # so the target word is highlighted but not obviously marked as "the error"
+    # Remove brackets from contextual error questions — students should
+    # identify the error word from context, not from visual markers
     if q.skill_id == "verbal_error" and text_ar and "(" in text_ar:
-        text_ar = _CE_BRACKET_PATTERN.sub(r'__\1__', text_ar)
+        text_ar = _CE_BRACKET_PATTERN.sub(r'\1', text_ar)
     options = {
         "a": q.option_a,
         "b": q.option_b,
