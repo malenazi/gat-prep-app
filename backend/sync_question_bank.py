@@ -189,6 +189,24 @@ def _apply_source_payload(existing: Question, payload: dict[str, Any]) -> bool:
 
 def sync_question_bank(db: Session, *, dry_run: bool = False) -> dict[str, Any]:
     source_questions = load_all_questions()
+
+    # Pre-sync quality gate: check for critical issues
+    from question_content import collect_question_content_issues
+    blocked = []
+    for sq in source_questions:
+        issues = collect_question_content_issues(sq)
+        errors = [i for i in issues if i.severity == "error"]
+        if errors:
+            key = clean_optional_text(getattr(sq, "source_key", None)) or "unknown"
+            blocked.append({"source_key": key, "errors": [i.code for i in errors]})
+
+    if blocked:
+        print(f"Quality gate: {len(blocked)} question(s) have errors (syncing anyway with status=review)")
+        for b in blocked[:5]:
+            print(f"  {b['source_key']}: {', '.join(b['errors'])}")
+        if len(blocked) > 5:
+            print(f"  ... +{len(blocked) - 5} more")
+
     source_payloads = [build_source_question_payload(question) for question in source_questions]
     existing_questions = db.query(Question).order_by(Question.id.asc()).all()
     legacy_unkeyed_questions = [
