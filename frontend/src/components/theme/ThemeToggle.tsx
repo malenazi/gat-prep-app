@@ -15,7 +15,7 @@ export function ThemeToggle() {
 
   return (
     <div
-      className="fixed bottom-[calc(env(safe-area-inset-bottom)+5rem)] right-4 z-[80] lg:bottom-auto lg:right-5 lg:top-5"
+      className="fixed bottom-[calc(env(safe-area-inset-bottom)+5rem)] right-4 z-[80] lg:bottom-4 lg:right-5 lg:top-auto"
       data-testid="theme-toggle"
     >
       <button

@@ -74,6 +74,24 @@ from seed import seed_all
 from sync_question_bank import generate_admin_source_key
 from user_management import create_user, find_user_by_email
 
+LEAGUE_THRESHOLDS = [
+    (5000, "champion"),
+    (3000, "diamond"),
+    (2000, "platinum"),
+    (1000, "gold"),
+    (500, "silver"),
+    (0, "bronze"),
+]
+
+def check_league_promotion(user: User):
+    """Update user's league tier based on XP thresholds."""
+    for threshold, league in LEAGUE_THRESHOLDS:
+        if user.xp >= threshold:
+            if user.league != league:
+                user.league = league
+            return
+
+
 def ensure_feedback_columns(eng):
     """Add new feedback columns if they don't exist (safe for production)."""
     from sqlalchemy import inspect, text
@@ -447,6 +465,7 @@ def diagnostic_answer(req: AnswerReq, user: User = Depends(get_user), db: Sessio
 
     # Award XP
     user.xp += 10 if is_correct else 5
+    check_league_promotion(user)
     db.commit()
 
     return {
@@ -575,6 +594,7 @@ def practice_answer(req: AnswerReq, user: User = Depends(get_user), db: Session 
 
     # XP + streak
     user.xp += 10 if is_correct else 5
+    check_league_promotion(user)
     today = datetime.date.today().isoformat()
     if user.last_active_date != today:
         yesterday = (datetime.date.today() - datetime.timedelta(days=1)).isoformat()
@@ -691,10 +711,19 @@ def parse_solution_steps(raw_value: Optional[str]):
         return [raw_value]
 
 
+import re as _re
+
+_CE_BRACKET_PATTERN = _re.compile(r'\(([^)]{1,30})\)')
+
 def get_render_content(q: Question) -> dict[str, Any]:
     content_format = validate_content_format(getattr(q, "content_format", None))
     text_ar = q.text_ar
     passage_ar = q.passage_ar
+
+    # Convert (word) brackets to underline for contextual error questions
+    # so the target word is highlighted but not obviously marked as "the error"
+    if q.skill_id == "verbal_error" and text_ar and "(" in text_ar:
+        text_ar = _CE_BRACKET_PATTERN.sub(r'__\1__', text_ar)
     options = {
         "a": q.option_a,
         "b": q.option_b,
