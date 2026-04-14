@@ -711,19 +711,10 @@ def parse_solution_steps(raw_value: Optional[str]):
         return [raw_value]
 
 
-import re as _re
-
-_CE_BRACKET_PATTERN = _re.compile(r'\(([^)]{1,30})\)')
-
 def get_render_content(q: Question) -> dict[str, Any]:
     content_format = validate_content_format(getattr(q, "content_format", None))
     text_ar = q.text_ar
     passage_ar = q.passage_ar
-
-    # Remove brackets from contextual error questions — students should
-    # identify the error word from context, not from visual markers
-    if q.skill_id == "verbal_error" and text_ar and "(" in text_ar:
-        text_ar = _CE_BRACKET_PATTERN.sub(r'\1', text_ar)
     options = {
         "a": q.option_a,
         "b": q.option_b,
