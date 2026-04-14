@@ -29,7 +29,6 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
     return this.props.children;
   }
 }
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Toaster } from '@/components/ui/sonner';
 
 const LandingPage = lazy(() => import('@/components/LandingPage').then(module => ({ default: module.LandingPage })));
@@ -121,7 +120,6 @@ export default function App() {
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} storageKey="qudra-theme">
         <BrowserRouter>
           <Suspense fallback={<Spinner />}>
-            <ThemeToggle />
             <AppRoutes />
             <Toaster
               position="top-center"
