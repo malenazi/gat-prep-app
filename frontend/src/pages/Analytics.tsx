@@ -235,6 +235,39 @@ export default function Analytics() {
         </div>
       )}
 
+      {/* Study Summary */}
+      {data.total_questions > 0 && (
+        <div className="bg-white shadow-card rounded-2xl p-6 card-hover dark:bg-slate-900">
+          <h3 className="text-slate-800 font-bold text-sm mb-4 dark:text-slate-100">Study Summary</h3>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="text-center">
+              <p className="text-2xl font-black text-slate-800 dark:text-slate-100">
+                {Math.round(data.total_questions * 4 / 60)}h {Math.round(data.total_questions * 4 % 60)}m
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Est. Study Time</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-black text-slate-800 dark:text-slate-100">
+                {allSkills.filter(s => s.accuracy >= 0.7).length}/{allSkills.length}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Skills Mastered (70%+)</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-black text-teal-600 dark:text-teal-400">
+                {data.predicted_score.low}-{data.predicted_score.high}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Score Range</p>
+            </div>
+            <div className="text-center">
+              <p className="text-2xl font-black text-slate-800 dark:text-slate-100">
+                {Math.round(data.predicted_score.verbal_mastery * 100) > Math.round(data.predicted_score.quant_mastery * 100) ? 'Verbal' : 'Quant'}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Stronger Section</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {data.total_questions === 0 && (
         <div className="text-center py-16">
           <div className="text-5xl mb-4 animate-float">📊</div>
