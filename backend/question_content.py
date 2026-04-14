@@ -238,6 +238,25 @@ def normalize_math_markdown(value: Optional[str]) -> Optional[str]:
     for raw_fraction, tex_fraction in UNICODE_FRACTION_REPLACEMENTS:
         normalized = normalized.replace(raw_fraction, f"${tex_fraction}$")
 
+    # Clean Unicode fraction characters
+    _CLEAN_UNICODE_FRACS = {
+        "\u00BD": r"\frac{1}{2}", "\u00BC": r"\frac{1}{4}", "\u00BE": r"\frac{3}{4}",
+        "\u2153": r"\frac{1}{3}", "\u2154": r"\frac{2}{3}", "\u2155": r"\frac{1}{5}",
+        "\u2157": r"\frac{3}{5}", "\u2159": r"\frac{1}{6}", "\u215B": r"\frac{1}{8}",
+    }
+    for char, tex in _CLEAN_UNICODE_FRACS.items():
+        normalized = normalized.replace(char, f"${tex}$")
+
+    # Convert superscript/subscript fractions like 22/7 in Unicode
+    _sup = str.maketrans("\u2070\u00B9\u00B2\u00B3\u2074\u2075\u2076\u2077\u2078\u2079", "0123456789")
+    _sub = str.maketrans("\u2080\u2081\u2082\u2083\u2084\u2085\u2086\u2087\u2088\u2089", "0123456789")
+    def _sup_sub_frac(m):
+        return f"$\\frac{{{m.group(1).translate(_sup)}}}{{{m.group(2).translate(_sub)}}}$"
+    normalized = re.sub(
+        r"([\u2070\u00B9\u00B2\u00B3\u2074-\u2079]+)\u2044([\u2080-\u2089]+)",
+        _sup_sub_frac, normalized,
+    )
+
     normalized = re.sub(
         r"(?<![$\\])\b(\d+)\s*/\s*(\d+)\b",
         lambda match: f"$\\frac{{{match.group(1)}}}{{{match.group(2)}}}$",
