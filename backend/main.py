@@ -127,6 +127,25 @@ ensure_question_content_columns(engine)
 ensure_feedback_columns(engine)
 seed_all()
 
+# Fix league ranks for all existing users on startup
+def _fix_all_leagues():
+    from database import SessionLocal
+    db = SessionLocal()
+    try:
+        users = db.query(User).all()
+        fixed = 0
+        for u in users:
+            old = u.league
+            check_league_promotion(u)
+            if u.league != old:
+                fixed += 1
+        if fixed:
+            db.commit()
+            print(f"Fixed league rank for {fixed} users")
+    finally:
+        db.close()
+_fix_all_leagues()
+
 app = FastAPI(title="Qudra Academy — GAT Prep")
 app.add_middleware(GZipMiddleware, minimum_size=500)
 app.add_middleware(
@@ -346,6 +365,8 @@ def reset_password(req: ResetPasswordReq, db: Session = Depends(get_db)):
 # ── User profile ─────────────────────────────────────────────────────────────
 @app.get("/api/me")
 def get_me(user: User = Depends(get_user), db: Session = Depends(get_db)):
+    check_league_promotion(user)
+    db.commit()
     sync_current_day_plan(db, user)
     abilities = db.query(UserAbility).filter_by(user_id=user.id).all()
     skills = db.query(Skill).all()
